@@ -1,0 +1,61 @@
+{
+  "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.25/MicrosoftTeams.schema.json",
+  "manifestVersion": "1.25",
+  "supportsChannelFeatures": "tier1",
+  "version": "1.0.2",
+  "id": "__APP_ID__",
+  "developer": {
+    "name": "HCI",
+    "websiteUrl": "https://hci-tv.com",
+    "privacyUrl": "https://hci-tv.com/privacy",
+    "termsOfUseUrl": "https://hci-tv.com/terms"
+  },
+  "name": {
+    "short": "Implementation Hub",
+    "full": "HCI Implementation Hub"
+  },
+  "description": {
+    "short": "HCI customer implementations, in the channel that runs them",
+    "full": "Adds an HCI Implementation Hub tab to a channel: project status, plan, decisions waiting for an answer, system configuration, installed base, integrations, meetings and people for the customer project the channel is about. The personal tab shows the whole portfolio."
+  },
+  "icons": {
+    "color": "color.png",
+    "outline": "outline.png"
+  },
+  "accentColor": "#19B34A",
+  "configurableTabs": [
+    {
+      "configurationUrl": "https://__HOST__/config.html",
+      "canUpdateConfiguration": true,
+      "scopes": [
+        "team",
+        "groupChat"
+      ],
+      "context": [
+        "channelTab",
+        "privateChatTab"
+      ]
+    }
+  ],
+  "staticTabs": [
+    {
+      "entityId": "portfolio",
+      "name": "Portfolio",
+      "contentUrl": "https://__HOST__/?scope=portfolio",
+      "websiteUrl": "https://__HOST__/?scope=portfolio",
+      "scopes": [
+        "personal"
+      ]
+    }
+  ],
+  "permissions": [
+    "identity"
+  ],
+  "validDomains": [
+    "__HOST__"
+  ],
+  "webApplicationInfo": {
+    "id": "__ENTRA_APP_ID__",
+    "resource": "api://__HOST__/__ENTRA_APP_ID__"
+  }
+}

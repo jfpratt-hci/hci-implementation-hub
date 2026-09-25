@@ -1,0 +1,292 @@
+{
+ "bh-d01": {
+  "answer": "Landscape, Ball Blue, Providence Park logo, prominent room numbers",
+  "date": "2026-08-20",
+  "decidedBy": "Ball Health with HCI",
+  "pending": false,
+  "projectId": "ball-health",
+  "question": "Door sign layout and branding",
+  "source": "20 Aug meeting",
+  "visibility": "external"
+ },
+ "bh-d02": {
+  "answer": "Dual occupancy layout, six status icons per resident",
+  "date": "2026-08-20",
+  "decidedBy": "Ball Health with HCI",
+  "pending": false,
+  "projectId": "ball-health",
+  "question": "Semi private room layout",
+  "source": "20 Aug meeting",
+  "visibility": "external"
+ },
+ "bh-d03": {
+  "answer": "Removed; staff info on the in room display only",
+  "date": "2026-08-20",
+  "decidedBy": "Ball Health",
+  "pending": false,
+  "projectId": "ball-health",
+  "question": "Lower banner on door displays",
+  "source": "20 Aug meeting",
+  "visibility": "external"
+ },
+ "bh-d04": {
+  "answer": "Keep the modern icon format, not large colored blocks",
+  "date": "2026-08-20",
+  "decidedBy": "Ball Health",
+  "pending": false,
+  "projectId": "ball-health",
+  "question": "Icon style",
+  "source": "20 Aug meeting",
+  "visibility": "external"
+ },
+ "bh-d05": {
+  "answer": "At least 1 inch tall",
+  "date": "2026-09-18",
+  "decidedBy": "Mr. Ball via Josh",
+  "pending": false,
+  "projectId": "ball-health",
+  "question": "Room number size on hallway door signs",
+  "source": "18 Sep meeting",
+  "visibility": "external"
+ },
+ "bh-d06": {
+  "answer": "Move from DHCP to static IPs assigned by unit and room",
+  "date": "2026-09-18",
+  "decidedBy": "Ball Health with Greg",
+  "pending": false,
+  "projectId": "ball-health",
+  "question": "Room board addressing",
+  "source": "18 Sep meeting",
+  "visibility": "external"
+ },
+ "bh-d07": {
+  "answer": "Server stays a VM at the data center; vendor VPN deferred until after opening",
+  "date": "2026-09-18",
+  "decidedBy": "Ball Health",
+  "pending": false,
+  "projectId": "ball-health",
+  "question": "Server location and vendor VPN",
+  "source": "18 Sep meeting",
+  "visibility": "external"
+ },
+ "bh-d08": {
+  "answer": "Redone in the new facility look; Ball blue banner stays",
+  "date": "2026-09-18",
+  "decidedBy": "John with Josh",
+  "pending": false,
+  "projectId": "ball-health",
+  "question": "Graphics package",
+  "source": "Email",
+  "visibility": "external"
+ },
+ "bh-d09": {
+  "answer": "5 x 10 inch and 5 x 24 inch, ordered as soon as possible",
+  "date": "2026-09-22",
+  "decidedBy": "Josh Glover",
+  "pending": false,
+  "projectId": "ball-health",
+  "question": "Spare displays",
+  "source": "Email",
+  "visibility": "external"
+ },
+ "bh-d10": {
+  "askedDate": "2026-09-23",
+  "askedOf": "Josh Glover, Raymond Broughton",
+  "defaultIfSilent": "HCI builds from the 18 Sep architectural floor plan and the 20 Aug rounding sheet fields",
+  "neededBy": "2026-09-24",
+  "pending": true,
+  "projectId": "ball-health",
+  "question": "Final room numbers and MatrixCare bed assignments",
+  "visibility": "external"
+ },
+ "bh-d11": {
+  "askedDate": "2026-09-23",
+  "askedOf": "Josh Glover, Raymond Broughton",
+  "defaultIfSilent": "HCI syncs staff from a weekly payroll report Ball Health sends on a schedule",
+  "neededBy": "2026-09-24",
+  "pending": true,
+  "projectId": "ball-health",
+  "question": "Staff onboarding for staff without Active Directory accounts",
+  "visibility": "external"
+ },
+ "bh-d12": {
+  "askedDate": "2026-09-23",
+  "askedOf": "Raymond Broughton",
+  "defaultIfSilent": "HCI proposes two dates the week of 28 Sep",
+  "neededBy": "2026-09-24",
+  "pending": true,
+  "projectId": "ball-health",
+  "question": "Clinical team call, 7:30 to 8:30 AM Central",
+  "visibility": "external"
+ },
+ "cr-d01": {
+  "askedDate": "2026-09-03",
+  "askedOf": "Crawford",
+  "defaultIfSilent": "",
+  "neededBy": "2026-09-11",
+  "pending": true,
+  "projectId": "crawford",
+  "question": "Image Viewer and Labs on the ED whiteboard: yes or no",
+  "visibility": "external"
+ },
+ "cr-d02": {
+  "answer": "Manual entry with presaved event values, HCI managed",
+  "date": "2026-09-03",
+  "decidedBy": "Crawford with HCI",
+  "pending": false,
+  "projectId": "crawford",
+  "question": "Patient schedule entry",
+  "source": "3 Sep decision meeting",
+  "visibility": "external"
+ },
+ "cr-d03": {
+  "answer": "Room, Patient, Provider, Nurse, Nurse Aide, Charge Nurse, Room Status, Nurse Call Alerts, InfoTiles; Bed Status and Work Order removed",
+  "date": "2026-09-03",
+  "decidedBy": "Crawford with HCI",
+  "pending": false,
+  "projectId": "crawford",
+  "question": "Unit status board columns",
+  "source": "3 Sep decision meeting",
+  "visibility": "external"
+ },
+ "cr-d04": {
+  "answer": "Virtual Nursing out of go live; smart bed alerts, work orders and Request Service, Next Round, Education, Visitor Log and WiFi Info removed",
+  "date": "2026-09-03",
+  "decidedBy": "Crawford with HCI",
+  "pending": false,
+  "projectId": "crawford",
+  "question": "Modules removed from go live",
+  "source": "3 Sep decision meeting",
+  "visibility": "external"
+ },
+ "cr-d05": {
+  "answer": "Kept and integrated with Oracle",
+  "date": "2026-09-03",
+  "decidedBy": "Crawford with HCI",
+  "pending": false,
+  "projectId": "crawford",
+  "question": "Family Phone module",
+  "source": "3 Sep decision meeting",
+  "visibility": "external"
+ },
+ "cr-d06": {
+  "answer": "15 site values approved; pain scale gets a new design",
+  "date": "2026-09-03",
+  "decidedBy": "Crawford with HCI",
+  "pending": false,
+  "projectId": "crawford",
+  "question": "IV location dropdown values",
+  "source": "3 Sep decision meeting",
+  "visibility": "external"
+ },
+ "do-d01": {
+  "askedDate": "2026-09-09",
+  "askedOf": "John Pratt, Rauland",
+  "defaultIfSilent": "",
+  "neededBy": "",
+  "pending": true,
+  "projectId": "dosher",
+  "question": "Care team nurse and tech data source, since HL7 has no field for them",
+  "visibility": "external"
+ },
+ "do-d02": {
+  "answer": "One way: ADT, orders, pharmacy and results to HCI. No scheduling feed and no writeback, so pain scale is manual and the patient schedule is a manual drop down",
+  "date": "2026-09-09",
+  "decidedBy": "Dosher project call",
+  "pending": false,
+  "projectId": "dosher",
+  "question": "TruBridge interface direction",
+  "source": "9 Sep project call",
+  "visibility": "external"
+ },
+ "do-d03": {
+  "answer": "Goals, Next Dose, Family Contact, WiFi Info and the separate drawing area are out; Quick Notes on the whiteboard only; Visitor Log sourced from Midmark; Virtual Nursing on all three device types; 9 precaution infotiles confirmed",
+  "date": "2026-09-09",
+  "decidedBy": "Dosher project call",
+  "pending": false,
+  "projectId": "dosher",
+  "question": "Final module list",
+  "source": "9 Sep project call",
+  "visibility": "external"
+ },
+ "do-d04": {
+  "answer": "PIN protection on labs, visitor log and other sensitive footer buttons; data kept one week in MediaCare, nothing on the device, wiped on discharge",
+  "date": "2026-09-09",
+  "decidedBy": "Dosher project call",
+  "pending": false,
+  "projectId": "dosher",
+  "question": "Privacy and data retention",
+  "source": "9 Sep project call",
+  "visibility": "external"
+ },
+ "go-d01": {
+  "askedDate": "2026-09-15",
+  "askedOf": "Terri Miller and the Goshen virtual nurses",
+  "defaultIfSilent": "",
+  "neededBy": "",
+  "pending": true,
+  "projectId": "goshen-esitter",
+  "question": "Across a whole shift, what does the virtual nurse do most: talk patients back into bed, watch, work calls, or get somebody into the room?",
+  "visibility": "external"
+ },
+ "go-d02": {
+  "answer": "In the respective nursing unit, not on the eSitter or across all surfaces",
+  "date": "2026-09-15",
+  "decidedBy": "John Pratt with Goshen",
+  "pending": false,
+  "projectId": "goshen-esitter",
+  "question": "Where staff assist alarms",
+  "source": "14 Sep visit",
+  "visibility": "external"
+ },
+ "go-d03": {
+  "answer": "The six fixes, the reimagined view and the Windows app go out as one release, about two weeks, at no cost to Goshen",
+  "date": "2026-09-15",
+  "decidedBy": "John Pratt",
+  "pending": false,
+  "projectId": "goshen-esitter",
+  "question": "Release plan for the fixes",
+  "source": "",
+  "visibility": "external"
+ },
+ "gs-d01": {
+  "askedDate": "2026-09-21",
+  "askedOf": "Joey (Good Sam IS)",
+  "defaultIfSilent": "Phase 1 floor is 16 GB memory, 32 GB preferred; the recording storage pool is optional if you do not record",
+  "neededBy": "",
+  "pending": true,
+  "projectId": "good-sam",
+  "question": "Final media server size",
+  "visibility": "external"
+ },
+ "gs-d02": {
+  "answer": "Whiteboard built in cameras only, digital zoom, no PTZ; the USB PTZ units cannot be used",
+  "date": "2026-08-26",
+  "decidedBy": "Good Sam with HCI",
+  "pending": false,
+  "projectId": "good-sam",
+  "question": "Cameras for virtual sitting",
+  "source": "26 Aug call",
+  "visibility": "external"
+ },
+ "gs-d03": {
+  "answer": "Whiteboard and unit status board stay as they are plus a call button and an eSitter button; new virtual nurse console with call queue and new eSitter console",
+  "date": "2026-09-02",
+  "decidedBy": "John Pratt",
+  "pending": false,
+  "projectId": "good-sam",
+  "question": "Rollout scope",
+  "source": "2 Sep",
+  "visibility": "external"
+ },
+ "gs-d04": {
+  "answer": "Virtual Nurse Academy, an interactive click through tutorial at hci-tv.com/vn-academy",
+  "date": "2026-09-23",
+  "decidedBy": "John Pratt",
+  "pending": false,
+  "projectId": "good-sam",
+  "question": "Staff training format",
+  "source": "",
+  "visibility": "external"
+ }
+}

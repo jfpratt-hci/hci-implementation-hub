@@ -1,0 +1,344 @@
+{
+ "bh-c01": {
+  "basis": "room",
+  "catalogId": "cat-ds-app",
+  "detail": "Landscape, Ball Blue, dual occupancy layout for semi private rooms",
+  "notes": "Confirm room count from the quote",
+  "projectId": "ball-health",
+  "qty": "",
+  "status": "installed"
+ },
+ "bh-c02": {
+  "basis": "bed",
+  "catalogId": "cat-wb-app",
+  "detail": "",
+  "notes": "Confirm count from the quote",
+  "projectId": "ball-health",
+  "qty": "",
+  "status": "installed"
+ },
+ "bh-c03": {
+  "basis": "room",
+  "catalogId": "cat-hw-10",
+  "detail": "",
+  "notes": "About half of displays online 18 Sep, south wing midweek",
+  "projectId": "ball-health",
+  "qty": "",
+  "status": "installed"
+ },
+ "bh-c04": {
+  "basis": "bed",
+  "catalogId": "cat-hw-24",
+  "detail": "",
+  "notes": "Confirm count from the quote",
+  "projectId": "ball-health",
+  "qty": "",
+  "status": "installed"
+ },
+ "bh-c05": {
+  "basis": "each",
+  "catalogId": "cat-hw-spare",
+  "detail": "10 inch spare displays",
+  "notes": "Josh fixed the count 22 Sep; on next week's order",
+  "projectId": "ball-health",
+  "qty": 5,
+  "status": "quoted"
+ },
+ "bh-c06": {
+  "basis": "each",
+  "catalogId": "cat-hw-spare",
+  "detail": "24 inch spare displays",
+  "notes": "Josh fixed the count 22 Sep; on next week's order",
+  "projectId": "ball-health",
+  "qty": 5,
+  "status": "quoted"
+ },
+ "bh-c07": {
+  "basis": "each",
+  "catalogId": "cat-srv",
+  "detail": "VM on the data center network, moved on site 18 Sep",
+  "notes": "New IP owed to Greg",
+  "projectId": "ball-health",
+  "qty": 1,
+  "status": "installed"
+ },
+ "bh-c08": {
+  "basis": "each",
+  "catalogId": "cat-int-mc",
+  "detail": "Census, vitals and progress notes",
+  "notes": "About 95 percent built; waiting on the authorization form",
+  "projectId": "ball-health",
+  "qty": 1,
+  "status": "in_progress"
+ },
+ "bh-c09": {
+  "basis": "each",
+  "catalogId": "cat-int-tektone",
+  "detail": "Via Storm Medical",
+  "notes": "Status to confirm with David Oxner",
+  "projectId": "ball-health",
+  "qty": 1,
+  "status": "planned"
+ },
+ "bh-c10": {
+  "basis": "each",
+  "catalogId": "cat-int-nfc",
+  "detail": "HID Corporate 1000",
+  "notes": "Format to confirm from the box label; fewer than half of staff have AD accounts",
+  "projectId": "ball-health",
+  "qty": 1,
+  "status": "planned"
+ },
+ "cr-c01": {
+  "basis": "room",
+  "catalogId": "cat-hw-32",
+  "detail": "ED: Trauma 1, Trauma 2, Exam 3, 4, 6. Med Surg: rooms 101 to 119",
+  "notes": "",
+  "projectId": "crawford",
+  "qty": 24,
+  "status": "ordered"
+ },
+ "cr-c02": {
+  "basis": "room",
+  "catalogId": "cat-hw-13",
+  "detail": "",
+  "notes": "",
+  "projectId": "crawford",
+  "qty": 24,
+  "status": "ordered"
+ },
+ "cr-c03": {
+  "basis": "unit",
+  "catalogId": "cat-hw-usb",
+  "detail": "",
+  "notes": "",
+  "projectId": "crawford",
+  "qty": 3,
+  "status": "ordered"
+ },
+ "cr-c04": {
+  "basis": "each",
+  "catalogId": "cat-hw-spare",
+  "detail": "32 inch spares",
+  "notes": "",
+  "projectId": "crawford",
+  "qty": 2,
+  "status": "ordered"
+ },
+ "cr-c05": {
+  "basis": "each",
+  "catalogId": "cat-hw-spare",
+  "detail": "13 inch spares",
+  "notes": "",
+  "projectId": "crawford",
+  "qty": 2,
+  "status": "ordered"
+ },
+ "cr-c06": {
+  "basis": "room",
+  "catalogId": "cat-wb-app",
+  "detail": "Med Surg whiteboard with IV module",
+  "notes": "",
+  "projectId": "crawford",
+  "qty": 19,
+  "status": "in_progress"
+ },
+ "cr-c07": {
+  "basis": "room",
+  "catalogId": "cat-edwb-app",
+  "detail": "ED variant, reduced module set, IV module",
+  "notes": "Image Viewer and Labs still open",
+  "projectId": "crawford",
+  "qty": 5,
+  "status": "in_progress"
+ },
+ "cr-c08": {
+  "basis": "room",
+  "catalogId": "cat-ds-app",
+  "detail": "",
+  "notes": "",
+  "projectId": "crawford",
+  "qty": 24,
+  "status": "in_progress"
+ },
+ "cr-c09": {
+  "basis": "unit",
+  "catalogId": "cat-usb-app",
+  "detail": "Columns finalized 3 Sep",
+  "notes": "",
+  "projectId": "crawford",
+  "qty": 3,
+  "status": "in_progress"
+ },
+ "cr-c10": {
+  "basis": "each",
+  "catalogId": "cat-int-adt",
+  "detail": "Oracle Health",
+  "notes": "",
+  "projectId": "crawford",
+  "qty": 1,
+  "status": "in_progress"
+ },
+ "cr-c11": {
+  "basis": "each",
+  "catalogId": "cat-int-rauland",
+  "detail": "Rauland Responder",
+  "notes": "Testing to schedule",
+  "projectId": "crawford",
+  "qty": 1,
+  "status": "planned"
+ },
+ "cr-c12": {
+  "basis": "each",
+  "catalogId": "cat-int-rtls",
+  "detail": "Kontakt.io",
+  "notes": "Phase 2",
+  "projectId": "crawford",
+  "qty": 1,
+  "status": "deferred"
+ },
+ "do-c01": {
+  "basis": "bed",
+  "catalogId": "cat-hw-32",
+  "detail": "",
+  "notes": "",
+  "projectId": "dosher",
+  "qty": 9,
+  "status": "installed"
+ },
+ "do-c02": {
+  "basis": "room",
+  "catalogId": "cat-hw-13",
+  "detail": "",
+  "notes": "",
+  "projectId": "dosher",
+  "qty": 9,
+  "status": "installed"
+ },
+ "do-c03": {
+  "basis": "unit",
+  "catalogId": "cat-hw-usb",
+  "detail": "",
+  "notes": "",
+  "projectId": "dosher",
+  "qty": 1,
+  "status": "installed"
+ },
+ "do-c04": {
+  "basis": "bed",
+  "catalogId": "cat-wb-app",
+  "detail": "Room 6 is the test room",
+  "notes": "As built config workbook 9.7.26 JFP holds the module by module status",
+  "projectId": "dosher",
+  "qty": 9,
+  "status": "installed"
+ },
+ "do-c05": {
+  "basis": "room",
+  "catalogId": "cat-ds-app",
+  "detail": "",
+  "notes": "",
+  "projectId": "dosher",
+  "qty": 9,
+  "status": "installed"
+ },
+ "do-c06": {
+  "basis": "unit",
+  "catalogId": "cat-usb-app",
+  "detail": "Header ALERTS, RTLS column and date still to add",
+  "notes": "",
+  "projectId": "dosher",
+  "qty": 1,
+  "status": "in_progress"
+ },
+ "do-c07": {
+  "basis": "each",
+  "catalogId": "cat-int-adt",
+  "detail": "TruBridge, one way",
+  "notes": "",
+  "projectId": "dosher",
+  "qty": 1,
+  "status": "in_progress"
+ },
+ "do-c08": {
+  "basis": "each",
+  "catalogId": "cat-int-rauland",
+  "detail": "Responder 5",
+  "notes": "",
+  "projectId": "dosher",
+  "qty": 1,
+  "status": "in_progress"
+ },
+ "do-c09": {
+  "basis": "each",
+  "catalogId": "cat-int-rtls",
+  "detail": "Midmark",
+  "notes": "",
+  "projectId": "dosher",
+  "qty": 1,
+  "status": "in_progress"
+ },
+ "do-c10": {
+  "basis": "each",
+  "catalogId": "cat-int-zoom",
+  "detail": "",
+  "notes": "",
+  "projectId": "dosher",
+  "qty": 1,
+  "status": "in_progress"
+ },
+ "go-c01": {
+  "basis": "station",
+  "catalogId": "cat-es-app",
+  "detail": "Web version in test; Windows app coming",
+  "notes": "At least 9 patients on one screen, ideally 10",
+  "projectId": "goshen-esitter",
+  "qty": 1,
+  "status": "installed"
+ },
+ "go-c02": {
+  "basis": "each",
+  "catalogId": "cat-int-genetec",
+  "detail": "",
+  "notes": "",
+  "projectId": "goshen-esitter",
+  "qty": 1,
+  "status": "live"
+ },
+ "gs-c01": {
+  "basis": "station",
+  "catalogId": "cat-vn-app",
+  "detail": "3 nurse stations plus 1 remote station",
+  "notes": "",
+  "projectId": "good-sam",
+  "qty": 4,
+  "status": "in_progress"
+ },
+ "gs-c02": {
+  "basis": "station",
+  "catalogId": "cat-es-app",
+  "detail": "Split screen 6 to 10 patients on the large screen",
+  "notes": "Observer ratio starts 1:6, scales to 1:10",
+  "projectId": "good-sam",
+  "qty": 1,
+  "status": "in_progress"
+ },
+ "gs-c03": {
+  "basis": "each",
+  "catalogId": "cat-srv-media",
+  "detail": "Built by Good Sam IS to HCI spec",
+  "notes": "Final size is Good Sam's call",
+  "projectId": "good-sam",
+  "qty": 1,
+  "status": "planned"
+ },
+ "gs-c04": {
+  "basis": "each",
+  "catalogId": "cat-int-zoom",
+  "detail": "",
+  "notes": "",
+  "projectId": "good-sam",
+  "qty": 1,
+  "status": "in_progress"
+ }
+}

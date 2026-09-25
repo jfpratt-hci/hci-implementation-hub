@@ -1,0 +1,22 @@
+{
+ "tm-arpan": {
+  "email": "",
+  "name": "Arpan Bajpai",
+  "role": "Product"
+ },
+ "tm-greg": {
+  "email": "",
+  "name": "Greg Lamb",
+  "role": "Devices, network and installation"
+ },
+ "tm-john": {
+  "email": "johnpratt@hci-tv.com",
+  "name": "John Pratt",
+  "role": "President, delivery lead"
+ },
+ "tm-li": {
+  "email": "litian@hci-tv.com",
+  "name": "Li Tian",
+  "role": "Database and integrations"
+ }
+}

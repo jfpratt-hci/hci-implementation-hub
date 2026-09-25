@@ -1,0 +1,18 @@
+{
+  "name": "hci-implementation-hub",
+  "version": "1.0.0",
+  "description": "HCI Implementation Hub as a Microsoft Teams app",
+  "private": true,
+  "license": "UNLICENSED",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "build": "python3 build.py",
+    "manifest": "node scripts/manifest.js"
+  },
+  "engines": { "node": ">=18" },
+  "dependencies": {
+    "@microsoft/teams-js": "^2.56.0",
+    "express": "^4.21.2"
+  }
+}

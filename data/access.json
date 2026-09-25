@@ -1,0 +1,28 @@
+{
+ "bh-a01": {
+  "account": "",
+  "client": "TeamViewer",
+  "contact": "Raymond Broughton",
+  "credentialLocation": "Not recorded yet",
+  "endpoint": "",
+  "lastVerified": "",
+  "method": "jump",
+  "name": "TeamViewer jump box",
+  "notes": "Interim HCI access to the on site server until the vendor VPN exists",
+  "projectId": "ball-health",
+  "status": "working"
+ },
+ "bh-a02": {
+  "account": "",
+  "client": "",
+  "contact": "Raymond Broughton",
+  "credentialLocation": "",
+  "endpoint": "",
+  "lastVerified": "",
+  "method": "vpn",
+  "name": "Vendor VPN",
+  "notes": "Deferred until after opening; mid to late October at the earliest",
+  "projectId": "ball-health",
+  "status": "pending"
+ }
+}

@@ -1,0 +1,265 @@
+{
+ "cat-ds-app": {
+  "active": true,
+  "basis": "room",
+  "category": "Software",
+  "deviceType": "Door Sign",
+  "name": "Digital Door Sign app",
+  "vendor": "HCI"
+ },
+ "cat-edwb-app": {
+  "active": true,
+  "basis": "bed",
+  "category": "Software",
+  "deviceType": "Whiteboard",
+  "name": "ED whiteboard variant",
+  "notes": "Reduced module set for emergency departments",
+  "vendor": "HCI"
+ },
+ "cat-es-app": {
+  "active": true,
+  "basis": "station",
+  "category": "Software",
+  "name": "eSitter console",
+  "vendor": "HCI"
+ },
+ "cat-hw-10": {
+  "active": true,
+  "basis": "room",
+  "category": "Hardware",
+  "deviceType": "Door Sign",
+  "name": "10 inch door display",
+  "vendor": "HCI"
+ },
+ "cat-hw-13": {
+  "active": true,
+  "basis": "room",
+  "category": "Hardware",
+  "deviceType": "Door Sign",
+  "name": "13 inch Wallmate door display",
+  "vendor": "HCI"
+ },
+ "cat-hw-24": {
+  "active": true,
+  "basis": "bed",
+  "category": "Hardware",
+  "deviceType": "Whiteboard",
+  "name": "24 inch display",
+  "vendor": "HCI"
+ },
+ "cat-hw-32": {
+  "active": true,
+  "basis": "bed",
+  "category": "Hardware",
+  "deviceType": "Whiteboard",
+  "name": "32 inch interactive whiteboard panel",
+  "vendor": "HCI"
+ },
+ "cat-hw-43": {
+  "active": true,
+  "basis": "bed",
+  "category": "Hardware",
+  "deviceType": "Whiteboard",
+  "name": "43 inch interactive whiteboard panel",
+  "vendor": "HCI"
+ },
+ "cat-hw-ptz": {
+  "active": true,
+  "basis": "each",
+  "category": "Hardware",
+  "deviceType": "Camera",
+  "name": "Network PTZ camera",
+  "vendor": "Hanwha or AVer"
+ },
+ "cat-hw-spare": {
+  "active": true,
+  "basis": "each",
+  "category": "Hardware",
+  "name": "Spare display",
+  "notes": "Put the size in the configuration detail",
+  "vendor": "HCI"
+ },
+ "cat-hw-usb": {
+  "active": true,
+  "basis": "unit",
+  "category": "Hardware",
+  "deviceType": "Unit Status Board",
+  "name": "Unit status board display",
+  "vendor": "HCI"
+ },
+ "cat-hw-ws": {
+  "active": true,
+  "basis": "station",
+  "category": "Hardware",
+  "deviceType": "Workstation",
+  "name": "eSitter workstation"
+ },
+ "cat-int-adt": {
+  "active": true,
+  "basis": "each",
+  "category": "Integration",
+  "name": "EMR ADT interface (HL7 v2)",
+  "notes": "Name the EMR in the configuration detail"
+ },
+ "cat-int-genetec": {
+  "active": true,
+  "basis": "each",
+  "category": "Integration",
+  "name": "Genetec camera feeds",
+  "vendor": "Genetec"
+ },
+ "cat-int-jeron": {
+  "active": true,
+  "basis": "each",
+  "category": "Integration",
+  "name": "Nurse call: Jeron Provider",
+  "vendor": "Jeron"
+ },
+ "cat-int-mc": {
+  "active": true,
+  "basis": "each",
+  "category": "Integration",
+  "name": "MatrixCare interface",
+  "notes": "Customer signs the MatrixCare authorization form; MatrixCare needs 7 to 10 business days after",
+  "vendor": "MatrixCare"
+ },
+ "cat-int-meal": {
+  "active": true,
+  "basis": "each",
+  "category": "Integration",
+  "name": "Meal ordering",
+  "notes": "CBORD or other"
+ },
+ "cat-int-nfc": {
+  "active": true,
+  "basis": "each",
+  "category": "Integration",
+  "name": "Staff badge tap (NFC)",
+  "notes": "HID or other badge format"
+ },
+ "cat-int-rauland": {
+  "active": true,
+  "basis": "each",
+  "category": "Integration",
+  "name": "Nurse call: Rauland Responder",
+  "vendor": "Rauland"
+ },
+ "cat-int-rtls": {
+  "active": true,
+  "basis": "each",
+  "category": "Integration",
+  "name": "RTLS interface",
+  "notes": "Midmark, Kontakt.io or other; name it in the detail"
+ },
+ "cat-int-stryker": {
+  "active": true,
+  "basis": "each",
+  "category": "Integration",
+  "name": "Stryker smart bed alerts",
+  "vendor": "Stryker"
+ },
+ "cat-int-tektone": {
+  "active": true,
+  "basis": "each",
+  "category": "Integration",
+  "name": "Nurse call: TekTone",
+  "vendor": "TekTone"
+ },
+ "cat-int-wb": {
+  "active": true,
+  "basis": "each",
+  "category": "Integration",
+  "name": "EMR bidirectional writeback",
+  "notes": "Needs badge or login at the device"
+ },
+ "cat-int-zoom": {
+  "active": true,
+  "basis": "each",
+  "category": "Integration",
+  "name": "Zoom virtual nursing bundle",
+  "vendor": "Zoom"
+ },
+ "cat-rd-app": {
+  "active": true,
+  "basis": "unit",
+  "category": "Software",
+  "name": "Rounding app",
+  "vendor": "HCI"
+ },
+ "cat-srv-media": {
+  "active": true,
+  "basis": "each",
+  "category": "Server",
+  "deviceType": "Server",
+  "name": "Media server for eSitter",
+  "notes": "Receives device camera streams and switches them between virtual nurse and eSitter"
+ },
+ "cat-srv": {
+  "active": true,
+  "basis": "each",
+  "category": "Server",
+  "deviceType": "Server",
+  "name": "HCI on premise server",
+  "notes": "VM or physical; needs outbound internet for Docker updates",
+  "vendor": "HCI"
+ },
+ "cat-svc-install": {
+  "active": true,
+  "basis": "hour",
+  "category": "Service",
+  "name": "Installation"
+ },
+ "cat-svc-pm": {
+  "active": true,
+  "basis": "hour",
+  "category": "Service",
+  "name": "Project management and design",
+  "vendor": "HCI"
+ },
+ "cat-svc-ps": {
+  "active": true,
+  "basis": "hour",
+  "category": "Service",
+  "name": "Professional services",
+  "notes": "Content integration, custom builds",
+  "vendor": "HCI"
+ },
+ "cat-svc-train": {
+  "active": true,
+  "basis": "hour",
+  "category": "Service",
+  "name": "Training",
+  "vendor": "HCI"
+ },
+ "cat-tv-app": {
+  "active": true,
+  "basis": "bed",
+  "category": "Software",
+  "deviceType": "Patient TV",
+  "name": "Patient TV launcher",
+  "vendor": "HCI"
+ },
+ "cat-usb-app": {
+  "active": true,
+  "basis": "unit",
+  "category": "Software",
+  "deviceType": "Unit Status Board",
+  "name": "Unit Status Board app",
+  "vendor": "HCI"
+ },
+ "cat-vn-app": {
+  "active": true,
+  "basis": "station",
+  "category": "Software",
+  "name": "Virtual Nursing console",
+  "vendor": "HCI"
+ },
+ "cat-wb-app": {
+  "active": true,
+  "basis": "bed",
+  "category": "Software",
+  "deviceType": "Whiteboard",
+  "name": "Digital Whiteboard app",
+  "vendor": "HCI"
+ }
+}

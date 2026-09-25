@@ -1,0 +1,241 @@
+{
+ "bh-p01": {
+  "name": "Josh Glover",
+  "org": "Ball Health",
+  "party": "customer",
+  "projectId": "ball-health",
+  "role": "Assistant IT Director, sponsor. Out two weeks from 25 Sep; Raymond covers",
+  "email": ""
+ },
+ "bh-p02": {
+  "name": "Raymond Broughton",
+  "org": "Ball Health",
+  "party": "customer",
+  "projectId": "ball-health",
+  "role": "System Administrator, day to day"
+ },
+ "bh-p03": {
+  "name": "Cherise Wilson",
+  "org": "Ball Health",
+  "party": "customer",
+  "projectId": "ball-health",
+  "role": "Clinical"
+ },
+ "bh-p04": {
+  "name": "Mr. Ball",
+  "org": "Ball Health",
+  "party": "customer",
+  "projectId": "ball-health",
+  "role": "Owner. Sets signage requirements"
+ },
+ "bh-p05": {
+  "name": "David Oxner",
+  "org": "Storm Medical",
+  "party": "partner",
+  "projectId": "ball-health",
+  "role": "TekTone nurse call"
+ },
+ "bh-p06": {
+  "name": "John Pratt",
+  "org": "HCI",
+  "party": "hci",
+  "projectId": "ball-health",
+  "role": "Delivery lead"
+ },
+ "bh-p07": {
+  "name": "Greg Lamb",
+  "org": "HCI",
+  "party": "hci",
+  "projectId": "ball-health",
+  "role": "Devices, network, IP sheet"
+ },
+ "bh-p08": {
+  "name": "Li Tian",
+  "org": "HCI",
+  "party": "hci",
+  "projectId": "ball-health",
+  "role": "Database and integrations"
+ },
+ "bh-p09": {
+  "name": "Arpan Bajpai",
+  "org": "HCI",
+  "party": "hci",
+  "projectId": "ball-health",
+  "role": "Product"
+ },
+ "cr-p01": {
+  "name": "Angie",
+  "org": "Crawford County Memorial Hospital",
+  "party": "customer",
+  "projectId": "crawford",
+  "role": "Providing Family Phone numbers"
+ },
+ "cr-p02": {
+  "name": "John Pratt",
+  "org": "HCI",
+  "party": "hci",
+  "projectId": "crawford",
+  "role": "Delivery lead"
+ },
+ "cr-p03": {
+  "name": "Li Tian",
+  "org": "HCI",
+  "party": "hci",
+  "projectId": "crawford",
+  "role": "Oracle integration"
+ },
+ "cr-p04": {
+  "name": "Greg Lamb",
+  "org": "HCI",
+  "party": "hci",
+  "projectId": "crawford",
+  "role": "Devices and nurse call testing"
+ },
+ "do-p01": {
+  "name": "Ken Worley",
+  "org": "Dosher Memorial Hospital",
+  "party": "customer",
+  "projectId": "dosher",
+  "role": ""
+ },
+ "do-p02": {
+  "name": "Jill Ward",
+  "org": "Dosher Memorial Hospital",
+  "party": "customer",
+  "projectId": "dosher",
+  "role": ""
+ },
+ "do-p03": {
+  "name": "Michael Hendershot",
+  "org": "Dosher Memorial Hospital",
+  "party": "customer",
+  "projectId": "dosher",
+  "role": "Notes and schedule lists"
+ },
+ "do-p04": {
+  "name": "Chris",
+  "org": "Pavion",
+  "party": "dealer",
+  "projectId": "dosher",
+  "role": "On site technician"
+ },
+ "do-p05": {
+  "name": "Brian Keaveny",
+  "org": "Pavion",
+  "party": "dealer",
+  "projectId": "dosher",
+  "role": "Rauland to ADT location mapping"
+ },
+ "do-p06": {
+  "name": "Sean Meares",
+  "org": "TruBridge",
+  "party": "partner",
+  "projectId": "dosher",
+  "role": "EMR interface contact"
+ },
+ "do-p07": {
+  "name": "Paul Barber",
+  "org": "TruBridge",
+  "party": "partner",
+  "projectId": "dosher",
+  "role": ""
+ },
+ "do-p08": {
+  "name": "Tony Farhat",
+  "org": "Midmark",
+  "party": "partner",
+  "projectId": "dosher",
+  "role": "RTLS"
+ },
+ "do-p09": {
+  "name": "John Pratt",
+  "org": "HCI",
+  "party": "hci",
+  "projectId": "dosher",
+  "role": "Project lead through completion"
+ },
+ "do-p10": {
+  "name": "Greg Lamb",
+  "org": "HCI",
+  "party": "hci",
+  "projectId": "dosher",
+  "role": "Hands on engineer"
+ },
+ "go-p01": {
+  "name": "Terri Miller",
+  "org": "Goshen Health",
+  "party": "customer",
+  "projectId": "goshen-esitter",
+  "role": "Director of Nursing Support Services"
+ },
+ "go-p02": {
+  "name": "Heidi Stoffel",
+  "org": "Goshen Health",
+  "party": "customer",
+  "projectId": "goshen-esitter",
+  "role": "Nurse leader, testing"
+ },
+ "go-p03": {
+  "name": "Jill Barber",
+  "org": "Goshen Health",
+  "party": "customer",
+  "projectId": "goshen-esitter",
+  "role": "Nurse leader, testing"
+ },
+ "go-p04": {
+  "name": "John Pratt",
+  "org": "HCI",
+  "party": "hci",
+  "projectId": "goshen-esitter",
+  "role": "Point of contact for virtual sitter items"
+ },
+ "go-p05": {
+  "name": "Greg Lamb",
+  "org": "HCI",
+  "party": "hci",
+  "projectId": "goshen-esitter",
+  "role": "Red light testing"
+ },
+ "gs-p01": {
+  "name": "Brandy Shouse",
+  "org": "Good Samaritan Hospital",
+  "party": "customer",
+  "projectId": "good-sam",
+  "role": "HCI contact; owns the weekly call"
+ },
+ "gs-p02": {
+  "name": "Jennifer Weger",
+  "org": "Good Samaritan Hospital",
+  "party": "customer",
+  "projectId": "good-sam",
+  "role": ""
+ },
+ "gs-p03": {
+  "name": "Amanda Siewers",
+  "org": "Good Samaritan Hospital",
+  "party": "customer",
+  "projectId": "good-sam",
+  "role": ""
+ },
+ "gs-p04": {
+  "name": "Deborah Snyder",
+  "org": "Good Samaritan Hospital",
+  "party": "customer",
+  "projectId": "good-sam",
+  "role": "Virtual sitter and nurse team; wants the training outline"
+ },
+ "gs-p05": {
+  "name": "Brant White",
+  "org": "Good Samaritan Hospital",
+  "party": "customer",
+  "projectId": "good-sam",
+  "role": "Cameras"
+ },
+ "gs-p06": {
+  "name": "Joey",
+  "org": "Good Samaritan Hospital",
+  "party": "customer",
+  "projectId": "good-sam",
+  "role": "IS Manager, builds the video server"
+ }
+}

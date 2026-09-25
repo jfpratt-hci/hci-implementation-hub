@@ -1,0 +1,6 @@
+node_modules/
+uploads/
+dist/
+manifest/manifest.json
+test-files.js
+*.log

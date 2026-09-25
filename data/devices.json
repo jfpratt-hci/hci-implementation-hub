@@ -1,0 +1,74 @@
+{
+ "bh-x01": {
+  "apps": {
+   "Door Sign": "1.0.0"
+  },
+  "bed": "",
+  "example": true,
+  "hostname": "ds-s101",
+  "ip": "10.0.0.101",
+  "mac": "00:00:00:00:00:01",
+  "model": "10 inch display",
+  "os": "Android",
+  "projectId": "ball-health",
+  "room": "101",
+  "serial": "EXAMPLE01",
+  "status": "online",
+  "type": "Door Sign",
+  "unit": "South",
+  "vlan": "20"
+ },
+ "bh-x02": {
+  "apps": {
+   "Whiteboard": "1.0.0"
+  },
+  "bed": "",
+  "example": true,
+  "hostname": "wb-s101",
+  "ip": "10.0.1.101",
+  "mac": "00:00:00:00:00:02",
+  "model": "24 inch display",
+  "os": "Android",
+  "projectId": "ball-health",
+  "room": "101",
+  "serial": "EXAMPLE02",
+  "status": "online",
+  "type": "Whiteboard",
+  "unit": "South",
+  "vlan": "20"
+ },
+ "bh-x03": {
+  "apps": {},
+  "bed": "",
+  "example": true,
+  "hostname": "",
+  "ip": "",
+  "mac": "",
+  "model": "10 inch display",
+  "os": "Android",
+  "projectId": "ball-health",
+  "room": "201",
+  "serial": "EXAMPLE03",
+  "status": "shipped",
+  "type": "Door Sign",
+  "unit": "North",
+  "vlan": ""
+ },
+ "bh-x04": {
+  "apps": {},
+  "bed": "",
+  "example": true,
+  "hostname": "hci-server",
+  "ip": "",
+  "mac": "",
+  "model": "VM",
+  "os": "Docker host",
+  "projectId": "ball-health",
+  "room": "Data center",
+  "serial": "",
+  "status": "offline",
+  "type": "Server",
+  "unit": "",
+  "vlan": ""
+ }
+}

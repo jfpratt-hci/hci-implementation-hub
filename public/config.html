@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Implementation Hub tab</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800&display=swap">
+<style>
+:root{--ground:#F2F0EC;--card:#fff;--ink:#1D2830;--muted:#7A766F;--line:#E4E0DA;--accent:#19B34A;--soft:#F7F5F2}
+:root[data-theme="dark"]{--ground:#15191C;--card:#1F2529;--ink:#ECEAE6;--muted:#A39E96;--line:#2E363B;--accent:#3FD06E;--soft:#252C31;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--ground);color:var(--ink);font-family:"Montserrat",system-ui,sans-serif;font-size:14px;font-weight:500;padding:20px 16px}
+h1{font-size:18px;font-weight:800;margin:0 0 6px}
+p{margin:0 0 16px;color:var(--muted);font-weight:600;font-size:13px;max-width:60ch}
+label{display:block;font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+select{width:100%;max-width:420px;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:8px;padding:10px 12px;font:inherit}
+.pick{display:flex;flex-direction:column;gap:6px;margin-top:14px;max-width:420px}
+.opt{display:flex;gap:10px;align-items:center;background:var(--card);border-radius:10px;padding:10px 12px;cursor:pointer;border:2px solid transparent}
+.opt.on{border-color:var(--accent)}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--muted);flex:none}
+.dot.on_track{background:#1E9E5A}.dot.watch{background:#C27E05}.dot.at_risk,.dot.off_track{background:#D6453D}
+.nm{font-weight:700}.sub{font-size:12px;color:var(--muted);font-weight:600}
+.err{color:#D6453D;font-weight:700}
+</style>
+</head>
+<body>
+<h1>Add the Implementation Hub to this channel</h1>
+<p>Pick the customer project this channel is about. The tab opens straight to it. Choose Portfolio for a tab that shows every active project.</p>
+<div class="pick" id="pick">Loading projects…</div>
+<script src="/teams-js/MicrosoftTeams.min.js"></script>
+<script>
+(function(){
+  var chosen=null, projects=[];
+  var pick=document.getElementById("pick");
+  function esc(v){return String(v==null?"":v).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
+  function render(){
+    var h='<div class="opt '+(chosen==="portfolio"?"on":"")+'" data-id="portfolio"><span class="dot"></span><div><div class="nm">Portfolio</div><div class="sub">Every active project</div></div></div>';
+    projects.forEach(function(p){h+='<div class="opt '+(chosen===p.id?"on":"")+'" data-id="'+esc(p.id)+'"><span class="dot '+esc(p.status)+'"></span><div><div class="nm">'+esc(p.name)+'</div><div class="sub">'+esc(p.customer||"")+(p.goLive?" · go live "+esc(p.goLive):"")+'</div></div></div>'});
+    pick.innerHTML=h;
+    try{microsoftTeams.pages.config.setValidityState(!!chosen)}catch(e){}
+  }
+  pick.addEventListener("click",function(e){var o=e.target.closest(".opt");if(!o)return;chosen=o.dataset.id;render()});
+  function load(token){
+    var h=token?{Authorization:"Bearer "+token}:{};
+    return fetch("/api/projects",{headers:h,credentials:"same-origin"}).then(function(r){if(!r.ok)throw new Error(r.status);return r.json()}).then(function(j){
+      projects=Object.keys(j.docs).map(function(id){return Object.assign({id:id},j.docs[id])}).filter(function(p){return p.status!=="done"}).sort(function(a,b){return (a.name||"").localeCompare(b.name||"")});
+      render();
+    }).catch(function(e){projects=[];render();pick.insertAdjacentHTML("afterbegin",'<span class="err">Could not load projects from the Hub ('+esc(e.message)+'). You can still choose Portfolio.</span>')});
+  }
+  function applyTheme(t){document.documentElement.dataset.theme=(t==="dark"||t==="contrast")?"dark":"light"}
+  microsoftTeams.app.initialize().then(function(){
+    microsoftTeams.authentication.getAuthToken().then(load).catch(function(){load("")});
+    microsoftTeams.app.getContext().then(function(ctx){applyTheme(ctx.app&&ctx.app.theme)}).catch(function(){});
+    microsoftTeams.app.registerOnThemeChangeHandler(applyTheme);
+    microsoftTeams.pages.config.registerOnSaveHandler(function(saveEvent){
+      var base=location.origin;
+      var isPort=chosen==="portfolio";
+      var p=projects.filter(function(x){return x.id===chosen})[0];
+      microsoftTeams.pages.config.setConfig({
+        entityId: isPort?"portfolio":"project-"+chosen,
+        contentUrl: base+(isPort?"/?scope=portfolio":"/?project="+encodeURIComponent(chosen)),
+        websiteUrl: base+(isPort?"/?scope=portfolio":"/?project="+encodeURIComponent(chosen)),
+        suggestedDisplayName: isPort?"Implementation Hub":(p?p.name:"Implementation Hub")
+      }).then(function(){saveEvent.notifySuccess()}).catch(function(){saveEvent.notifyFailure("Could not save the tab")});
+    });
+    microsoftTeams.app.notifySuccess();
+  }).catch(function(){load("");pick.insertAdjacentHTML("afterend",'<p class="err">Open this page from inside Microsoft Teams when adding the tab.</p>')});
+})();
+</script>
+</body>
+</html>

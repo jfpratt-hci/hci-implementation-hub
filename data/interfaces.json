@@ -1,0 +1,138 @@
+{
+ "bh-i01": {
+  "note": "About 95 percent built. Authorization form with Raymond since 15 Sep; MatrixCare needs 7 to 10 business days after signature. Room and bed mapping waits on final room numbers.",
+  "projectId": "ball-health",
+  "status": "blocked",
+  "system": "MatrixCare",
+  "type": "EMR",
+  "vendor": "MatrixCare"
+ },
+ "bh-i02": {
+  "note": "Via Storm Medical; status to confirm with David Oxner.",
+  "projectId": "ball-health",
+  "status": "confirm",
+  "system": "TekTone",
+  "type": "Nurse call",
+  "vendor": "Storm Medical"
+ },
+ "bh-i03": {
+  "note": "Format to confirm from the box label. Fewer than half of staff have AD accounts; payroll report sync proposed.",
+  "projectId": "ball-health",
+  "status": "confirm",
+  "system": "HID Corporate 1000",
+  "type": "Staff badging",
+  "vendor": ""
+ },
+ "bh-i04": {
+  "note": "VM on the data center network, moved on site 18 Sep, new IP owed to Greg. HCI access via TeamViewer jump box until vendor VPN, mid to late October at earliest. Needs outbound internet for Docker updates and weather.",
+  "projectId": "ball-health",
+  "status": "blocked",
+  "system": "On site server",
+  "type": "Infrastructure",
+  "vendor": ""
+ },
+ "bh-i05": {
+  "note": "Not in scope.",
+  "projectId": "ball-health",
+  "status": "out",
+  "system": "RTLS and imaging",
+  "type": "Other",
+  "vendor": ""
+ },
+ "cr-i01": {
+  "note": "ADT integration in build by Li. Must be complete and tested before the 5 Oct Oracle update.",
+  "projectId": "crawford",
+  "status": "in_progress",
+  "system": "Oracle Health",
+  "type": "EMR",
+  "vendor": ""
+ },
+ "cr-i02": {
+  "note": "Code blue and nurse call testing to schedule; care team setup coordinated by HCI.",
+  "projectId": "crawford",
+  "status": "confirm",
+  "system": "Rauland Responder",
+  "type": "Nurse call",
+  "vendor": ""
+ },
+ "cr-i03": {
+  "note": "Deferred to Phase 2.",
+  "projectId": "crawford",
+  "status": "deferred",
+  "system": "Kontakt.io",
+  "type": "RTLS",
+  "vendor": ""
+ },
+ "do-i01": {
+  "note": "One way ADT, orders, pharmacy and results. TruBridge reports it largely working with no open bugs.",
+  "projectId": "dosher",
+  "status": "testing",
+  "system": "TruBridge",
+  "type": "EMR",
+  "vendor": "Sean Meares"
+ },
+ "do-i02": {
+  "note": "Nearly ready to test; Rauland to ADT location mapping owned by Pavion.",
+  "projectId": "dosher",
+  "status": "testing",
+  "system": "Rauland Responder 5",
+  "type": "Nurse call",
+  "vendor": "Brian Keaveny (Pavion)"
+ },
+ "do-i03": {
+  "note": "Some sensors offline; two drop boxes and one badge collector not installed. Visitor Log is Midmark sourced.",
+  "projectId": "dosher",
+  "status": "testing",
+  "system": "Midmark",
+  "type": "RTLS",
+  "vendor": "Tony Farhat"
+ },
+ "do-i04": {
+  "note": "Virtual nursing bundle on all three device types.",
+  "projectId": "dosher",
+  "status": "in_progress",
+  "system": "Zoom",
+  "type": "Virtual nursing",
+  "vendor": ""
+ },
+ "go-i01": {
+  "note": "Camera feeds for the sitter wall; picture quality compared against Goshen's dedicated Genetec viewer.",
+  "projectId": "goshen-esitter",
+  "status": "live",
+  "system": "Genetec",
+  "type": "Cameras",
+  "vendor": ""
+ },
+ "go-i02": {
+  "note": "Must light whenever a room is viewed. All but 5 rooms on the 3rd floor worked in the last test.",
+  "projectId": "goshen-esitter",
+  "status": "testing",
+  "system": "In room red light",
+  "type": "Hardware control",
+  "vendor": "ASSA ABLOY / Alarm Controls"
+ },
+ "gs-i01": {
+  "note": "Virtual nurse calls on the whiteboard panel camera; recording, transcription and translation to be tried.",
+  "projectId": "good-sam",
+  "status": "in_progress",
+  "system": "Zoom SDK",
+  "type": "Virtual nursing",
+  "vendor": ""
+ },
+ "gs-i02": {
+  "note": "Server side service receives device camera streams and switches them between the virtual nurse and the eSitter. Good Sam builds the server.",
+  "projectId": "good-sam",
+  "status": "in_progress",
+  "system": "Media server and stream switching",
+  "type": "eSitter",
+  "vendor": ""
+ },
+ "gs-i03": {
+  "note": "Bidirectional Epic writeback live since August 2026.",
+  "projectId": "good-sam",
+  "status": "live",
+  "system": "Epic writeback",
+  "type": "EMR",
+  "vendor": ""
+ }
+}

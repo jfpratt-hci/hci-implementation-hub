@@ -1,0 +1,24 @@
+{
+ "bh-n01": {
+  "dhcp": "static",
+  "dns": "",
+  "gateway": "",
+  "name": "Room boards",
+  "notes": "Static IPs assigned by unit and room; the list is owed to Greg",
+  "ports": "",
+  "projectId": "ball-health",
+  "subnet": "",
+  "vlan": ""
+ },
+ "bh-n02": {
+  "dhcp": "static",
+  "dns": "",
+  "gateway": "",
+  "name": "Server",
+  "notes": "Data center network; new on site IP owed to Greg since 18 Sep",
+  "ports": "Outbound internet for Docker updates and weather",
+  "projectId": "ball-health",
+  "subnet": "",
+  "vlan": ""
+ }
+}

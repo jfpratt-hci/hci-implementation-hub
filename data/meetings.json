@@ -1,0 +1,38 @@
+{
+ "bh-m01": {
+  "attendees": "John, Josh, Greg, Raymond, Cherise Wilson",
+  "date": "2026-08-20",
+  "notes": "Door sign design settled; everything else waited on assets and the rounding sheet.",
+  "projectId": "ball-health",
+  "title": "Design session",
+  "undecided": "Timing of the clinical call",
+  "visibility": "external"
+ },
+ "bh-m02": {
+  "attendees": "John, Josh, Greg, Raymond",
+  "date": "2026-09-18",
+  "notes": "Keys mid November, CON pending, first resident in 30 to 60 days. Half of displays online, south wing midweek. Server moved on site, new IP owed to Greg. Room boards to static IPs. MatrixCare about 95 percent. Badging: HID Corporate 1000, fewer than half of staff in AD. Josh wants spare displays. Josh sent the architectural floor plan and site photos. Summary email sent by John 18 Sep.",
+  "projectId": "ball-health",
+  "title": "Weekly project meeting",
+  "undecided": "Staff sync from payroll report; clinical call timing",
+  "visibility": "external"
+ },
+ "bh-m03": {
+  "attendees": "Josh, Raymond, John",
+  "date": "2026-09-22",
+  "notes": "Josh chased the spare quote and fixed the count at 5 of each size. Raymond asked whether HCI offers a small room number sign above the door. Replies drafted 23 Sep.",
+  "projectId": "ball-health",
+  "title": "Email thread",
+  "undecided": "",
+  "visibility": "external"
+ },
+ "bh-m04": {
+  "attendees": "",
+  "date": "2026-09-03",
+  "notes": "On the calendar, no notes found. Treat as not held or not captured.",
+  "projectId": "ball-health",
+  "title": "Weekly meetings 27 Aug and 3 Sep",
+  "undecided": "",
+  "visibility": "internal"
+ }
+}

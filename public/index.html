@@ -1,0 +1,1040 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<script src="/teams-js/MicrosoftTeams.min.js"></script>
+<script src="/hub-data.js"></script>
+<style>body{margin:0} img{max-width:100%} [hidden]{display:none!important}</style>
+<title>HCI Implementation Hub</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* HCI ONE tokens v2.1, board look. Names as in hci-one-tokens.css; Bloom is light, Night is dark. */
+:root{
+  --bg1:#F4F1EC; --card:#FFFFFF; --card2:#F7F5F0; --card-brd:#E6E1D8; --pill:#F1EEE7; --ink:#141414; --muted:#7A766F; --muted2:#A39E95;
+  --hero:#19B34A; --hero-deep:#0F7A33; --hero-dark:#0D3D26; --hero-fill:#0F7A33; --hero-fill-ink:#FFFFFF;
+  --blue:#2F6DF6; --blue-deep:#1F47B3; --purple:#6D4FD8; --gold:#F5C400; --gold-ink:#1F1A00; --warn:#EF3A33; --warn-deep:#C4211B; --warn-fill-ink:#FFFFFF; --code-blue:#1233B8;
+  --chip-pos:#DCEFE3; --chip-pos-ink:#0D3D26; --chip-caution:#FFF1B8; --chip-caution-ink:#5C4700; --chip-blocked:#FFE1DF; --chip-blocked-ink:#B3120C; --chip-info:#DFE8FF; --chip-info-ink:#1F47B3; --chip-purple:#EBE3FF; --chip-purple-ink:#4B2AB3; --chip-amber:#FFECCC; --chip-amber-ink:#8A4A00;
+  --shadow:0 8px 24px rgba(20,20,20,.06); --shadow-lg:0 24px 60px rgba(20,20,20,.18);
+  --r:22px; --r-sm:14px; --r-tile:12px; --r-pill:999px; --focus:#F5C400;
+  --font:"Montserrat",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  /* aliases the page reads */
+  --ground:var(--bg1); --soft:var(--card2); --line:var(--card-brd);
+  --accent:var(--hero-fill); --accent-ink:var(--hero-fill-ink); --accent-soft:var(--chip-pos);
+  --good:var(--hero-deep); --good-soft:var(--chip-pos); --warn-soft:var(--chip-caution); --bad:var(--warn-deep); --bad-soft:var(--chip-blocked);
+  --hci:var(--chip-pos-ink); --cust:var(--chip-info-ink); --dealer:var(--chip-amber-ink); --partner:var(--chip-purple-ink); --partner-soft:var(--chip-purple);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg1:#0F1117; --card:#171A22; --card2:#1D212B; --card-brd:#2A2F3A; --pill:#222632; --ink:#F3F1EC; --muted:#A09B92; --muted2:#6F6B64;
+    --hero:#2FD163; --hero-deep:#19B34A; --hero-dark:#0D3D26; --hero-fill:#19B34A; --hero-fill-ink:#04210D;
+    --blue:#5B8CFF; --blue-deep:#A9C0FF; --purple:#9C86F0; --gold:#FFD21F; --warn:#FF5A52; --warn-deep:#FF5A52; --warn-fill-ink:#2B0706;
+    --chip-pos:#163D2A; --chip-pos-ink:#9EE2B8; --chip-caution:#4A3D07; --chip-caution-ink:#FFE27A; --chip-blocked:#4A1512; --chip-blocked-ink:#FFB3AE; --chip-info:#1B2A55; --chip-info-ink:#A9C0FF; --chip-purple:#2F2160; --chip-purple-ink:#CBB8FF; --chip-amber:#4A2C07; --chip-amber-ink:#FFD08A;
+    --shadow:0 8px 24px rgba(0,0,0,.35); --shadow-lg:0 24px 60px rgba(0,0,0,.6); --focus:#FFD21F;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg1:#0F1117; --card:#171A22; --card2:#1D212B; --card-brd:#2A2F3A; --pill:#222632; --ink:#F3F1EC; --muted:#A09B92; --muted2:#6F6B64;
+  --hero:#2FD163; --hero-deep:#19B34A; --hero-dark:#0D3D26; --hero-fill:#19B34A; --hero-fill-ink:#04210D;
+  --blue:#5B8CFF; --blue-deep:#A9C0FF; --purple:#9C86F0; --gold:#FFD21F; --warn:#FF5A52; --warn-deep:#FF5A52; --warn-fill-ink:#2B0706;
+  --chip-pos:#163D2A; --chip-pos-ink:#9EE2B8; --chip-caution:#4A3D07; --chip-caution-ink:#FFE27A; --chip-blocked:#4A1512; --chip-blocked-ink:#FFB3AE; --chip-info:#1B2A55; --chip-info-ink:#A9C0FF; --chip-purple:#2F2160; --chip-purple-ink:#CBB8FF; --chip-amber:#4A2C07; --chip-amber-ink:#FFD08A;
+  --shadow:0 8px 24px rgba(0,0,0,.35); --shadow-lg:0 24px 60px rgba(0,0,0,.6); --focus:#FFD21F;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{background:var(--bg1);color:var(--ink);font-family:var(--font);font-size:14px;line-height:1.45;font-weight:600;letter-spacing:.01em;-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font:inherit;color:inherit;letter-spacing:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--focus);outline-offset:3px}
+svg.ic{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.app{display:flex;flex-direction:column;height:100vh;height:100dvh;min-height:0}
+/* sidebar */
+.side{background:var(--card);box-shadow:var(--shadow);padding:22px 16px;display:flex;flex-direction:column;gap:20px;position:sticky;top:env(safe-area-inset-top,0px);height:100vh;overflow:auto;z-index:1}
+.brand{display:flex;flex-direction:column;gap:2px;padding-inline:6px}
+.wordmark{font-weight:800;letter-spacing:.12em;font-size:19px;color:var(--ink);white-space:nowrap}
+.wordmark b{font-weight:800;color:var(--hero-deep)}
+.brand-sub{font-size:11px;color:var(--muted);font-weight:800;letter-spacing:.12em;text-transform:uppercase}
+.label{font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.sgroup{display:flex;flex-direction:column;gap:3px}
+.sgroup>.label{padding:0 12px 6px}
+.sbtn{display:flex;align-items:center;gap:9px;border:0;background:transparent;padding:8px 12px;border-radius:var(--r-pill);font-weight:700;text-align:left;color:var(--ink);width:100%}
+.sbtn:hover{background:var(--pill)}
+.sbtn.on{background:var(--hero-fill);color:var(--hero-fill-ink)}
+.sbtn.proj.on{background:var(--chip-pos);color:var(--chip-pos-ink)}
+.sbtn .count{margin-left:auto;font-size:11px;font-weight:800;padding:2px 8px;border-radius:var(--r-pill);background:var(--pill);color:var(--muted)}
+.sbtn.on .count{background:rgba(255,255,255,.28);color:inherit}
+.sbtn.proj.on .count{background:var(--card);color:var(--chip-pos-ink)}
+.sbtn .count.bad{background:var(--chip-blocked);color:var(--chip-blocked-ink)}
+.subnav{display:flex;flex-direction:column;gap:1px;margin:2px 0 8px 16px;padding-left:8px;border-left:2px solid var(--card-brd)}
+.subnav .sbtn{padding:6px 12px;font-size:13px}
+.dot{width:9px;height:9px;border-radius:50%;flex:none;background:var(--muted2)}
+.dot.on_track{background:var(--hero)}.dot.watch{background:var(--gold)}.dot.at_risk,.dot.off_track{background:var(--warn)}
+.side-foot{margin-top:auto;display:flex;flex-direction:column;gap:10px}
+.ghost{width:100%;border:1.5px dashed var(--card-brd);background:transparent;border-radius:var(--r-pill);padding:9px 14px;font-weight:700;color:var(--muted);text-align:left}
+.ghost:hover{border-color:var(--hero-deep);color:var(--hero-deep)}
+.me-box{display:flex;flex-direction:column;gap:5px;padding:12px;border-radius:var(--r-sm);background:var(--card2);border:1px solid var(--card-brd)}
+.me-box input{border:0;background:var(--card);border-radius:10px;padding:8px 10px;font-weight:700;min-width:0;width:100%}
+/* main */
+.main{flex:1;min-height:0;overflow:auto;padding:18px 24px 24px;min-width:0}
+.top{display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:20px}
+.top h1{font-size:28px;font-weight:800;margin:4px 0 0;text-wrap:balance;line-height:1.1;letter-spacing:-.01em}
+.top .sub{color:var(--muted);font-weight:700;margin-top:5px}
+.top-right{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.viewas{display:inline-flex;align-items:center;gap:2px;background:var(--card);border-radius:var(--r-pill);padding:5px;box-shadow:var(--shadow)}
+.viewas span{font-size:11px;color:var(--muted);font-weight:800;padding:0 10px;letter-spacing:.12em;text-transform:uppercase}
+.seg{border:0;background:transparent;padding:7px 14px;border-radius:var(--r-pill);font-weight:700;font-size:13px;color:var(--muted)}
+.seg.on{background:var(--hero-fill);color:var(--hero-fill-ink)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:0;border-radius:var(--r-pill);min-height:40px;padding:0 18px;font-weight:800;font-size:14px;background:var(--hero-fill);color:var(--hero-fill-ink);white-space:nowrap;transition:transform .15s cubic-bezier(.2,.8,.2,1),filter .15s}
+.btn:hover{transform:translateY(-1px);filter:brightness(1.05)}
+.btn.sec{background:var(--card);color:var(--ink);box-shadow:var(--shadow)}
+.card .btn.sec,.modal .btn.sec,.pend .btn.sec{background:var(--pill);box-shadow:none}
+.btn.sm{min-height:32px;padding:0 14px;font-size:12.5px}
+.btn.danger{background:var(--warn-deep);color:var(--warn-fill-ink)}
+.btn:disabled{opacity:.5;cursor:default;transform:none}
+.banner{background:var(--chip-purple);color:var(--chip-purple-ink);border-radius:var(--r-sm);padding:12px 16px;margin-bottom:16px;font-weight:700;font-size:13px}
+.warnbox{background:var(--chip-caution);color:var(--chip-caution-ink);border-radius:var(--r-sm);padding:12px 16px;margin-bottom:16px;font-weight:700;font-size:13px}
+.grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:16px}
+.c12{grid-column:span 12}.c8{grid-column:span 8}.c7{grid-column:span 7}.c6{grid-column:span 6}.c5{grid-column:span 5}.c4{grid-column:span 4}
+.card{background:var(--card);border-radius:var(--r);padding:22px;box-shadow:var(--shadow);min-width:0}
+.card-h{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+.n{display:inline-block;margin-left:8px;padding:2px 9px;border-radius:var(--r-pill);background:var(--pill);color:var(--ink);font-size:11px;letter-spacing:.08em}
+.statusblock{display:flex;gap:18px;align-items:stretch}
+.stat-chip{flex:none;border-radius:var(--r-tile);padding:14px 16px;min-width:150px;display:flex;flex-direction:column;justify-content:space-between;gap:8px;font-weight:800}
+.stat-chip.on_track{background:var(--chip-pos);color:var(--chip-pos-ink)}.stat-chip.watch{background:var(--chip-caution);color:var(--chip-caution-ink)}.stat-chip.at_risk,.stat-chip.off_track{background:var(--chip-blocked);color:var(--chip-blocked-ink)}.stat-chip.done{background:var(--pill);color:var(--muted)}
+.stat-chip .big{font-size:22px;line-height:1}
+.stat-chip small{font-size:11.5px;font-weight:700;opacity:.9}
+.note{font-size:14.5px;line-height:1.55;max-width:72ch;font-weight:600}
+.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}
+.kpi{background:var(--card);border-radius:var(--r);padding:16px 18px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:6px}
+.kpi .v{font-size:30px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1}
+.kpi .v.bad{color:var(--warn-deep)}.kpi .v.warn{color:var(--chip-caution-ink)}
+.kpi .k{font-size:11px;color:var(--muted);font-weight:800;letter-spacing:.12em;text-transform:uppercase}
+.meet .when{font-size:19px;font-weight:800}
+.phases{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:6px}
+.ph{display:flex;flex-direction:column;gap:7px}
+.ph .bar{height:9px;border-radius:var(--r-pill);background:var(--pill)}
+.ph.done .bar{background:var(--hero)}.ph.cur .bar{background:var(--blue)}
+.ph .nm{font-size:11.5px;font-weight:700;color:var(--muted);line-height:1.25}.ph.cur .nm{color:var(--ink);font-weight:800}
+.phases-wrap{overflow-x:auto}.phases-wrap .phases{min-width:640px}
+.mini{display:grid;grid-template-columns:repeat(8,1fr);gap:2px;width:96px}
+.mini i{height:6px;border-radius:2px;background:var(--pill)}.mini i.done{background:var(--hero)}.mini i.cur{background:var(--blue)}
+/* rows: the rowc pattern */
+.rows{display:flex;flex-direction:column;gap:8px}
+.row{display:grid;grid-template-columns:28px minmax(0,1fr) auto;gap:12px;align-items:start;padding:12px 14px;background:var(--card2);border:1px solid var(--card-brd);border-radius:var(--r-sm)}
+.row .t{font-weight:700;cursor:pointer}.row .t:hover{color:var(--hero-deep)}
+.meta{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;align-items:center}
+.row .right{display:flex;gap:6px;align-items:center;justify-content:flex-end;flex-wrap:wrap}
+.chk{width:22px;height:22px;border-radius:7px;border:2px solid var(--card-brd);background:var(--card);display:grid;place-items:center;padding:0;margin-top:1px}
+.chk.on{background:var(--hero-fill);border-color:var(--hero-fill);color:var(--hero-fill-ink)}
+.chk svg{width:12px;height:12px}
+.done-t{text-decoration:line-through;color:var(--muted)}
+.pill{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;padding:3px 9px;border-radius:var(--r-pill);background:var(--pill);color:var(--muted);white-space:nowrap}
+.pill.hci{background:var(--chip-pos);color:var(--chip-pos-ink)}.pill.customer{background:var(--chip-info);color:var(--chip-info-ink)}.pill.dealer{background:var(--chip-amber);color:var(--chip-amber-ink)}.pill.partner{background:var(--chip-purple);color:var(--chip-purple-ink)}
+.pill.bad{background:var(--chip-blocked);color:var(--chip-blocked-ink)}.pill.warn{background:var(--chip-caution);color:var(--chip-caution-ink)}.pill.good{background:var(--chip-pos);color:var(--chip-pos-ink)}
+.pill.int{background:var(--ink);color:var(--bg1)}.pill.ex{background:transparent;box-shadow:inset 0 0 0 1.5px var(--card-brd)}
+.pill.proj{background:var(--card);box-shadow:var(--shadow);color:var(--ink);cursor:pointer;text-transform:none;letter-spacing:.01em;font-weight:700}
+.pill .mono{text-transform:none;letter-spacing:0}
+.cnt{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:800;color:var(--muted);padding:3px 8px;border-radius:var(--r-pill);background:var(--pill)}
+.cnt svg{width:12px;height:12px}
+.who{font-size:12.5px;color:var(--muted);font-weight:700}
+.due{font-size:12.5px;font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap}.due.over{color:var(--warn-deep)}
+.phase-h{display:flex;align-items:center;gap:10px;margin:22px 0 8px}.phase-h:first-child{margin-top:0}
+.phase-h h3{margin:0;font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.filters{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px;align-items:center}
+.fchip{border:0;border-radius:var(--r-pill);padding:7px 14px;font-weight:800;font-size:12px;background:var(--card);color:var(--muted);box-shadow:var(--shadow)}
+.fchip.on{background:var(--hero-fill);color:var(--hero-fill-ink);box-shadow:none}
+.push{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
+.empty{color:var(--muted);font-weight:700;padding:18px 4px;font-size:15px}
+.tbl-wrap{overflow-x:auto;margin-inline:-4px}
+table{border-collapse:collapse;width:100%;font-size:13.5px}
+th{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:800;text-align:left;padding:8px 10px;white-space:nowrap}
+td{padding:11px 10px;border-top:1px solid var(--card-brd);vertical-align:top;font-weight:700}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+tr.click{cursor:pointer}tr.click:hover td{background:var(--card2)}
+tr.grp td{background:var(--card2);font-weight:800;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);border-top:0}
+.mono{font-family:var(--mono);font-size:12.5px;font-variant-numeric:tabular-nums;white-space:nowrap;font-weight:500}
+.masked{color:var(--muted2);font-style:italic;font-size:12px}
+.icards{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:16px}
+.icard{background:var(--card2);border:1px solid var(--card-brd);border-radius:var(--r-sm);padding:18px;display:flex;flex-direction:column;gap:9px;cursor:pointer}
+.card .icard,.icard.flat{background:var(--card2)}
+.icards>.icard{background:var(--card);border:0;box-shadow:var(--shadow);border-radius:var(--r)}
+.card .icards>.icard{background:var(--card2);border:1px solid var(--card-brd);box-shadow:none;border-radius:var(--r-sm)}
+.icard:hover{outline:2px solid var(--hero-deep);outline-offset:0}
+.icard.flat{cursor:default}.icard.flat:hover{outline:0}
+.icard .sys{font-weight:800;font-size:17px}
+.icard p{margin:0;font-size:13.5px;line-height:1.5;font-weight:600}
+.icard .foot{display:flex;flex-wrap:wrap;gap:6px;margin-top:auto}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:5px 14px;font-size:13.5px}
+.kv dt{color:var(--muted);font-weight:800;font-size:11px;letter-spacing:.1em;text-transform:uppercase;padding-top:2px}
+.kv dd{margin:0;font-weight:700;min-width:0;overflow-wrap:anywhere}
+.pend{background:var(--chip-caution);color:var(--chip-caution-ink);border-radius:var(--r-sm);padding:16px;display:flex;flex-direction:column;gap:10px}
+.pend + .pend{margin-top:10px}
+.pend .q{font-weight:800;font-size:15px}
+.pend .df{font-size:13px;font-weight:700}
+.pend .who,.pend .due{color:inherit;opacity:.85}
+.pend .ans{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:end}
+.pend textarea,.pend input{border:0;background:var(--card);color:var(--ink);border-radius:12px;padding:10px 12px;min-width:0;width:100%;font-weight:600}
+.pend textarea{min-height:56px;resize:vertical;grid-column:span 2}
+.pend .quick{display:flex;flex-wrap:wrap;gap:6px}
+.qbtn{border:0;border-radius:var(--r-pill);padding:6px 12px;font-size:12px;font-weight:800;background:var(--card);color:var(--ink)}
+.qbtn:hover{filter:brightness(.97)}
+.mtg{border-top:1px solid var(--card-brd);padding:16px 4px;cursor:pointer}.mtg:first-child{border-top:0;padding-top:4px}
+.mtg .mh{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.mtg .mt{font-weight:800;font-size:15px}
+.mtg .body{margin-top:6px;font-size:13.5px;line-height:1.55;max-width:80ch;white-space:pre-wrap;font-weight:600}
+.shots{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+.shot{display:flex;flex-direction:column;gap:6px;cursor:pointer;border:0;background:transparent;padding:0;text-align:left}
+.shot img{width:100%;aspect-ratio:16/10;object-fit:cover;border-radius:var(--r-tile);background:var(--card2);display:block;max-width:100%}
+.shot span{font-size:12px;font-weight:700;color:var(--muted)}
+/* conversation */
+.thread{display:flex;flex-direction:column;gap:8px}
+.cmt{background:var(--card2);border:1px solid var(--card-brd);border-radius:var(--r-sm);padding:10px 14px;display:flex;flex-direction:column;gap:4px}
+.cmt.mine{background:var(--chip-pos);border-color:transparent;color:var(--chip-pos-ink)}
+.cmt .by{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:12px;font-weight:800}
+.cmt .at{color:var(--muted);font-weight:700;font-variant-numeric:tabular-nums}
+.cmt.mine .at{color:inherit;opacity:.75}
+.cmt .txt{font-size:14px;line-height:1.5;font-weight:600;white-space:pre-wrap;overflow-wrap:anywhere}
+.composer{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:end;margin-top:10px}
+.composer textarea{grid-column:span 2;border:1px solid var(--card-brd);background:var(--card);border-radius:12px;padding:10px 12px;min-height:60px;resize:vertical;width:100%;font-weight:600}
+.composer .opts{display:flex;gap:10px;align-items:center;font-size:12.5px;color:var(--muted);font-weight:700}
+.feed{display:flex;flex-direction:column;gap:10px}
+.fitem{display:grid;grid-template-columns:44px minmax(0,1fr);gap:12px;padding:12px 14px;background:var(--card2);border:1px solid var(--card-brd);border-radius:var(--r-sm)}
+.fitem .fic{width:44px;height:44px;border-radius:var(--r-tile);display:grid;place-items:center;--c:var(--muted);color:var(--c);border:2px solid var(--c);background:color-mix(in srgb,var(--c) 10%,var(--card))}
+.fitem .fic svg{width:20px;height:20px}
+.fitem .fic.comment{--c:var(--blue)}.fitem .fic.decision{--c:var(--hero-deep)}.fitem .fic.task{--c:var(--purple)}.fitem .fic.shot{--c:#0E7C86}.fitem .fic.deploy{--c:#B45309}.fitem .fic.meeting{--c:#BE185D}
+.fitem .fh{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:12px;color:var(--muted);font-weight:800}
+.fitem .fh .rec{color:var(--ink);cursor:pointer;text-transform:none;letter-spacing:0}
+.fitem .fh .rec:hover{color:var(--hero-deep)}
+.fitem .ft{margin-top:4px;font-size:14px;line-height:1.5;font-weight:600;white-space:pre-wrap;overflow-wrap:anywhere}
+.fitem .ft b{font-weight:800}
+.fitem img{margin-top:8px;max-width:260px;border-radius:var(--r-tile);display:block}
+/* modal */
+.scrim{position:fixed;inset:0;background:rgba(15,20,24,.45);display:grid;place-items:center;padding:16px;z-index:50}
+.modal{background:var(--card);border-radius:var(--r);width:min(640px,100%);max-height:calc(100vh - 32px);overflow:auto;padding:24px;box-shadow:var(--shadow-lg)}
+.modal.wide{width:min(940px,100%)}
+.modal h2{margin:0 0 16px;font-size:20px;font-weight:800;letter-spacing:-.01em}
+.modal h3{margin:22px 0 10px;font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.fgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.field{display:flex;flex-direction:column;gap:5px}
+.field.full{grid-column:span 2}
+.field label{font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.field input,.field select,.field textarea{border:1px solid var(--card-brd);background:var(--card2);border-radius:12px;padding:10px 12px;min-width:0;font-weight:600}
+.field textarea{min-height:80px;resize:vertical}
+.mfoot{display:flex;justify-content:space-between;gap:8px;margin-top:20px;flex-wrap:wrap}
+.mfoot .r{display:flex;gap:8px;margin-left:auto}
+.lightbox img{width:100%;border-radius:var(--r-tile);display:block}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg1);padding:11px 18px;border-radius:var(--r-pill);font-weight:800;z-index:60;box-shadow:var(--shadow-lg)}
+.loading{display:grid;place-items:center;min-height:60vh;color:var(--muted);font-weight:800;text-align:center;padding:24px}
+.hint{font-size:12.5px;color:var(--muted);font-weight:700;margin-top:12px;max-width:84ch}
+.statusrow{display:flex;flex-wrap:wrap;gap:6px}
+.pname{font-weight:800;font-size:15px}.pname:hover{color:var(--hero-deep)}
+@media (max-width:1100px){.c8,.c7,.c6,.c5,.c4{grid-column:span 12}.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:760px){
+  .bar-top{flex-wrap:wrap;padding:10px 16px}.bar-meta{display:none}
+  .main{padding-inline:16px}
+  .statusblock{flex-direction:column}
+  .fgrid{grid-template-columns:1fr}.field.full{grid-column:span 1}
+  .pend .ans{grid-template-columns:1fr}.pend textarea{grid-column:span 1}
+  .composer{grid-template-columns:1fr}.composer textarea{grid-column:span 1}
+  .card{padding:16px;border-radius:var(--r-sm)}
+}
+@media (prefers-reduced-motion:reduce){.btn{transition:none}.btn:hover{transform:none}}
+.docv iframe{width:100%;height:78vh;border:0;border-radius:12px;background:#fff;display:block}
+.docsplit.has{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:16px;align-items:start}
+.docsplit.has .docv{position:sticky;top:12px}
+.docsplit.has .xcol{display:none}
+table.docs td:not(:nth-child(2)){white-space:nowrap}
+@media (max-width:1100px){.docsplit.has{grid-template-columns:1fr}.docsplit.has .docv{position:static}}
+table.docs tr.on td{background:var(--chip-pos)}
+.dq{border:1px solid var(--card-brd);background:var(--card);border-radius:var(--r-pill);padding:7px 14px;font-weight:600;min-width:0;width:220px;max-width:100%}
+
+/* top bar: replaces the sidebar so the Hub sits under the Teams channel tabs */
+.bar{flex:none;background:var(--card);border-bottom:1px solid var(--card-brd);position:relative;z-index:2}
+.bar-top{display:flex;align-items:center;gap:14px;padding:10px 24px;min-height:58px}
+.bar-title{display:flex;flex-direction:column;gap:1px;min-width:0}
+.bar-title .eyebrow{font-size:10px;font-weight:800;letter-spacing:.12em;color:var(--hero-deep);text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar-title h1{font-size:18px;font-weight:800;margin:0;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar-meta{display:flex;align-items:center;gap:10px;min-width:0;flex:none}
+.bar-meta .who{white-space:nowrap}
+@media (max-width:1440px){.bar-meta .who{display:none}}
+.bar-title{flex:0 1 auto}
+.bar-right{margin-left:auto;display:flex;align-items:center;gap:10px;flex:none}
+.golive{text-align:right;line-height:1.2}.golive small{display:block;font-size:11px;color:var(--muted);font-weight:700}.golive b{font-size:14px;font-weight:800;white-space:nowrap}
+.iconbtn{width:36px;height:36px;border-radius:var(--r-pill);border:0;background:var(--pill);color:var(--ink);display:inline-flex;align-items:center;justify-content:center;flex:none}
+.iconbtn:hover{background:var(--chip-pos);color:var(--chip-pos-ink)}
+.iconbtn svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.me{display:flex;flex-direction:column;align-items:flex-end;line-height:1.2;font-size:12px;font-weight:800;max-width:180px}
+.me a,.me .who{font-size:11px}.me input{border:1px solid var(--card-brd);background:var(--card2);border-radius:var(--r-pill);padding:6px 12px;font-weight:700;width:150px}
+.tabs{display:flex;align-items:stretch;gap:2px;padding:0 16px;overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{border:0;background:transparent;height:44px;padding:0 14px;font-weight:700;font-size:13px;color:var(--muted);border-bottom:3px solid transparent;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.tab:hover{color:var(--ink)}
+.tab.on{color:var(--hero-deep);border-bottom-color:var(--hero);font-weight:800}
+.tab .count{font-size:11px;font-weight:800;padding:1px 7px;border-radius:var(--r-pill);background:var(--pill);color:var(--muted)}
+.tab .count.warn{background:var(--chip-caution);color:var(--chip-caution-ink)}.tab .count.bad{background:var(--chip-blocked);color:var(--chip-blocked-ink)}
+.bar .viewas{box-shadow:none;background:var(--pill);padding:3px}.bar .viewas .seg{padding:5px 10px;font-size:12px}
+.subnav2{display:inline-flex;gap:2px;padding:4px;background:var(--card);border-radius:var(--r-pill);box-shadow:var(--shadow);margin-bottom:14px}
+.subnav2 .seg{padding:7px 16px}
+/* screens that fit the window: cards fill the height and long lists scroll inside their card */
+.fit{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:16px;align-content:start}
+.fit>.card{display:flex;flex-direction:column;min-height:0}
+.scroll{overflow:auto;min-height:0}
+@media (min-width:1000px) and (min-height:620px){
+  .main.fill{display:flex;flex-direction:column;overflow:hidden}
+  .main.fill>.fit{flex:1;min-height:0;grid-auto-rows:minmax(0,auto)}
+  .main.fill>.fit.rows2{grid-template-rows:auto minmax(0,1fr)}
+  .main.fill>.fit.rows1{grid-template-rows:minmax(0,1fr)}
+  .main.fill>.fit>.card{height:100%}
+}
+.c3{grid-column:span 3}
+.kpi2{grid-column:span 3;background:var(--card);border-radius:var(--r);padding:14px 18px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:6px;justify-content:space-between}
+.kpi2 .k{font-size:11px;color:var(--muted);font-weight:800;letter-spacing:.12em;text-transform:uppercase}
+.kpi2 .v{font-size:30px;font-weight:800;line-height:1;font-variant-numeric:tabular-nums}.kpi2 .v small{font-size:13px;color:var(--muted);font-weight:700;margin-left:8px}
+.kpi2 .v.bad{color:var(--warn-deep)}.kpi2 .v.warn{color:var(--chip-caution-ink)}
+.ask{border:1px solid var(--card-brd);border-radius:var(--r-sm);padding:11px 14px;display:flex;flex-direction:column;gap:7px;background:var(--card2)}
+.ask .q{font-weight:800;font-size:14px}
+.ask .meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.li{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--card-brd);font-size:13px;font-weight:700}
+.li:last-child{border-bottom:0}.li .grow{flex:1;min-width:0}
+.li .dotr{width:8px;height:8px;border-radius:50%;background:var(--warn);flex:none}
+.stand{background:var(--hero-dark,#0D3D26);color:#fff}
+.stand .label{color:#9FE0B5}.stand .note{color:#fff;font-size:14px}
+.stand .scroll{flex:1}
+.stand dl{margin:12px 0 0;display:grid;grid-template-columns:auto 1fr;gap:5px 12px;font-size:12px;color:#CDEFD8}.stand dt{font-weight:700}.stand dd{margin:0;text-align:right;font-weight:800}
+.phstrip{grid-column:span 12;background:var(--card);border-radius:var(--r);box-shadow:var(--shadow);padding:12px 18px;display:grid;grid-template-columns:repeat(8,minmax(0,1fr)) auto;gap:8px;align-items:center}
+.phstrip .ph .nm{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ocol{grid-column:span 3}
+.tcard{border:1px solid var(--card-brd);background:var(--card2);border-radius:var(--r-sm);padding:10px 12px;display:grid;grid-template-columns:22px minmax(0,1fr);gap:8px;margin-bottom:8px}
+.tcard .t{font-size:13px;font-weight:700;line-height:1.35;cursor:pointer}
+.tcard .meta{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:5px}
+.tcard .chk{width:20px;height:20px}
+.tcard .pill{max-width:100%;overflow:hidden;text-overflow:ellipsis}
+.pcards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;grid-column:span 12}
+.pcard{background:var(--card);border-radius:var(--r);box-shadow:var(--shadow);padding:16px 18px;display:flex;flex-direction:column;gap:10px;cursor:pointer;border:2px solid transparent;text-align:left}
+.pcard:hover{border-color:var(--hero)}
+.pcard .nm{font-size:16px;font-weight:800}.pcard .mini{width:100%}
+.pcard .foot{margin-top:auto;display:flex;gap:14px;font-size:12px;font-weight:800;flex-wrap:wrap}
+.pcard.new{border:2px dashed var(--card-brd);box-shadow:none;background:transparent;align-items:center;justify-content:center;color:var(--muted)}
+@media (max-width:1100px){.ocol{grid-column:span 6}.pcards{grid-template-columns:repeat(2,minmax(0,1fr))}.kpi2{grid-column:span 6}}
+@media (max-width:760px){.ocol{grid-column:span 12}.pcards{grid-template-columns:1fr}.phstrip{grid-template-columns:repeat(4,minmax(0,1fr))}}
+</style>
+
+</head>
+<body>
+<div class="app">
+  <header class="bar" id="side"></header>
+  <main class="main" id="main"><div class="loading" id="boot">Loading projects…</div></main>
+</div>
+<div id="modalRoot"></div>
+
+<script>
+(function(){
+const PHASES=["Kickoff","Discovery and design","Integration build and test","Site readiness and hardware","Install and configure","Training","Go live","Handoff"];
+const PARTIES={hci:"HCI",customer:"Customer",dealer:"Dealer",partner:"Partner"};
+const STATUS={on_track:"On track",watch:"Watch",at_risk:"At risk",off_track:"Off track",done:"Complete"};
+const ISTATUS={not_started:"Not started",in_progress:"In build",testing:"Testing",blocked:"Blocked",live:"Live",out:"Not in scope",confirm:"To confirm",deferred:"Phase 2"};
+const CSTATUS={planned:"Planned",quoted:"Quoted",ordered:"Ordered",received:"Received",in_progress:"In build",installed:"Installed",live:"Live",deferred:"Phase 2",removed:"Removed"};
+const CCAT=["Software","Hardware","Integration","Server","Service"];
+const BASIS={each:"Each",bed:"Per bed",room:"Per room",unit:"Per unit",station:"Per station",hour:"Hours"};
+const DEVTYPES={"Door Sign":"Door sign","Whiteboard":"Whiteboard","Patient TV":"Patient TV","Unit Status Board":"Unit status board","Camera":"Camera","Server":"Server","Workstation":"Workstation","Other":"Other"};
+const APPS=["Whiteboard","Door Sign","Patient TV","Unit Status Board","eSitter","Virtual Nursing","Launcher"];
+const COLS=["projects","tasks","decisions","meetings","interfaces","people","devices","releases","deployments","components","catalog","access","network","template","team","shots","comments","audit"];
+const PVIEWS=[["overview","Overview"],["plan","Plan"],["decisions","Decisions"],["files","Files"],["system","System"],["integrations","Integrations"],["team","Team"]];
+/* tabs that hold more than one screen */
+const SUBS={system:[["config","Configuration"],["installed","Installed base"],["changelog","App changelog"]],integrations:[["integrations","Integrations"],["access","Access and network"]],team:[["people","People"],["feed","Feed"],["audit","History"]]};
+/* old screen names still used by links and saved navigation */
+const LEGACY={config:["system","config"],installed:["system","installed"],changelog:["system","changelog"],access:["integrations","access"],feed:["team","feed"],people:["team","people"],audit:["team","audit"],meetings:["plan",""]};
+const PORTTABS=[["portfolio","Projects"],["alldecisions","Decisions waiting"],["allwork","Overdue work"]];
+const AVIEWS=[["catalog","Component catalog"],["template","Project template"],["team","HCI team"],["releases","Releases"],["projects","All projects"]];
+const opt=o=>Object.entries(o);
+const FORMS={
+ tasks:[["title","Task","text",1,1],["owner","Owner","text",0,0,null,"owners"],["party","Party","select",0,0,PARTIES],["due","Due","date"],["phase","Phase","select",0,0,PHASES],["visibility","Who can see it","select",0,0,{external:"Everyone on the project",internal:"HCI only"}],["status","Status","select",0,0,{open:"Open",done:"Done"}],["note","Notes","area",0,1]],
+ decisions:[["question","Question","text",1,1],["answer","Decision","area",0,1],["pending","Status","select",0,0,{"true":"Waiting for an answer","false":"Decided"}],["askedOf","Asked of","text",0,0,null,"owners"],["neededBy","Needed by","date"],["decidedBy","Decided by","text",0,0,null,"owners"],["date","Date decided","date"],["defaultIfSilent","Default if no answer","text",0,1],["source","Source","text",0,1],["visibility","Who can see it","select",0,0,{external:"Everyone on the project",internal:"HCI only"}]],
+ meetings:[["title","Meeting","text",1,1],["date","Date","date"],["attendees","Attendees","text"],["notes","Summary and action items","area",0,1],["undecided","Not decided","text",0,1],["visibility","Who can see it","select",0,0,{external:"Everyone on the project",internal:"HCI only"}]],
+ interfaces:[["system","System","text",1],["type","Type","text"],["vendor","Vendor contact","text"],["status","Status","select",0,0,ISTATUS],["note","Detail","area",0,1]],
+ people:[["name","Name","text",1],["org","Organization","text"],["role","Role","text",0,1],["email","Email","text"],["party","Party","select",0,0,PARTIES]],
+ devices:[["unit","Unit","text"],["room","Room","text",1],["bed","Bed","text"],["type","Device","select",0,0,DEVTYPES],["model","Model","text"],["serial","Serial","text"],["mac","MAC","text"],["ip","IP address","text"],["vlan","VLAN","text"],["hostname","Hostname","text"],["os","OS and firmware","text"],["status","Status","select",0,0,{planned:"Planned",shipped:"Shipped",installed:"Installed",online:"Online",offline:"Offline"}],["appsText","Installed apps (App version, comma separated)","text",0,1]],
+ releases:[["app","App","select",1,0,Object.fromEntries(APPS.map(a=>[a,a]))],["version","Version","text",1],["date","Release date","date"],["notes","Release notes","area",0,1],["knownIssues","Known issues","text",0,1]],
+ projects:[["name","Project name","text",1,1],["customer","Customer","text"],["site","Site","text"],["scope","Scope","text",0,1],["lead","HCI lead","text",0,0,null,"owners"],["dealer","Dealer or integrator","text"],["goLive","Go live target","date"],["status","Status","select",0,0,STATUS],["phase","Current phase","select",0,0,PHASES],["beds","Beds","number"],["rooms","Rooms","number"],["units","Units","number"],["nextMeeting","Next meeting","text"],["meetingAttendees","Meeting attendees","text"],["statusNote","Status note","area",0,1],["hubspot","HubSpot project","text",0,1],["sharepointUrl","SharePoint library link (Shared Documents)","text",0,1],["fileCode","Customer code in file names (e.g. BALL)","text"]],
+ components:[["catalogId","Component","select",1,1,()=>Object.fromEntries(S.cols.catalog.filter(c=>c.active!==false).sort((a,b)=>CCAT.indexOf(a.category)-CCAT.indexOf(b.category)||(a.name||"").localeCompare(b.name||"")).map(c=>[c.id,c.category+" · "+c.name]))],["qty","Quantity","number"],["basis","Basis","select",0,0,BASIS],["status","Status","select",0,0,CSTATUS],["detail","Configuration detail","text",0,1],["notes","Notes","area",0,1]],
+ catalog:[["name","Name","text",1,1],["category","Category","select",0,0,Object.fromEntries(CCAT.map(c=>[c,c]))],["basis","Default basis","select",0,0,BASIS],["vendor","Vendor","text"],["sku","SKU or part","text"],["deviceType","Counts as device","select",0,0,Object.assign({"":"Not a device"},DEVTYPES)],["notes","Notes","area",0,1],["active","Available","select",0,0,{"true":"Yes","false":"Retired"}]],
+ access:[["name","Name","text",1],["method","Method","select",0,0,{vpn:"VPN",teamviewer:"TeamViewer",jump:"Jump box",rdp:"RDP",ssh:"SSH",web:"Web console",other:"Other"}],["endpoint","Endpoint or ID","text"],["account","Account name","text"],["credentialLocation","Where the password is kept","text",0,1],["client","Client software","text"],["contact","Customer IT contact","text"],["status","Status","select",0,0,{working:"Working",pending:"Pending",broken:"Not working"}],["lastVerified","Last verified","date"],["notes","Notes","area",0,1]],
+ network:[["name","Network","text",1],["vlan","VLAN","text"],["subnet","Subnet","text"],["gateway","Gateway","text"],["dns","DNS","text"],["dhcp","Addressing","select",0,0,{static:"Static",dhcp:"DHCP",reserved:"DHCP reservations"}],["ports","Firewall and ports","text",0,1],["notes","Notes","area",0,1]],
+ template:[["title","Task","text",1,1],["phase","Phase","select",0,0,PHASES],["party","Party","select",0,0,PARTIES],["order","Order","number"]],
+ team:[["name","Name","text",1],["role","Role","text"],["email","Email","text",0,1]]
+};
+const TITLES={tasks:"task",decisions:"decision",meetings:"meeting",interfaces:"integration",people:"person",devices:"device",releases:"release",projects:"project",components:"component",catalog:"catalog item",access:"remote access",network:"network",template:"template task",team:"team member"};
+const GLOBAL=new Set(["releases","catalog","template","team","projects"]);
+
+const S={db:null,dl:null,assets:null,cols:{},pid:null,scope:"portfolio",view:"portfolio",role:"hci",filter:"open",ffilter:"all",me:"",ready:false,sub:{},channel:false};
+COLS.forEach(c=>S.cols[c]=[]);
+try{const v=window.HUB_PRESELECT||JSON.parse(localStorage.getItem("hub.nav")||"{}");if(v.pid){S.pid=v.pid}if(v.scope){S.scope=v.scope;S.view=v.view}if(window.HUB_PRESELECT&&window.HUB_PRESELECT.pid)S.channel=true}catch(e){}
+try{S.me=localStorage.getItem("hub.me")||""}catch(e){}
+
+const $=s=>document.querySelector(s);
+const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const today=()=>{const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")};
+const pd=s=>{if(!s)return null;const [y,m,d]=String(s).split("-").map(Number);if(!y)return null;return new Date(y,(m||1)-1,d||1)};
+const fd=s=>{const d=pd(s);return d?d.toLocaleDateString("en-US",{day:"numeric",month:"short"}):""};
+const fdy=s=>{const d=pd(s);return d?d.toLocaleDateString("en-US",{day:"numeric",month:"short",year:"numeric"}):""};
+const days=s=>{const d=pd(s);if(!d)return null;return Math.round((d-pd(today()))/864e5)};
+const byId=(c,id)=>S.cols[c].find(x=>x.id===id);
+const P=()=>byId("projects",S.pid)||null;
+const active=()=>S.cols.projects.filter(p=>p.status!=="done");
+const ofP=(c,pid)=>S.cols[c].filter(x=>x.projectId===pid);
+const over=t=>t.status!=="done"&&t.due&&t.due<today();
+const check='<svg viewBox="0 0 12 12" fill="none"><path d="M2 6.5l2.5 2.5L10 3.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+const now=()=>new Date().toISOString();
+function toast(msg){const t=document.createElement("div");t.className="toast";t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),2400)}
+async function exportAudit(){
+  const q=v=>/[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;
+  const rows=ofP("audit",S.pid).sort((a,b)=>(a.at||"").localeCompare(b.at||""));
+  const lines=["when,who,action,record type,record,changes,note"].concat(rows.map(r=>[r.at,r.by||"",r.action,TITLES[r.col]||r.col,r.title||"",(r.changes||[]).map(c=>`${fieldLabel(r.col,c.field)}: ${typeof c.from==="object"?JSON.stringify(c.from):c.from} to ${typeof c.to==="object"?JSON.stringify(c.to):c.to}`).join("; "),r.note||""].map(v=>q(String(v??""))).join(",")));
+  try{await S.dl.save({filename:(P().name||"project").replace(/[^\w ]+/g,"").trim()+" history.csv",data:lines.join("\n")})}catch(e){if(e&&e.code!=="declined")toast("Export not available here")}
+}
+function saveNav(){try{localStorage.setItem("hub.nav",JSON.stringify({pid:S.pid,scope:S.scope,view:S.view}))}catch(e){}}
+function go(scope,view,pid){if(S.locked&&S.role!=="hci"&&scope!=="project")return;if(scope==="project"&&LEGACY[view]){const [v,sub]=LEGACY[view];if(sub)S.sub[v]=sub;view=v}S.scope=scope;S.view=view;if(pid)S.pid=pid;if(scope!=="project"&&!S.locked)S.role="hci";saveNav();render();const m=$("#main");if(m)m.scrollTop=0}
+
+/* role preview */
+function canSee(x,c){const r=S.role;if(r==="hci")return true;if(x.visibility==="internal")return false;if(r==="partner"&&c==="tasks")return x.party==="partner";return true}
+const vis=(c,pid)=>ofP(c,pid||S.pid).filter(x=>canSee(x,c));
+const netOK=()=>S.role==="hci"||S.role==="customer";
+function allowed(){
+  if(S.role==="partner")return["overview","plan","integrations","team"];
+  if(S.role==="dealer")return["overview","plan","decisions","files","system","team"];
+  if(S.role==="customer")return["overview","plan","decisions","files","integrations","team"];
+  return PVIEWS.map(v=>v[0]);
+}
+function subsFor(v){const r=S.role;return (SUBS[v]||[]).filter(([k])=>{if(k==="changelog")return r==="hci";if(k==="audit")return r==="hci";if(k==="access")return r==="hci"||r==="customer";if(k==="installed")return r!=="partner";return true})}
+function subView(v,p){const list=subsFor(v);let cur=S.sub[v];if(!list.some(x=>x[0]===cur))cur=list[0][0];
+  const seg=list.length>1?`<div class="subnav2" role="tablist">${list.map(([k,l])=>`<button class="seg ${cur===k?"on":""}" role="tab" aria-selected="${cur===k}" data-sub="${v}:${k}">${l}</button>`).join("")}</div>`:"";
+  return seg+VIEW[cur](p)}
+function stats(pid){const t=ofP("tasks",pid);const open=t.filter(x=>x.status!=="done");return{open:open.length,over:open.filter(over).length,dec:ofP("decisions",pid).filter(d=>d.pending).length}}
+
+/* sidebar */
+const GEAR='<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>';
+const BACK='<svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>';
+function meBlock(){const id=window.HUB_IDENTITY;
+  if(S.locked)return `<div class="me"><span>${esc(S.me||id.email||"")}</span>${id.logout?`<a href="${esc(id.logout)}" style="color:var(--hero-deep)">Sign out</a>`:""}</div>`;
+  return `<div class="me"><input id="meIn" list="owners" placeholder="Your name" value="${esc(S.me)}" autocomplete="off" aria-label="Your name"></div>`}
+function renderSide(){
+  const staff=!S.locked||S.role==="hci";
+  const projs=active();
+  const totDec=S.cols.decisions.filter(d=>d.pending&&byId("projects",d.projectId)?.status!=="done").length;
+  const totOver=S.cols.tasks.filter(t=>over(t)&&byId("projects",t.projectId)?.status!=="done").length;
+  const tab=(on,attrs,label,count,cls)=>`<button class="tab ${on?"on":""}" ${attrs}${on?' aria-current="page"':""}>${label}${count?`<span class="count ${cls||""}">${count}</span>`:""}</button>`;
+  const gear=staff?`<button class="iconbtn" data-go="admin:catalog" aria-label="Admin" title="Admin">${GEAR}</button>`:"";
+  let h="";
+  if(S.scope==="project"&&P()){
+    const p=P();const st=stats(p.id);const gl=days(p.goLive);const ph=Number(p.phase)||0;
+    const back=staff&&!S.channel?`<button class="iconbtn" data-go="portfolio:portfolio" aria-label="All projects" title="All projects">${BACK}</button>`:"";
+    const roleBar=S.locked?"":`<div class="viewas" role="group" aria-label="Preview as">${[["hci","HCI"],["customer","Customer"],["dealer","Dealer"],["partner","Partner"]].map(([k,l])=>`<button class="seg ${S.role===k?"on":""}" data-role="${k}">${l}</button>`).join("")}</div>`;
+    const counts={plan:[vis("tasks").filter(t=>t.status!=="done").length,st.over?"bad":""],decisions:[vis("decisions").filter(d=>d.pending).length,"warn"],integrations:[S.role==="dealer"?0:vis("interfaces").filter(i=>i.status==="blocked").length,"bad"]};
+    h=`<div class="bar-top">${back}<div class="bar-title"><span class="eyebrow">${esc(p.customer||"")}${p.site?" · "+esc(p.site):""}</span><h1>${esc(p.name)}</h1></div>
+     <div class="bar-meta">${stPill(p.status)}${mini(ph)}<span class="who">Phase ${ph+1} of ${PHASES.length} · ${esc(PHASES[ph])}</span></div>
+     <div class="bar-right">${roleBar}<div class="golive"><small>Go live</small><b>${p.goLive?fd(p.goLive)+(gl!=null?` · ${gl<0?Math.abs(gl)+" days past":gl+" days"}`:""):"Not set"}</b></div>${S.role==="hci"?`<button class="btn sec sm" data-edit="projects" data-id="${esc(p.id)}">Edit</button>`:""}${gear}${meBlock()}</div></div>
+     <nav class="tabs" aria-label="Project">${PVIEWS.filter(v=>allowed().includes(v[0])).map(([k,l])=>{const c=counts[k]||[0,""];return tab(S.view===k,`data-go="project:${k}:${esc(p.id)}"`,l,c[0],c[1])}).join("")}</nav>`;
+  }else if(S.scope==="admin"){
+    h=`<div class="bar-top"><button class="iconbtn" data-go="portfolio:portfolio" aria-label="All projects" title="All projects">${BACK}</button><div class="bar-title"><span class="eyebrow">HCI ONE · Implementation Hub</span><h1>Admin</h1></div><span class="pill int">HCI only</span><div class="bar-right">${meBlock()}</div></div>
+     <nav class="tabs" aria-label="Admin">${AVIEWS.map(([k,l])=>tab(S.view===k,`data-go="admin:${k}"`,l)).join("")}</nav>`;
+  }else{
+    h=`<div class="bar-top"><div class="bar-title"><span class="eyebrow">HCI ONE · Implementation Hub</span><h1>All projects</h1></div><div class="bar-right">${staff?'<button class="btn sm" data-act="newproj">New project</button>':""}${gear}${meBlock()}</div></div>
+     <nav class="tabs" aria-label="Portfolio">${PORTTABS.map(([k,l])=>tab(S.view===k,`data-go="portfolio:${k}"`,l,k==="portfolio"?projs.length:k==="alldecisions"?totDec:totOver,k==="alldecisions"?"warn":k==="allwork"?"bad":"")).join("")}</nav>`;
+  }
+  $("#side").innerHTML=h+ownersList();
+}
+
+/* main */
+function render(){
+  if(!S.ready)return;
+  if(S.locked&&S.role!=="hci"){S.scope="project";if(!P())S.pid=(S.cols.projects[0]||{}).id||null;if(!P()){renderSide();$("#main").innerHTML='<div class="loading">You are not on a project team yet. Ask HCI to add you to the project.</div>';return}}
+  if(S.scope==="project"&&!P()){S.scope="portfolio";S.view="portfolio"}
+  if(S.scope==="project"&&LEGACY[S.view]){const [v,sub]=LEGACY[S.view];if(sub)S.sub[v]=sub;S.view=v}
+  if(S.scope==="project"&&!allowed().includes(S.view))S.view="overview";
+  renderSide();
+  const main=$("#main");
+  const FILL={overview:1,plan:1,decisions:1,portfolio:1};
+  main.classList.toggle("fill",!!FILL[S.view]&&S.scope!=="admin");
+  if(S.scope==="portfolio"){main.innerHTML=PORT[S.view]?PORT[S.view]():PORT.portfolio();return}
+  if(S.scope==="admin"){main.innerHTML=ADMIN[S.view]?ADMIN[S.view]():ADMIN.catalog();return}
+  const p=P();
+  const banner=S.role!=="hci"&&!S.locked?`<div class="banner">Previewing the ${PARTIES[S.role].toLowerCase()} portal. ${S.role==="partner"?"Partners see only their own tasks, integrations and the project team.":S.role==="dealer"?"Dealers see project work without IP addresses, MACs, remote access or HCI only notes.":"Customers see everything marked for the whole project; HCI only items are hidden."}</div>`:"";
+  main.innerHTML=banner+(S.view==="integrations"?VIEW.integrations2(p):VIEW[S.view](p));
+}
+function head(title,sub,right){return (sub||right)?`<div class="filters"><span class="who">${sub||""}</span><span class="push">${right||""}</span></div>`:""}
+function mini(ph){ph=Number(ph)||0;return `<div class="mini" title="${esc(PHASES[ph])}">${PHASES.map((_,i)=>`<i class="${i<ph?"done":i===ph?"cur":""}"></i>`).join("")}</div>`}
+function stPill(s){const m={on_track:"good",watch:"warn",at_risk:"bad",off_track:"bad",done:""};return `<span class="pill ${m[s]||""}">${STATUS[s]||"No status"}</span>`}
+
+/* portfolio */
+const PORT={
+portfolio(){
+  const ps=active().sort((a,b)=>{const r={at_risk:0,off_track:0,watch:1,on_track:2};return (r[a.status]??3)-(r[b.status]??3)||(a.goLive||"9").localeCompare(b.goLive||"9")});
+  const staff=!S.locked||S.role==="hci";
+  return `<div class="fit rows1"><div class="pcards scroll" style="grid-auto-rows:minmax(210px,1fr)">${ps.map(p=>{const s=stats(p.id);const gl=days(p.goLive);const ph=Number(p.phase)||0;
+    return `<button type="button" class="pcard" data-go="project:overview:${esc(p.id)}"><div style="display:flex;gap:10px;align-items:flex-start;width:100%"><div style="flex:1;min-width:0"><div class="nm">${esc(p.name)}</div><div class="who">${esc([p.dealer,p.scope].filter(Boolean).join(" · "))}</div></div>${stPill(p.status)}</div>
+     ${mini(ph)}<div class="who">Phase ${ph+1} · ${esc(PHASES[ph])}</div><div class="note" style="font-size:12.5px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden">${esc(p.statusNote||"")}</div>
+     <div class="foot"><span>${p.goLive?"Go live "+fd(p.goLive)+(gl!=null?` · ${gl<0?Math.abs(gl)+" days past":gl+" days"}`:""):"No go live date"}</span>${s.dec?`<span style="color:var(--chip-caution-ink)">${s.dec} to decide</span>`:""}${s.over?`<span style="color:var(--warn-deep)">${s.over} overdue</span>`:""}</div></button>`}).join("")}
+    ${staff?'<button type="button" class="pcard new" data-act="newproj"><span class="nm">New project</span><span class="who">From the project template</span></button>':""}</div></div>`;
+},
+alldecisions(){
+  const ps=active();const ids=new Set(ps.map(p=>p.id));
+  const pend=S.cols.decisions.filter(d=>d.pending&&ids.has(d.projectId)).sort((a,b)=>(a.neededBy||"9").localeCompare(b.neededBy||"9"));
+  const log=S.cols.decisions.filter(d=>!d.pending&&ids.has(d.projectId)).sort((a,b)=>(b.date||"").localeCompare(a.date||"")).slice(0,40);
+  return head("Decisions","Answer here and the decision moves to its project's log")+`<div class="grid"><section class="card c6"><div class="card-h"><span class="label">Waiting for an answer<span class="n">${pend.length}</span></span></div>${pend.map(d=>pendCard(d,true)).join("")||'<div class="empty">Nothing waiting.</div>'}</section>
+  <section class="card c6"><div class="card-h"><span class="label">Recently decided</span></div>${logTable(log,true)}</section></div>`;
+},
+allwork(){
+  const ps=active();const ids=new Set(ps.map(p=>p.id));
+  const t=S.cols.tasks.filter(x=>ids.has(x.projectId)&&x.status!=="done");
+  const od=t.filter(over).sort((a,b)=>a.due.localeCompare(b.due));
+  const wk=t.filter(x=>!over(x)&&x.due&&days(x.due)<=7).sort((a,b)=>a.due.localeCompare(b.due));
+  const owners={};od.forEach(x=>{const o=x.owner||"Unassigned";owners[o]=(owners[o]||0)+1});
+  return head("Overdue work","Across every active project")+`<div class="grid"><section class="card c8"><div class="card-h"><span class="label">Overdue<span class="n">${od.length}</span></span></div><div class="rows">${od.map(x=>taskRow(x,true)).join("")||'<div class="empty">Nothing overdue.</div>'}</div>
+  <div class="card-h" style="margin-top:18px"><span class="label">Due in the next 7 days<span class="n">${wk.length}</span></span></div><div class="rows">${wk.map(x=>taskRow(x,true)).join("")||'<div class="empty">Nothing due this week.</div>'}</div></section>
+  <section class="card c4"><div class="card-h"><span class="label">Overdue by owner</span></div><div class="tbl-wrap"><table><tbody>${Object.entries(owners).sort((a,b)=>b[1]-a[1]).map(([o,n])=>`<tr><td>${esc(o)}</td><td class="num"><span class="pill bad">${n}</span></td></tr>`).join("")||'<tr><td class="empty">Nobody.</td></tr>'}</tbody></table></div></section></div>`;
+}
+};
+
+/* project views */
+const VIEW={
+system(p){return subView("system",p)},
+integrations2(p){return subView("integrations",p)},
+team(p){return subView("team",p)},
+overview(p){
+  const tasks=vis("tasks"),open=tasks.filter(t=>t.status!=="done"),od=open.filter(over).sort((a,b)=>a.due.localeCompare(b.due));
+  const pend=vis("decisions").filter(d=>d.pending).sort((a,b)=>(a.neededBy||"9").localeCompare(b.neededBy||"9"));
+  const dev=ofP("devices",p.id),live=dev.filter(d=>d.status==="installed"||d.status==="online").length;
+  const ints=vis("interfaces").filter(i=>i.status!=="out"),ilive=ints.filter(i=>i.status==="live").length,iblk=ints.filter(i=>i.status==="blocked").length;
+  const mine=S.role!=="hci"&&S.role!=="partner"?open.filter(t=>t.party===S.role):null;
+  const week=open.filter(t=>!over(t)&&(!t.due||days(t.due)<=7)).sort((a,b)=>(a.due||"9").localeCompare(b.due||"9"));
+  const pp=Object.fromEntries(ofP("people",p.id).map(x=>[x.name,x]));
+  const late=d=>{if(!d.neededBy)return "";const n=days(d.neededBy);return n<0?`<span class="pill bad">${Math.abs(n)} day${n===-1?"":"s"} late</span>`:`<span class="pill warn">Due ${fd(d.neededBy)}</span>`};
+  const byOver={};od.forEach(t=>byOver[t.party]=(byOver[t.party]||0)+1);
+  const kpi=(k,v,cls,small)=>`<div class="kpi2"><div class="k">${k}</div><div class="v ${cls||""}">${v}${small?`<small>${small}</small>`:""}</div></div>`;
+  const hi=S.me?String(S.me).split(" ")[0]:"";
+  const ask=d=>`<div class="ask"><div class="q">${esc(d.question)}</div><div class="meta">${late(d)}${d.askedOf?`<span class="who">${esc(d.askedOf)}</span>`:""}<span class="push"><button class="btn sm" data-go="project:decisions:${esc(p.id)}">Answer</button></span></div></div>`;
+  const first=mine?`<section class="card c5"><div class="card-h"><span class="label">${hi?"Good to see you, "+esc(hi):"Your to do"}</span><span class="who">${mine.length} with ${esc(PARTIES[S.role]||"")}</span></div><div class="scroll">${mine.map(t=>taskRow(t)).join("")||'<div class="empty">Nothing on your list right now.</div>'}</div></section>`
+    :`<section class="card c5"><div class="card-h"><span class="label">Needs an answer<span class="n">${pend.length}</span></span><button class="btn sec sm" data-go="project:decisions:${esc(p.id)}">All decisions</button></div><div class="scroll" style="display:flex;flex-direction:column;gap:8px">${pend.slice(0,4).map(ask).join("")||'<div class="empty">Nothing waiting.</div>'}${pend.length>4?`<button class="qbtn" data-go="project:decisions:${esc(p.id)}">+ ${pend.length-4} more</button>`:""}
+      ${od.length?`<div class="label" style="margin-top:8px">Overdue</div>${od.slice(0,5).map(t=>`<div class="li"><span class="dotr"></span><span class="grow t" data-edit="tasks" data-id="${esc(t.id)}" style="cursor:pointer">${esc(t.title)}</span><span class="who">${esc(PARTIES[t.party]||"")} · ${Math.abs(days(t.due))}d</span></div>`).join("")}${od.length>5?`<button class="qbtn" data-go="project:plan:${esc(p.id)}">+ ${od.length-5} more overdue</button>`:""}`:""}</div></section>`;
+  return `<div class="fit rows2">
+   ${kpi("Decisions waiting",pend.length,pend.length?"warn":"",pend[0]&&pend[0].neededBy?"next due "+fd(pend[0].neededBy):"")}
+   ${kpi("Overdue work",od.length,od.length?"bad":"",opt(byOver).map(([k,n])=>n+" "+(PARTIES[k]||k)).join(" · "))}
+   ${S.role==="dealer"?kpi("Open work",open.length,""):kpi("Integrations live",`${ilive} of ${ints.length}`,"",iblk?iblk+" blocked":"")}
+   ${kpi("Devices installed",`${live}`,"",dev.length?"of "+dev.length+" logged"+(p.beds?" · "+p.beds+" beds":""):(p.beds?p.beds+" beds":""))}
+   ${first}
+   <section class="card c4"><div class="card-h"><span class="label">${mine?"What HCI is doing":"Coming up"}</span><button class="btn sec sm" data-go="project:plan:${esc(p.id)}">Full plan</button></div>
+    <div class="scroll">${p.nextMeeting?`<div class="ask" style="margin-bottom:10px"><span class="label">Next meeting</span><div class="q">${esc(p.nextMeeting)}</div><div class="who">${esc(p.meetingAttendees||"")}</div></div>`:""}
+    ${(mine?open.filter(t=>t.party==="hci"):week).slice(0,7).map(t=>`<div class="li"><button class="chk ${t.status==="done"?"on":""}" data-toggle="${esc(t.id)}" aria-label="Mark done"></button><span class="grow" data-edit="tasks" data-id="${esc(t.id)}" style="cursor:pointer">${esc(t.title)}</span><span class="pill ${esc(t.party)}">${esc(PARTIES[t.party]||"")}</span></div>`).join("")||'<div class="empty">Nothing due this week.</div>'}</div></section>
+   <section class="card c3 stand"><div class="card-h"><span class="label">Where it stands</span>${S.role==="hci"?`<button class="btn sec sm" data-edit="projects" data-id="${esc(p.id)}">Update</button>`:""}</div>
+    <div class="scroll note">${esc(p.statusNote||"No status note yet.")}</div>
+    <dl><dt>Scope</dt><dd>${esc(p.scope||"")}</dd>${p.dealer?`<dt>Dealer</dt><dd>${esc(p.dealer)}</dd>`:""}<dt>HCI lead</dt><dd>${esc(p.lead||"")}</dd></dl></section>
+  </div>`;
+},
+feed(p){
+  const items=feedItems(p.id);const f=S.ffilter||"all";
+  const fl={all:"Everything",comment:"Comments",decision:"Decisions",task:"Work",shot:"Screenshots",deploy:"Releases",meeting:"Meetings"};
+  const shown=items.filter(i=>f==="all"||i.kind===f);
+  const canPost=S.role!=="partner";
+  return `<section class="card" style="margin-bottom:16px"><div class="card-h"><span class="label">Post to the project</span><span class="who">${canPost?"Everyone on the project sees it"+(S.role==="hci"?" unless you mark it HCI only":""):"Partners comment on their own tasks and integration cards"}</span></div>
+   ${canPost?`<div class="composer" style="margin-top:0"><textarea id="cmtText" placeholder="An update, a question, a heads up"></textarea><div class="opts">${S.role==="hci"?'<label><input type="checkbox" id="cmtInt"> HCI only</label>':""}</div><button type="button" class="btn" data-comment="projects:${esc(p.id)}">Post</button></div>`:""}</section>
+  <div class="filters">${opt(fl).map(([k,l])=>`<button class="fchip ${f===k?"on":""}" data-ffilter="${k}">${l}</button>`).join("")}</div>
+  <section class="card"><div class="feed">${shown.map(feedItem).join("")||'<div class="empty">Nothing here yet. Post the first update above, or comment on any task, decision or integration.</div>'}</div></section>`;
+},
+files(p){
+  const base=(p.sharepointUrl||"").trim().replace(/\/+$/,"");
+  if(!window.HUB_FILES){
+    return `<div class="grid"><section class="card c12"><div class="card-h"><span class="label">Documents</span>${base?`<a class="btn" href="${esc(base)}" target="_blank" rel="noopener">Open the SharePoint library</a>`:""}</div>
+    <div class="empty">Documents show here, inside the Hub, on the hosted version. Every document lives in one flat list named ##_CODE_CUSTOMER_Description_vN_YYYYMMDD.</div>
+    <div class="icards">${DOCTYPES.map(([n,c,l])=>`<div class="icard flat"><div class="sys">${n} ${c}</div><p>${esc(l)}</p></div>`).join("")}</div></section></div>`;
+  }
+  const st=DOCS[p.id];
+  if(!st||st.stale){loadDocs(p.id);}
+  if(!st||(st.loading&&!st.files))return `<section class="card"><div class="empty">Loading documents from SharePoint…</div></section>`;
+  if(st.err)return `<section class="card"><div class="card-h"><span class="label">Documents</span>${S.role==="hci"&&base?`<a class="btn sec sm" href="${esc(base)}" target="_blank" rel="noopener">Open in SharePoint</a>`:""}</div><div class="empty">${esc(st.setup?"SharePoint is not connected to the Hub yet. HCI finishes that once in Azure.":st.err)}</div>${S.role==="hci"&&!base?`<button class="btn" data-edit="projects" data-id="${esc(p.id)}">Add the SharePoint link</button>`:""}</section>`;
+  const vis=st.files.filter(f=>docVisible(f.type));
+  const f=S.dfilter||"all";
+  const counts={};vis.forEach(x=>counts[x.type]=(counts[x.type]||0)+1);
+  const shown=vis.filter(x=>f==="all"||x.type===f);
+  const chips=[["all","All",vis.length]].concat(DOCTYPES.filter(t=>docVisible(t[0])).map(t=>[t[0],t[0]+" "+t[1],counts[t[0]]||0])).concat(counts.unsorted?[["unsorted","Not named yet",counts.unsorted]]:[]);
+  const sel=S.dsel&&st.files.find(x=>x.id===S.dsel);
+  const canRename=S.role==="hci"&&st.canRename;
+  const up=S.dup?docUploadForm(p,st):"";
+  const row=x=>{const t=DOCTYPE[x.type];const on=sel&&sel.id===x.id;
+    return `<tr class="click${on?" on":""}" data-doc="${esc(x.id)}" data-text="${esc((x.name+" "+x.by).toLowerCase())}"><td>${t?`<span class="pill">${t[0]} ${t[1]}</span>`:'<span class="pill warn">Not named</span>'}</td>
+    <td><b>${esc(t?x.desc:x.name)}</b>${S.dren===x.id?docRenameForm(x,st):""}</td><td class="num">${x.version?"v"+esc(x.version):""}</td><td class="who">${x.date?esc(fdy(x.date.slice(0,4)+"-"+x.date.slice(4,6)+"-"+x.date.slice(6,8))):""}</td><td class="num who xcol">${docSize(x.size)}</td><td class="who xcol">${esc(x.by)}</td>
+    <td class="num">${!t&&canRename&&S.dren!==x.id?`<button class="btn sec sm" data-dact="rename" data-id="${esc(x.id)}">Name it</button>`:""}</td></tr>`};
+  return `${up}<div class="filters">${chips.map(([k,l,n])=>`<button class="fchip ${f===k?"on":""}" data-dfilter="${k}">${esc(l)}${n?` · ${n}`:""}</button>`).join("")}<span class="push"><input id="dq" class="dq" type="search" placeholder="Search documents" aria-label="Search documents">${S.dup?"":'<button class="btn" data-dact="add">Add document</button>'}</span></div>
+  <div class="docsplit${sel?" has":""}"><section class="card"><div class="tbl-wrap"><table class="docs"><thead><tr><th>Type</th><th>Document</th><th class="num">Ver</th><th>Date</th><th class="num xcol">Size</th><th class="xcol">Updated by</th><th></th></tr></thead><tbody>${shown.map(row).join("")||'<tr><td colspan="7" class="empty">No documents here yet. Add the first one above.</td></tr>'}</tbody></table></div>
+  <div class="hint">One list for the whole project, sorted by name, so the numbers keep it in project order: ${DOCTYPES.map(t=>t[0]+" "+t[1]).join(", ")}. The Hub names each upload for you.${S.role==="hci"&&st.library?` <a href="${esc(st.library)}" target="_blank" rel="noopener">Open the library in SharePoint</a>`:""}</div></section>${sel?docViewer(p,sel):""}</div>`;
+},
+plan(){
+  const p=P();const all=vis("tasks");const done=S.filter==="done";
+  const t=all.filter(x=>done?x.status==="done":x.status!=="done");
+  const ph=Number(p.phase)||0;
+  const parties=["hci","customer","dealer","partner"].filter(k=>k!=="dealer"||t.some(x=>x.party==="dealer")||p.dealer).filter(k=>S.role==="partner"?k==="partner":true);
+  const card=x=>{const d=x.status==="done";const n=x.due?days(x.due):null;
+    return `<div class="tcard"><button class="chk ${d?"on":""}" data-toggle="${esc(x.id)}" aria-label="${d?"Reopen":"Mark done"}">${d?check:""}</button><div><div class="t ${d?"done-t":""}" data-edit="tasks" data-id="${esc(x.id)}">${esc(x.title)}</div>
+     <div class="meta"><span class="pill">${esc(PHASES[Number(x.phase)||0])}</span>${x.owner?`<span class="who">${esc(x.owner)}</span>`:""}${x.visibility==="internal"?'<span class="pill int">HCI only</span>':""}${cntPill("tasks",x.id)}${x.due?`<span class="due ${over(x)?"over":""}">${over(x)?Math.abs(n)+(n===-1?" day late":" days late"):n===0?"Due today":fd(x.due)}</span>`:""}</div></div></div>`};
+  const cols=parties.map(k=>{const items=t.filter(x=>x.party===k).sort((a,b)=>(over(b)-over(a))||(a.due||"9").localeCompare(b.due||"9"));
+    return `<section class="card ocol"><div class="card-h"><span class="label">${esc(k==="customer"?(p.customer||"Customer"):PARTIES[k])}<span class="n">${items.length}</span></span></div><div class="scroll">${items.map(card).join("")||'<div class="empty">Nothing here.</div>'}</div></section>`}).join("");
+  const m=vis("meetings").sort((a,b)=>(b.date||"").localeCompare(a.date||""));
+  const meet=`<section class="card ocol"><div class="card-h"><span class="label">Meetings<span class="n">${m.length}</span></span>${S.role==="hci"?'<button class="btn sm" data-new="meetings">Add notes</button>':""}</div><div class="scroll">
+    ${p.nextMeeting?`<div class="ask" style="margin-bottom:10px"><span class="label">Next</span><div class="q">${esc(p.nextMeeting)}</div><div class="who">${esc(p.meetingAttendees||"")}</div></div>`:""}
+    ${m.map(x=>`<div class="li" style="flex-direction:column;align-items:stretch;gap:3px;cursor:pointer" data-edit="meetings" data-id="${esc(x.id)}"><div style="display:flex;justify-content:space-between;gap:8px"><b>${esc(x.title)}</b><span class="who">${fd(x.date)}</span></div><span class="who" style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${esc(x.notes||"")}</span></div>`).join("")||'<div class="empty">No meetings yet.</div>'}</div></section>`;
+  const nCols=parties.length+1;const span=Math.max(2,Math.floor(12/nCols));
+  return `<div class="fit rows2" style="--ocol:${span}">
+   <div class="phstrip">${PHASES.map((n,i)=>{const c=t.filter(x=>(Number(x.phase)||0)===i).length;return `<div class="ph ${i<ph?"done":i===ph?"cur":""}"><div class="bar"></div><div class="nm">${esc(n)}</div><div class="who">${i<ph?"Done":i===ph?"Now":""}${c?` · ${c} open`:""}</div></div>`}).join("")}
+    <div style="display:flex;gap:6px;flex-direction:column;align-items:flex-end"><div class="viewas" style="box-shadow:none;background:var(--pill);padding:3px"><button class="seg ${done?"":"on"}" data-filter="open">Open</button><button class="seg ${done?"on":""}" data-filter="done">Done</button></div>${S.role!=="partner"?'<button class="btn sm" data-new="tasks">Add task</button>':""}</div></div>
+   ${cols}${S.role!=="partner"?meet:""}</div>`.replace(/class="card ocol"/g,`class="card ocol" style="grid-column:span ${span}"`);
+},
+decisions(){
+  const d=vis("decisions"),pend=d.filter(x=>x.pending).sort((a,b)=>(a.neededBy||"9").localeCompare(b.neededBy||"9")),log=d.filter(x=>!x.pending).sort((a,b)=>(b.date||"").localeCompare(a.date||""));
+  return `<div class="fit rows1"><section class="card c7"><div class="card-h"><span class="label">Waiting for an answer<span class="n">${pend.length}</span></span>${S.role==="hci"?'<button class="btn sm" data-new="decisions">Ask a question</button>':""}</div><div class="scroll">${pend.map(x=>pendCard(x)).join("")||'<div class="empty">Nothing waiting. Every question on this project has an answer.</div>'}</div></section>
+  <section class="card c5"><div class="card-h"><span class="label">Decision log<span class="n">${log.length}</span></span>${S.role==="hci"?'<button class="btn sec sm" data-new="decisions" data-decided="1">Log a decision</button>':""}</div><div class="scroll">${log.map(x=>`<div class="li" style="align-items:flex-start;cursor:pointer" data-edit="decisions" data-id="${esc(x.id)}"><span class="who" style="width:52px;flex:none">${fd(x.date)}</span><span class="grow"><b>${esc(x.question)}</b><div class="who">${esc(x.answer||"")}${x.decidedBy?" · "+esc(x.decidedBy):""}</div></span></div>`).join("")||'<div class="empty">No decisions logged yet.</div>'}</div></section></div>`;
+},
+config(p){
+  const comp=ofP("components",p.id);const dev=ofP("devices",p.id);
+  const cnt={};comp.forEach(c=>cnt[c.status]=(cnt[c.status]||0)+1);
+  const rows=CCAT.map(cat=>{const items=comp.filter(c=>(catOf(c).category||c.category)===cat).sort((a,b)=>(catOf(a).name||"").localeCompare(catOf(b).name||""));if(!items.length)return "";
+    return `<tr class="grp"><td colspan="7">${esc(cat)} · ${items.length}</td></tr>`+items.map(c=>{const k=catOf(c);const dt=k.deviceType;const have=dt?dev.filter(d=>d.type===dt&&(d.status==="installed"||d.status==="online")).length:null;
+      return `<tr class="click" data-edit="components" data-id="${esc(c.id)}"><td><b>${esc(k.name||c.name||"Removed item")}</b>${c.detail?`<div class="who">${esc(c.detail)}</div>`:""}</td><td class="who">${esc([k.vendor,k.sku].filter(Boolean).join(" · "))}</td><td class="num">${c.qty!==""&&c.qty!=null?`<b>${esc(c.qty)}</b>`:'<span class="pill warn">Qty needed</span>'}</td><td class="who">${BASIS[c.basis]||""}</td><td>${cPill(c.status)}</td><td class="num">${have!=null?`${have}${c.qty?` / ${esc(c.qty)}`:""}`:""}</td><td class="who">${esc(c.notes||"")}</td></tr>`}).join("")}).join("");
+  const edit=S.role==="hci";
+  return `<div class="grid"><section class="card c12"><div class="card-h"><span class="label">Site facts</span>${edit?`<button class="btn sec sm" data-edit="projects" data-id="${esc(p.id)}">Edit</button>`:""}</div><dl class="kv"><dt>Beds</dt><dd>${esc(p.beds||"Not set")}</dd><dt>Rooms</dt><dd>${esc(p.rooms||"Not set")}</dd><dt>Units</dt><dd>${esc(p.units||"Not set")}</dd><dt>Dealer</dt><dd>${esc(p.dealer||"None")}</dd></dl>
+   <div class="hint">Quantities fill in from these counts when you add a component priced per bed, room or unit.</div></section>
+  <section class="card c12"><div class="card-h"><div class="statusrow">${opt(CSTATUS).filter(([k])=>cnt[k]).map(([k,l])=>`${cPill(k,`${l} ${cnt[k]}`)}`).join("")||'<span class="who">No components yet</span>'}</div>${edit?'<span class="push"><button class="btn sec" data-go="admin:catalog">Edit catalog</button><button class="btn" data-new="components">Add component</button></span>':""}</div>
+  <div class="tbl-wrap"><table><thead><tr><th>Component</th><th>Vendor · part</th><th class="num">Qty</th><th>Basis</th><th>Status</th><th class="num">Installed</th><th>Notes</th></tr></thead><tbody>${rows||'<tr><td colspan="7" class="empty">No components yet. Add apps, hardware, integrations, server and services from the catalog.</td></tr>'}</tbody></table></div>
+  <div class="hint">Installed counts come from the installed base, so hardware and apps show how many are actually in the rooms against what was configured.</div></section></div>`;
+},
+installed(p){
+  const d=ofP("devices",p.id).sort((a,b)=>(a.unit||"").localeCompare(b.unit||"")||String(a.room||"").localeCompare(String(b.room||""),undefined,{numeric:true}));
+  const net=netOK();const shots=ofP("shots",p.id).sort((a,b)=>(b.takenAt||"").localeCompare(a.takenAt||""));
+  const byType={};d.forEach(x=>byType[x.type||"Other"]=(byType[x.type||"Other"]||0)+1);
+  const m=v=>net?`<span class="mono">${esc(v||"")}</span>`:'<span class="masked">hidden</span>';
+  const sc={};shots.forEach(s=>sc[s.deviceId]=(sc[s.deviceId]||0)+1);
+  return `<div class="filters"><span class="who">${d.length} devices${Object.keys(byType).length?" · "+opt(byType).map(([k,v])=>`${v} ${esc(DEVTYPES[k]||k)}`).join(" · "):""}</span><span class="push">${S.role==="hci"?'<label class="btn sec" for="csvIn" style="cursor:pointer">Import CSV</label><input type="file" id="csvIn" accept=".csv,text/csv" hidden>':""}${S.dl&&net?'<button class="btn sec" data-act="export">Export CSV</button>':""}${S.role==="hci"?'<button class="btn" data-new="devices">Add device</button>':""}</span></div>
+  <section class="card"><div class="tbl-wrap"><table><thead><tr><th>Unit</th><th>Room</th><th>Device</th><th>Model</th><th>Serial</th><th>MAC</th><th>IP</th><th>VLAN</th><th>OS / firmware</th><th>Apps</th><th>Status</th><th class="num">Shots</th></tr></thead><tbody>
+  ${d.map(x=>`<tr class="click" data-device="${esc(x.id)}"><td>${esc(x.unit)}</td><td><b>${esc(x.room)}</b>${x.bed?" "+esc(x.bed):""}${x.example?' <span class="pill ex">Example</span>':""}</td><td>${esc(DEVTYPES[x.type]||x.type||"")}</td><td>${esc(x.model)}</td><td><span class="mono">${esc(x.serial)}</span></td><td>${m(x.mac)}</td><td>${m(x.ip)}</td><td>${m(x.vlan)}</td><td>${esc(x.os)}</td><td>${opt(x.apps||{}).map(([a,v])=>`<span class="pill hci">${esc(a)} <span class="mono" style="font-size:11px">${esc(v)}</span></span>`).join(" ")}</td><td>${devStatus(x.status)}</td><td class="num">${sc[x.id]||""}</td></tr>`).join("")||'<tr><td colspan="12" class="empty">No devices yet. Add them one at a time or import a CSV with columns unit, room, bed, type, model, serial, mac, ip, vlan, hostname, os, apps, status.</td></tr>'}
+  </tbody></table></div><div class="hint">Click a device to edit it and add screenshots. IP addresses, MACs and VLANs show only to HCI and the customer's IT team.</div></section>
+  <section class="card" style="margin-top:16px"><div class="card-h"><span class="label">Latest screenshots<span class="n">${shots.length}</span></span></div>${shots.length?`<div class="shots">${shots.slice(0,18).map(shotTile).join("")}</div>`:'<div class="empty">No screenshots yet. Open a device to upload one.</div>'}</section>`;
+},
+access(p){
+  if(!netOK())return '<div class="empty">Not shared with this portal.</div>';
+  const a=ofP("access",p.id),n=ofP("network",p.id);const edit=S.role==="hci";
+  const M={vpn:"VPN",teamviewer:"TeamViewer",jump:"Jump box",rdp:"RDP",ssh:"SSH",web:"Web console",other:"Other"};
+  const st={working:["good","Working"],pending:["warn","Pending"],broken:["bad","Not working"]};
+  return `<div class="warnbox">Never put passwords, keys or MFA seeds here. Record where the password is kept, such as the password manager entry, and keep the secret there.</div>
+  <div class="grid"><section class="c12"><div class="filters"><span class="label">Remote access<span class="n">${a.length}</span></span><span class="push">${edit?'<button class="btn" data-new="access">Add remote access</button>':""}</span></div>
+   <div class="icards">${a.map(x=>`<div class="icard" data-edit="access" data-id="${esc(x.id)}"><div class="label">${esc(M[x.method]||x.method||"")}</div><div class="sys">${esc(x.name)}</div><dl class="kv"><dt>Endpoint</dt><dd class="mono" style="white-space:normal">${esc(x.endpoint||"Not set")}</dd><dt>Account</dt><dd>${esc(x.account||"")}</dd><dt>Password</dt><dd>${esc(x.credentialLocation||"Not recorded")}</dd><dt>Contact</dt><dd>${esc(x.contact||"")}</dd></dl>${x.notes?`<p class="who">${esc(x.notes)}</p>`:""}<div class="foot">${x.status?`<span class="pill ${st[x.status]?.[0]||""}">${st[x.status]?.[1]||""}</span>`:""}${x.lastVerified?`<span class="pill">Verified ${fd(x.lastVerified)}</span>`:""}</div></div>`).join("")||'<div class="empty">No remote access recorded.</div>'}</div></section>
+  <section class="card c12"><div class="card-h"><span class="label">Networks<span class="n">${n.length}</span></span>${edit?'<button class="btn sec" data-new="network">Add network</button>':""}</div><div class="tbl-wrap"><table><thead><tr><th>Network</th><th>VLAN</th><th>Subnet</th><th>Gateway</th><th>DNS</th><th>Addressing</th><th>Firewall and ports</th><th>Notes</th></tr></thead><tbody>${n.map(x=>`<tr class="click" data-edit="network" data-id="${esc(x.id)}"><td><b>${esc(x.name)}</b></td><td class="mono">${esc(x.vlan)}</td><td class="mono">${esc(x.subnet)}</td><td class="mono">${esc(x.gateway)}</td><td class="mono">${esc(x.dns)}</td><td>${esc({static:"Static",dhcp:"DHCP",reserved:"Reservations"}[x.dhcp]||"")}</td><td>${esc(x.ports)}</td><td class="who">${esc(x.notes)}</td></tr>`).join("")||'<tr><td colspan="8" class="empty">No networks recorded.</td></tr>'}</tbody></table></div></section></div>`;
+},
+integrations(){
+  const i=vis("interfaces");
+  return `<div class="filters"><span class="who">One card per interface. Vendors work on their own card in the partner portal.</span><span class="push">${S.role==="hci"?'<button class="btn" data-new="interfaces">Add integration</button>':""}</span></div><div class="icards">${i.map(icard).join("")||'<div class="empty">No integrations logged.</div>'}</div>`;
+},
+meetings(){
+  const m=vis("meetings").sort((a,b)=>(b.date||"").localeCompare(a.date||""));
+  return `<section class="card"><div class="card-h"><span class="label">Meetings<span class="n">${m.length}</span></span>${S.role==="hci"?'<button class="btn" data-new="meetings">Add meeting</button>':""}</div>
+  ${m.map(x=>`<div class="mtg" data-edit="meetings" data-id="${esc(x.id)}"><div class="mh"><span class="mt">${esc(x.title)}</span><span class="who">${fdy(x.date)}${x.visibility==="internal"?' <span class="pill int">HCI only</span>':""}</span></div>${x.attendees?`<div class="who" style="margin-top:4px">${esc(x.attendees)}</div>`:""}<div class="body">${esc(x.notes||"")}</div>${x.undecided?`<div class="hint">Not decided: ${esc(x.undecided)}</div>`:""}</div>`).join("")||'<div class="empty">No meetings yet.</div>'}</section>`;
+},
+changelog(p){
+  const rel=S.cols.releases.slice().sort((a,b)=>(b.date||"").localeCompare(a.date||""));
+  const dep=ofP("deployments",p.id).sort((a,b)=>(b.date||"").localeCompare(a.date||""));
+  const cur={};ofP("devices",p.id).forEach(d=>opt(d.apps||{}).forEach(([a,v])=>{cur[a]=cur[a]||{};cur[a][v]=(cur[a][v]||0)+1}));
+  return `<div class="grid"><section class="card c12"><div class="card-h"><span class="label">Installed on this project</span>${S.role==="hci"?'<button class="btn" data-act="deploy">Log deployment</button>':""}</div>
+   ${Object.keys(cur).length?`<div class="icards">${opt(cur).map(([a,vs])=>`<div class="icard flat" style="cursor:default"><div class="sys">${esc(a)}</div><div class="foot">${opt(vs).map(([v,n])=>`<span class="pill hci"><span class="mono" style="font-size:11px">${esc(v)}</span> on ${n}</span>`).join("")}</div></div>`).join("")}</div>`:'<div class="empty">No app versions recorded on devices yet.</div>'}</section>
+  <section class="card c7"><div class="card-h"><span class="label">Deployments<span class="n">${dep.length}</span></span></div><div class="tbl-wrap"><table><thead><tr><th>Date</th><th>App</th><th>Version</th><th>From</th><th>Devices</th><th>By</th><th>Result</th></tr></thead><tbody>${dep.map(x=>`<tr><td>${fd(x.date)}</td><td>${esc(x.app)}</td><td class="mono">${esc(x.version)}</td><td class="mono">${esc(x.prevVersion||"")}</td><td>${esc(x.targets)}</td><td>${esc(x.by)}</td><td>${x.rolledBack?'<span class="pill bad">Rolled back</span>':x.result==="issues"?'<span class="pill warn">Issues</span>':'<span class="pill good">Success</span>'}</td></tr>`).join("")||'<tr><td colspan="7" class="empty">No deployments logged yet.</td></tr>'}</tbody></table></div></section>
+  <section class="card c5"><div class="card-h"><span class="label">Release notes<span class="n">${rel.length}</span></span><button class="btn sec sm" data-go="admin:releases">Manage</button></div>${rel.slice(0,6).map(relItem).join("")||'<div class="empty">No releases yet.</div>'}</section></div>`;
+},
+audit(p){
+  const rows=ofP("audit",p.id).sort((a,b)=>(b.at||"").localeCompare(a.at||""));
+  const f=S.afilter||"all";const cols=[...new Set(rows.map(r=>r.col))];
+  const shown=rows.filter(r=>f==="all"||r.col===f).slice(0,300);
+  const L={create:"Added",update:"Changed",delete:"Deleted"};
+  return `<div class="filters"><button class="fchip ${f==="all"?"on":""}" data-afilter="all">All</button>${cols.map(c=>`<button class="fchip ${f===c?"on":""}" data-afilter="${esc(c)}">${esc(TITLES[c]||c)}</button>`).join("")}<span class="push">${S.dl&&rows.length?'<button class="btn sec" data-act="exportaudit">Export CSV</button>':""}</span></div>
+  <section class="card"><div class="card-h"><span class="label">History<span class="n">${rows.length}</span></span><span class="who">Every add, change and delete on this project, who did it and what changed</span></div>
+  <div class="tbl-wrap"><table><thead><tr><th>When</th><th>Who</th><th>What</th><th>Record</th><th>Changes</th></tr></thead><tbody>${shown.map(r=>`<tr><td class="due">${fdt(r.at)}</td><td>${esc(r.by||"")}</td><td><span class="pill ${r.action==="delete"?"bad":r.action==="create"?"good":""}">${L[r.action]||esc(r.action)}</span><div class="who" style="margin-top:4px">${esc(TITLES[r.col]||r.col)}</div></td><td>${r.action!=="delete"&&byId(r.col,r.docId)?`<span data-edit="${esc(r.col)}" data-id="${esc(r.docId)}" style="cursor:pointer;font-weight:800">${esc(r.title||"")}</span>`:esc(r.title||"")}</td><td>${(r.changes||[]).map(c=>`<div><span class="who">${esc(fieldLabel(r.col,c.field))}:</span> ${chg(fmtVal(r.col,c.field,c.from))} <span class="who">to</span> ${chg(fmtVal(r.col,c.field,c.to))}</div>`).join("")}${r.note?`<div class="who">${esc(r.note)}</div>`:""}</td></tr>`).join("")||'<tr><td colspan="5" class="empty">No changes recorded yet. Every save from here on is logged with who made it.</td></tr>'}</tbody></table></div></section>`;
+},
+people(p){
+  const ppl=ofP("people",p.id).sort((a,b)=>Object.keys(PARTIES).indexOf(a.party)-Object.keys(PARTIES).indexOf(b.party));
+  return `<section class="card"><div class="card-h"><span class="label">Project team<span class="n">${ppl.length}</span></span>${S.role==="hci"?'<button class="btn" data-new="people">Add person</button>':""}</div><div class="tbl-wrap"><table><thead><tr><th>Name</th><th>Organization</th><th>Role</th><th>Email</th><th>Party</th></tr></thead><tbody>${ppl.map(x=>`<tr class="click" data-edit="people" data-id="${esc(x.id)}"><td><b>${esc(x.name)}</b></td><td>${esc(x.org)}</td><td>${esc(x.role)}</td><td>${esc(x.email||"")}</td><td><span class="pill ${esc(x.party)}">${PARTIES[x.party]||""}</span></td></tr>`).join("")}</tbody></table></div></section>`;
+}
+};
+
+/* admin */
+const ADMIN={
+catalog(){
+  const c=S.cols.catalog;
+  const used={};S.cols.components.forEach(x=>used[x.catalogId]=(used[x.catalogId]||0)+1);
+  return head("Component catalog","Everything that can go into a project. Projects configure from this list.",'<button class="btn" data-new="catalog">Add item</button>')+`<section class="card"><div class="tbl-wrap"><table><thead><tr><th>Item</th><th>Vendor</th><th>SKU or part</th><th>Default basis</th><th>Counts as device</th><th class="num">Projects</th><th>Status</th></tr></thead><tbody>
+  ${CCAT.map(cat=>{const items=c.filter(x=>x.category===cat).sort((a,b)=>(a.name||"").localeCompare(b.name||""));if(!items.length)return "";return `<tr class="grp"><td colspan="7">${esc(cat)} · ${items.length}</td></tr>`+items.map(x=>`<tr class="click" data-edit="catalog" data-id="${esc(x.id)}"><td><b>${esc(x.name)}</b>${x.notes?`<div class="who">${esc(x.notes)}</div>`:""}</td><td>${esc(x.vendor)}</td><td class="mono">${esc(x.sku)}</td><td>${BASIS[x.basis]||""}</td><td>${esc(DEVTYPES[x.deviceType]||"")}</td><td class="num">${used[x.id]||""}</td><td>${x.active===false?'<span class="pill">Retired</span>':'<span class="pill good">Available</span>'}</td></tr>`).join("")}).join("")}
+  </tbody></table></div><div class="hint">Pricing stays in HubSpot quotes. The catalog holds what a component is and how it is counted, so configurations stay consistent across projects.</div></section>`;
+},
+template(){
+  const t=S.cols.template.slice().sort((a,b)=>(a.phase-b.phase)||((a.order||0)-(b.order||0)));
+  return head("Project template","Every new project starts with these tasks.",'<button class="btn" data-new="template">Add template task</button>')+`<section class="card">${PHASES.map((n,i)=>{const it=t.filter(x=>Number(x.phase)===i);return `<div class="phase-h"><h3>${esc(n)}</h3><span class="pill">${it.length}</span></div><div class="rows">${it.map(x=>`<div class="row"><span></span><div><div class="t" data-edit="template" data-id="${esc(x.id)}">${esc(x.title)}</div></div><div class="right"><span class="pill ${esc(x.party)}">${PARTIES[x.party]||""}</span></div></div>`).join("")||'<div class="empty">No tasks in this phase.</div>'}</div>`}).join("")}</section>`;
+},
+team(){
+  const t=S.cols.team.slice().sort((a,b)=>(a.name||"").localeCompare(b.name||""));
+  const load=n=>S.cols.tasks.filter(x=>x.status!=="done"&&(x.owner||"").includes(n.split(" ")[0])).length;
+  return head("HCI team","Owners you can assign across every project.",'<button class="btn" data-new="team">Add person</button>')+`<section class="card"><div class="tbl-wrap"><table><thead><tr><th>Name</th><th>Role</th><th>Email</th><th class="num">Open tasks</th><th>Leads</th></tr></thead><tbody>${t.map(x=>`<tr class="click" data-edit="team" data-id="${esc(x.id)}"><td><b>${esc(x.name)}</b></td><td>${esc(x.role)}</td><td>${esc(x.email)}</td><td class="num">${load(x.name)}</td><td class="who">${active().filter(p=>(p.lead||"").includes(x.name.split(" ")[0])).map(p=>esc(p.name)).join(", ")}</td></tr>`).join("")}</tbody></table></div><div class="hint">Portal logins for customers, dealers and partners come with next week's portal release.</div></section>`;
+},
+releases(){
+  const rel=S.cols.releases.slice().sort((a,b)=>(b.date||"").localeCompare(a.date||""));
+  return head("Releases","Release notes shared across every project.",'<button class="btn" data-new="releases">Add release</button>')+`<section class="card">${rel.map(relItem).join("")||'<div class="empty">No releases yet.</div>'}</section>`;
+},
+projects(){
+  const ps=S.cols.projects.slice().sort((a,b)=>(a.status==="done")-(b.status==="done")||(a.name||"").localeCompare(b.name||""));
+  return head("All projects","Including completed projects.",'<button class="btn" data-act="newproj">New project</button>')+`<section class="card"><div class="tbl-wrap"><table><thead><tr><th>Project</th><th>Customer</th><th>Status</th><th>Go live</th><th>HCI lead</th><th>HubSpot</th></tr></thead><tbody>${ps.map(p=>`<tr class="click" data-edit="projects" data-id="${esc(p.id)}"><td><b>${esc(p.name)}</b></td><td>${esc(p.customer)}</td><td>${stPill(p.status)}</td><td>${fdy(p.goLive)}</td><td>${esc(p.lead)}</td><td class="who">${esc(p.hubspot)}</td></tr>`).join("")}</tbody></table></div><div class="hint">Set a project to Complete to move it out of the portfolio.</div></section>`;
+}
+};
+
+/* audit trail: every create, change and delete, with who and what changed */
+const AUDIT_SKIP=new Set(["audit","comments"]);
+const SKIPF=new Set(["updatedAt","createdAt","history","order"]);
+function titleOf(col,d){d=d||{};return col==="tasks"?d.title:col==="decisions"?d.question:col==="interfaces"?d.system:col==="devices"?"Room "+(d.room||"")+" "+(DEVTYPES[d.type]||d.type||""):col==="meetings"?d.title:col==="components"?(catOf(d).name||d.catalogId||"Component"):col==="projects"?d.name:(col==="releases"||col==="deployments")?(d.app||"")+" "+(d.version||""):col==="shots"?"Screenshot"+(d.caption?" · "+d.caption:""):col==="template"?d.title:d.name||col}
+function diffDocs(a,b){const out=[];const keys=new Set([...Object.keys(a||{}),...Object.keys(b||{})]);for(const k of keys){if(SKIPF.has(k))continue;const x=a?a[k]:undefined,y=b?b[k]:undefined;if(JSON.stringify(x??"")!==JSON.stringify(y??""))out.push({field:k,from:x??"",to:y??""})}return out}
+async function logAudit(col,id,action,before,after,note){
+  if(window.HUB_SERVER_AUDIT||AUDIT_SKIP.has(col)||!S.db)return;
+  const doc=after||before||{};const pid=doc.projectId||(col==="projects"?id:"");
+  const changes=action==="update"?diffDocs(before,after):[];
+  if(action==="update"&&!changes.length&&!note)return;
+  const entry={projectId:pid,col,docId:id,action,by:S.me||"",at:now(),title:titleOf(col,doc),changes:changes.slice(0,40),note:note||""};
+  try{const r=await S.db.collection("audit").add(entry);if(!S.cols.audit.some(x=>x.id===r.id))S.cols.audit.push(Object.assign({id:r.id},entry))}catch(e){console.warn("audit",e)}
+}
+const strip=d=>{if(!d)return null;const b=Object.assign({},d);delete b.id;return b};
+async function setDoc(col,id,data,note){const before=strip(byId(col,id));await S.db.collection(col).doc(id).set(data);await logAudit(col,id,before?"update":"create",before,data,note)}
+async function addDoc(col,data,note){const r=await S.db.collection(col).add(data);await logAudit(col,r.id,"create",null,data,note);return r}
+async function delDoc(col,id,note){const before=strip(byId(col,id));await S.db.collection(col).doc(id).delete();await logAudit(col,id,"delete",before,null,note)}
+function chg(v){if(v===""||v==null)return '<span class="masked">empty</span>';if(typeof v==="object")v=Object.entries(v).map(([k,x])=>k+" "+x).join(", ")||"empty";v=String(v);if(v.length>90)v=v.slice(0,90)+"…";return esc(v)}
+function fieldLabel(col,k){const f=(FORMS[col]||[]).find(x=>x[0]===k);return f?f[1]:k==="apps"?"Installed apps":k==="pending"?"Status":k==="answer"?"Decision":k==="projectId"?"Project":k}
+function fmtVal(col,k,v){if(k==="phase"&&typeof v==="number")return PHASES[v]||v;if(k==="pending")return v?"Waiting for an answer":"Decided";const f=(FORMS[col]||[]).find(x=>x[0]===k);if(f&&f[2]==="select"&&f[5]&&!Array.isArray(f[5])&&typeof f[5]==="object"&&f[5][String(v)])return f[5][String(v)];if(k==="catalogId")return (byId("catalog",v)||{}).name||v;return v}
+
+/* conversation */
+const BUBBLE='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>';
+const FIC={comment:"M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z",decision:"M20 6L9 17l-5-5",task:"M12 2a10 10 0 1 0 0 20a10 10 0 1 0 0-20M12 6a6 6 0 1 0 0 12a6 6 0 1 0 0-12M12 10a2 2 0 1 0 0 4a2 2 0 1 0 0-4",shot:"M5 3h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zM8.5 7a1.5 1.5 0 1 0 0 3a1.5 1.5 0 1 0 0-3M21 15l-5-5L5 21",deploy:"M23 4v6h-6M1 20v-6h6M3.5 9a9 9 0 0 1 14.9-3.4L23 10M1 14l4.6 4.4A9 9 0 0 0 20.5 15",meeting:"M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2zM16 2v4M8 2v4M3 10h18"};
+function fdt(iso){if(!iso)return "";const d=new Date(iso);if(isNaN(d))return esc(iso);return d.toLocaleDateString("en-US",{day:"numeric",month:"short"})+" "+d.toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit"})}
+function recTitle(type,id){const r=byId(type,id);if(type==="projects")return "Project";if(!r)return "(removed)";
+  return type==="tasks"?r.title:type==="decisions"?r.question:type==="interfaces"?r.system:type==="devices"?"Room "+(r.room||"")+" "+(DEVTYPES[r.type]||""):type==="meetings"?r.title:type==="components"?(catOf(r).name||"Component"):r.name||type}
+function canSeeComment(c){
+  if(S.role==="hci")return true;if(c.visibility==="internal")return false;
+  if(c.recordType==="projects")return S.role!=="partner";
+  const r=byId(c.recordType,c.recordId);if(!r)return false;
+  if(S.role==="partner")return (c.recordType==="tasks"&&r.party==="partner")||c.recordType==="interfaces";
+  if(r.visibility==="internal")return false;
+  if(S.role==="dealer"&&(c.recordType==="access"||c.recordType==="network"))return false;
+  return true;
+}
+const threadOf=(type,id)=>S.cols.comments.filter(c=>c.recordType===type&&c.recordId===id&&canSeeComment(c)).sort((a,b)=>(a.at||"").localeCompare(b.at||""));
+const cntPill=(type,id)=>{const n=threadOf(type,id).length;return n?`<span class="cnt">${BUBBLE}${n}</span>`:""};
+function threadHTML(type,id){
+  const list=threadOf(type,id);const canPost=S.role!=="partner"||type==="tasks"||type==="interfaces";
+  return `<div class="thread">${list.map(c=>`<div class="cmt ${c.by&&c.by===S.me?"mine":""}"><div class="by">${esc(c.by||"Someone")}<span class="at">${fdt(c.at)}</span>${c.visibility==="internal"?'<span class="pill int">HCI only</span>':""}</div><div class="txt">${esc(c.text)}</div></div>`).join("")||'<div class="who">No comments yet.</div>'}</div>
+  ${canPost?`<div class="composer"><textarea id="cmtText" placeholder="Write a comment"></textarea><div class="opts">${S.role==="hci"?'<label><input type="checkbox" id="cmtInt"> HCI only</label>':""}</div><button type="button" class="btn sm" data-comment="${esc(type)}:${esc(id)}">Post</button></div>`:""}`;
+}
+async function postComment(type,id){
+  const ta=$("#cmtText");const text=(ta?.value||"").trim();if(!text){toast("Write something first");return}
+  if(!S.me){toast("Put your name in the sidebar first");const m=$("#meIn");if(m)m.focus();return}
+  const rec=type==="projects"?null:byId(type,id);
+  const internal=!!($("#cmtInt")?.checked)||!!(rec&&rec.visibility==="internal");
+  const doc={projectId:rec?rec.projectId:(type==="projects"?id:S.pid),recordType:type,recordId:id,text,by:S.me,at:now(),visibility:internal?"internal":"external"};
+  try{const r=await S.db.collection("comments").add(doc);if(!S.cols.comments.some(x=>x.id===r.id))S.cols.comments.push(Object.assign({id:r.id},doc));
+    const host=$("#threadHost");if(host)host.innerHTML=threadHTML(type,id);else render();toast("Posted")}
+  catch(e){toast("Not posted: "+(e.code||e.message))}
+}
+function feedItems(pid,withP){
+  const out=[];const push=o=>{o.pid=pid;o.withP=withP;out.push(o)};
+  S.cols.comments.filter(c=>c.projectId===pid&&canSeeComment(c)).forEach(c=>push({kind:"comment",label:c.recordType==="projects"?"Update":"Comment",at:c.at,by:c.by,text:c.text,type:c.recordType,id:c.recordId,internal:c.visibility==="internal"}));
+  ofP("decisions",pid).filter(d=>canSee(d,"decisions")&&S.role!=="partner").forEach(d=>(d.history||[]).forEach(h=>push({kind:"decision",label:h.what==="Question asked"?"Question":"Decision",at:h.at,by:h.by,type:"decisions",id:d.id,html:h.what==="Question asked"?esc(d.question):`<b>${esc(d.question)}</b> · ${esc(d.answer||h.what.replace(/^Decided: /,""))}`,internal:d.visibility==="internal"})));
+  ofP("tasks",pid).filter(t=>t.status==="done"&&t.updatedAt&&canSee(t,"tasks")).forEach(t=>push({kind:"task",label:"Done",at:t.updatedAt,by:t.owner,type:"tasks",id:t.id,text:"Marked done"+(t.note?" · "+t.note:""),internal:t.visibility==="internal"}));
+  if(S.role!=="partner"){
+    ofP("shots",pid).forEach(s=>push({kind:"shot",label:"Screenshot",at:s.takenAt,by:s.by,type:"devices",id:s.deviceId,text:s.caption||"",img:shotSrc(s),shotId:s.id}));
+    ofP("deployments",pid).forEach(x=>push({kind:"deploy",label:x.rolledBack?"Rolled back":"Deployed",at:x.createdAt||x.date,by:x.by,text:`${x.app} ${x.version} on ${x.targets}`}));
+    ofP("meetings",pid).filter(m=>canSee(m,"meetings")).forEach(m=>push({kind:"meeting",label:"Meeting",at:m.createdAt||(m.date?m.date+"T12:00:00":""),by:"",type:"meetings",id:m.id,text:(m.notes||"").slice(0,180)+((m.notes||"").length>180?"…":""),internal:m.visibility==="internal"}));
+  }
+  return out.filter(i=>i.at).sort((a,b)=>String(b.at).localeCompare(String(a.at))).slice(0,80);
+}
+function feedItem(i){
+  return `<div class="fitem"><div class="fic ${i.kind}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="${FIC[i.kind]}"/></svg></div><div>
+   <div class="fh"><span>${esc(i.label)}</span>${i.type&&i.type!=="projects"?`<span class="rec" data-edit="${esc(i.type)}" data-id="${esc(i.id)}">${esc(recTitle(i.type,i.id))}</span>`:""}${i.by?`<span>· ${esc(i.by)}</span>`:""}<span class="at">· ${fdt(i.at)}</span>${i.internal?'<span class="pill int">HCI only</span>':""}${i.withP?projTag(i.pid):""}</div>
+   <div class="ft">${i.html||esc(i.text||"")}</div>${i.img?`<img src="${i.img}" alt="${esc(i.text||"Screenshot")}" data-shot="${esc(i.shotId)}" loading="lazy">`:""}</div></div>`;
+}
+
+/* pieces */
+const catOf=c=>byId("catalog",c.catalogId)||{};
+function cPill(s,label){const m={planned:"",quoted:"warn",ordered:"hci",received:"hci",in_progress:"hci",installed:"good",live:"good",deferred:"",removed:"bad"};return `<span class="pill ${m[s]||""}">${esc(label||CSTATUS[s]||s||"")}</span>`}
+function devStatus(s){const m={planned:"",shipped:"warn",installed:"hci",online:"good",offline:"bad"};const l={planned:"Planned",shipped:"Shipped",installed:"Installed",online:"Online",offline:"Offline"};return s?`<span class="pill ${m[s]||""}">${l[s]||esc(s)}</span>`:""}
+function projTag(pid){const p=byId("projects",pid);return p?`<span class="pill proj" data-go="project:overview:${esc(p.id)}">${esc(p.name)}</span>`:""}
+function taskRow(t,withP){
+  const d=t.status==="done";
+  return `<div class="row"><button class="chk ${d?"on":""}" data-toggle="${esc(t.id)}" aria-label="${d?"Reopen":"Mark done"}">${d?check:""}</button>
+  <div><div class="t ${d?"done-t":""}" data-edit="tasks" data-id="${esc(t.id)}">${esc(t.title)}</div><div class="meta">${withP?projTag(t.projectId):""}<span class="who">${esc(t.owner||"Unassigned")}</span><span class="pill ${esc(t.party)}">${PARTIES[t.party]||""}</span>${t.visibility==="internal"?'<span class="pill int">HCI only</span>':""}${cntPill("tasks",t.id)}${t.note?`<span class="who">· ${esc(t.note)}</span>`:""}</div></div>
+  <div class="right">${t.due?`<span class="due ${over(t)?"over":""}">${over(t)?"Overdue · ":""}${fd(t.due)}</span>`:""}</div></div>`;
+}
+function pendCard(d,withP){
+  const canAns=S.role==="hci"||S.role==="customer";
+  const due=d.neededBy?`<span class="due ${d.neededBy<today()?"over":""}">Needed by ${fd(d.neededBy)}</span>`:"";
+  return `<div class="pend" id="pc_${esc(d.id)}"><div class="meta" style="margin-top:0">${withP?projTag(d.projectId):""}${d.askedOf?`<span class="who">Asked of ${esc(d.askedOf)}</span>`:""}${due}${d.visibility==="internal"?'<span class="pill int">HCI only</span>':""}${cntPill("decisions",d.id)}</div>
+  <div class="q">${esc(d.question)}</div>${d.defaultIfSilent?`<div class="df">Default if no answer: ${esc(d.defaultIfSilent)}</div>`:""}
+  ${canAns?`${d.defaultIfSilent?`<div class="quick"><button class="qbtn" data-usedefault="${esc(d.id)}">Accept the default</button></div>`:""}<div class="ans"><textarea id="ans_${esc(d.id)}" placeholder="Type the decision"></textarea><input id="by_${esc(d.id)}" placeholder="Decided by" list="owners" value="${esc(S.me||"")}"><button class="btn" data-answer="${esc(d.id)}">Record decision</button></div>`:""}
+  <div class="quick">${S.role==="hci"?`<button class="qbtn" data-edit="decisions" data-id="${esc(d.id)}">Edit question</button>`:""}<button class="qbtn" data-edit="decisions" data-id="${esc(d.id)}">Discuss</button></div></div>`;
+}
+function logTable(log,withP){
+  if(!log.length)return '<div class="empty">No decisions logged yet.</div>';
+  return `<div class="tbl-wrap"><table><thead><tr><th>Date</th>${withP?"<th>Project</th>":""}<th>Question</th><th>Decision</th><th>Decided by</th></tr></thead><tbody>${log.map(x=>`<tr class="click" data-edit="decisions" data-id="${esc(x.id)}"><td class="due">${fd(x.date)}</td>${withP?`<td>${esc(byId("projects",x.projectId)?.name||"")}</td>`:""}<td>${esc(x.question)}</td><td><b>${esc(x.answer||"")}</b>${x.source?`<div class="who">${esc(x.source)}</div>`:""}</td><td class="who">${esc(x.decidedBy||"")}</td></tr>`).join("")}</tbody></table></div>`;
+}
+function icard(i){
+  const c={live:"good",in_progress:"hci",testing:"hci",blocked:"bad",confirm:"warn",out:"",not_started:"",deferred:""}[i.status]||"";
+  return `<div class="icard" data-edit="interfaces" data-id="${esc(i.id)}"><div class="label">${esc(i.type||"")}</div><div class="sys">${esc(i.system)}</div><p>${esc(i.note||"")}</p><div class="foot"><span class="pill ${c}">${ISTATUS[i.status]||esc(i.status)||""}</span>${i.vendor?`<span class="pill partner">${esc(i.vendor)}</span>`:""}${cntPill("interfaces",i.id)}</div></div>`;
+}
+function relItem(r){return `<div class="mtg" data-edit="releases" data-id="${esc(r.id)}"><div class="mh"><span class="mt">${esc(r.app)} <span class="mono">${esc(r.version)}</span>${r.example?' <span class="pill ex">Example</span>':""}</span><span class="who">${fdy(r.date)}</span></div><div class="body">${esc(r.notes||"")}</div>${r.knownIssues?`<div class="hint">Known issues: ${esc(r.knownIssues)}</div>`:""}</div>`}
+const shotSrc=s=>"/_blob/"+encodeURIComponent(s.assetId);
+function shotTile(s){const d=byId("devices",s.deviceId);return `<button class="shot" data-shot="${esc(s.id)}"><img src="${shotSrc(s)}" alt="${esc(s.caption||"Device screenshot")}" loading="lazy"><span>${d?`Room ${esc(d.room)} · `:""}${esc(s.caption||fd((s.takenAt||"").slice(0,10)))}</span></button>`}
+
+/* owners datalist */
+function ownersList(){const n=new Set();S.cols.team.forEach(x=>x.name&&n.add(x.name));if(S.pid)ofP("people",S.pid).forEach(x=>x.name&&n.add(x.name));return `<datalist id="owners">${[...n].map(x=>`<option value="${esc(x)}"></option>`).join("")}</datalist>`}
+
+/* forms */
+function editable(col,cur){
+  if(S.role==="hci")return true;
+  if(col==="tasks")return S.role!=="partner"||cur.party==="partner";
+  if(col==="interfaces")return S.role==="partner";
+  return false;
+}
+function openForm(col,id,defaults){
+  const list=S.cols[col];
+  const cur=id?list.find(x=>x.id===id):Object.assign({},defaults||{});
+  if(!cur)return;
+  const ro=!editable(col,cur);
+  const vals=Object.assign({},cur);
+  if(col==="devices")vals.appsText=opt(cur.apps||{}).map(([a,v])=>a+" "+v).join(", ");
+  if(col==="decisions")vals.pending=String(cur.pending!==false);
+  if(col==="catalog")vals.active=String(cur.active!==false);
+  const hideNet=col==="devices"&&!netOK();
+  const fields=FORMS[col].filter(f=>!(hideNet&&["mac","ip","vlan","hostname"].includes(f[0])));
+  const fh=fields.map(([k,l,t,req,full,opts,list])=>{
+    const v=vals[k]??"";const idA=`f_${col}_${k}`;let inp;
+    if(t==="select"){const o0=typeof opts==="function"?opts():opts;const o=Array.isArray(o0)?o0.map((n,i)=>[String(i),n]):opt(o0);inp=`<select id="${idA}" name="${k}" ${ro?"disabled":""}>${o.map(([ov,ol])=>`<option value="${esc(ov)}" ${String(v)===ov?"selected":""}>${esc(ol)}</option>`).join("")}</select>`}
+    else if(t==="area")inp=`<textarea id="${idA}" name="${k}" ${ro?"readonly":""}>${esc(v)}</textarea>`;
+    else inp=`<input id="${idA}" name="${k}" type="${t}" value="${esc(v)}" ${list?`list="${list}"`:""} ${ro?"readonly":""}>`;
+    return `<div class="field ${full?"full":""}"><label for="${idA}">${esc(l)}</label>${inp}</div>`;
+  }).join("");
+  let extra="";
+  if(col==="devices"&&id){const sh=S.cols.shots.filter(s=>s.deviceId===id).sort((a,b)=>(b.takenAt||"").localeCompare(a.takenAt||""));
+    extra=`<h3>Screenshots <span class="n">${sh.length}</span></h3>${sh.length?`<div class="shots">${sh.map(shotTile).join("")}</div>`:'<div class="who">No screenshots yet.</div>'}${S.assets&&S.role==="hci"?`<div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;align-items:center"><input id="shotCap" placeholder="Caption, such as After 2.4 update" style="flex:1;min-width:180px;border:1px solid var(--line);background:var(--soft);border-radius:8px;padding:8px 10px"><label class="btn sec" for="shotIn" style="cursor:pointer">Upload screenshot</label><input type="file" id="shotIn" accept="image/*" hidden data-dev="${esc(id)}"></div>`:S.role==="hci"?'<div class="hint">Uploading needs edit access to the Hub.</div>':""}`}
+  if(col==="decisions"&&id&&cur.history&&cur.history.length){extra=`<h3>History</h3><div class="thread">${cur.history.slice().reverse().map(h=>`<div class="who">${fdt(h.at)} · ${esc(h.what)}${h.by?" · "+esc(h.by):""}</div>`).join("")}</div>`}
+  if(id&&(!GLOBAL.has(col)||col==="projects")&&(S.role!=="partner"||col==="tasks"||col==="interfaces")){extra+=`<h3>Conversation <span class="n">${threadOf(col,id).length}</span></h3><div id="threadHost">${threadHTML(col,id)}</div>`}
+  $("#modalRoot").innerHTML=`<div class="scrim" data-close="1"><form class="modal ${col==="devices"?"wide":""}" id="mform" novalidate><h2>${ro?"":id?"Edit ":"New "}${TITLES[col]}</h2><div class="fgrid">${fh}</div>${extra}
+   <div class="mfoot">${id&&!ro&&S.role==="hci"?'<button type="button" class="btn sec" id="delBtn">Delete</button>':""}<div class="r"><button type="button" class="btn sec" data-close="1">${ro?"Close":"Cancel"}</button>${ro?"":'<button type="submit" class="btn">Save</button>'}</div></div></form></div>`;
+  const form=$("#mform");
+  if(col==="components"){const sel=form.querySelector('[name="catalogId"]'),bs=form.querySelector('[name="basis"]'),q=form.querySelector('[name="qty"]');
+    const fill=(fromCat)=>{const c=byId("catalog",sel.value);if(fromCat&&c&&c.basis)bs.value=c.basis;const p=P()||{};const m={bed:p.beds,room:p.rooms,unit:p.units}[bs.value];if(m&&(!q.value||q.dataset.auto==="1")){q.value=m;q.dataset.auto="1"}};
+    sel.onchange=()=>fill(true);bs.onchange=()=>fill(false);q.oninput=()=>q.dataset.auto="0";if(!id)fill(true)}
+  const del=$("#delBtn");
+  if(del)del.onclick=async()=>{
+    if(del.dataset.arm!=="1"){del.dataset.arm="1";del.textContent="Click again to delete";del.className="btn danger";return}
+    try{await delDoc(col,id);closeModal();toast("Deleted")}catch(e){toast("Could not delete: "+(e.code||e.message))}
+  };
+  form.onsubmit=async ev=>{
+    ev.preventDefault();if(ro)return;
+    const fdta=new FormData(form);const out=Object.assign({},cur);delete out.id;
+    for(const [k,l,t,req] of fields){let v=fdta.get(k);if(v==null)continue;v=String(v).trim();if(req&&!v){toast("Fill in "+l.toLowerCase());return}
+      if(k==="phase")v=Number(v);else if(k==="pending"||k==="active")v=v==="true";else if(t==="number")v=v===""?"":Number(v);out[k]=v}
+    if(col==="devices"){out.apps=parseApps(out.appsText||"");delete out.appsText;delete out.example}
+    if(col==="releases")delete out.example;
+    if(col==="decisions"){const was=id&&cur.pending!==false;if(out.pending===false&&!out.date)out.date=today();if(!out.pending&&(!id||was)){out.history=(cur.history||[]).concat([{at:now(),what:"Decided: "+(out.answer||""),by:out.decidedBy||""}])}else if(!id){out.askedDate=today();out.history=[{at:now(),what:"Question asked"}]}}
+    if(!GLOBAL.has(col)&&!out.projectId)out.projectId=S.pid;
+    out.updatedAt=now();
+    try{
+      if(id)await setDoc(col,id,out);
+      else{out.createdAt=out.updatedAt;const r=await addDoc(col,out,col==="projects"?"Created with the project template":"");if(col==="projects"){await seedTemplate(r.id);S.pid=r.id;S.scope="project";S.view="overview";saveNav()}}
+      closeModal();toast("Saved");
+    }catch(e){toast("Not saved: "+(e.code||e.message))}
+  };
+}
+function parseApps(s){const o={};s.split(",").map(x=>x.trim()).filter(Boolean).forEach(x=>{const i=x.lastIndexOf(" ");if(i>0)o[x.slice(0,i).trim()]=x.slice(i+1).trim();else o[x]=""});return o}
+function closeModal(){$("#modalRoot").innerHTML="";render()}
+async function seedTemplate(pid){
+  const t=S.cols.template.slice().sort((a,b)=>(a.phase-b.phase)||((a.order||0)-(b.order||0)));
+  await Promise.all(t.map((x,i)=>S.db.collection("tasks").add({projectId:pid,title:x.title,party:x.party||"hci",phase:Number(x.phase)||0,status:"open",visibility:"external",owner:"",due:"",order:i,createdAt:now()})));
+}
+async function answer(id,useDefault){
+  const d=byId("decisions",id);if(!d)return;
+  const a=useDefault?d.defaultIfSilent:($("#ans_"+CSS.escape(id))?.value||"").trim();
+  const by=($("#by_"+CSS.escape(id))?.value||"").trim()||(useDefault?"Default applied":S.me||"");
+  if(!a){toast("Type the decision first");return}
+  const o=Object.assign({},d);delete o.id;
+  Object.assign(o,{pending:false,answer:a,decidedBy:by,date:today(),updatedAt:now(),history:(d.history||[]).concat([{at:now(),what:"Decided: "+a,by}])});
+  try{await setDoc("decisions",id,o,useDefault?"Default accepted":"Decision recorded");const i=S.cols.decisions.findIndex(x=>x.id===id);if(i>=0)S.cols.decisions[i]=Object.assign({id},o);if(document.activeElement&&document.activeElement.blur)document.activeElement.blur();render();toast("Decision logged")}catch(e){toast("Not saved: "+(e.code||e.message))}
+}
+function deployForm(){
+  const rel=S.cols.releases.slice().sort((a,b)=>(b.date||"").localeCompare(a.date||""));
+  if(!rel.length){toast("Add a release first");return}
+  const dev=ofP("devices",S.pid);const units=[...new Set(dev.map(d=>d.unit).filter(Boolean))];
+  $("#modalRoot").innerHTML=`<div class="scrim" data-close="1"><form class="modal" id="dform"><h2>Log deployment</h2><div class="fgrid">
+   <div class="field full"><label for="d_rel">Release</label><select id="d_rel" name="rel">${rel.map(r=>`<option value="${esc(r.id)}">${esc(r.app)} ${esc(r.version)}</option>`).join("")}</select></div>
+   <div class="field"><label for="d_scope">Devices</label><select id="d_scope" name="scope"><option value="app">Every device running this app</option>${units.map(u=>`<option value="u:${esc(u)}">Unit ${esc(u)}</option>`).join("")}</select></div>
+   <div class="field"><label for="d_date">Date</label><input id="d_date" type="date" name="date" value="${today()}"></div>
+   <div class="field"><label for="d_by">Deployed by</label><input id="d_by" name="by" list="owners"></div>
+   <div class="field"><label for="d_res">Result</label><select id="d_res" name="result"><option value="success">Success</option><option value="issues">Issues</option><option value="rolled">Rolled back</option></select></div>
+  </div><div class="mfoot"><div class="r"><button type="button" class="btn sec" data-close="1">Cancel</button><button class="btn" type="submit">Log it</button></div></div></form></div>`;
+  $("#dform").onsubmit=async ev=>{
+    ev.preventDefault();const f=new FormData(ev.target);const r=rel.find(x=>x.id===f.get("rel"));const scope=f.get("scope");const rolled=f.get("result")==="rolled";
+    const targets=dev.filter(d=>scope==="app"?(d.apps&&r.app in d.apps)||d.type===r.app:d.unit===scope.slice(2));
+    const prev=[...new Set(targets.map(d=>(d.apps||{})[r.app]).filter(Boolean))].join(", ");
+    try{
+      await addDoc("deployments",{projectId:S.pid,releaseId:r.id,app:r.app,version:r.version,prevVersion:prev,targets:`${targets.length} ${scope==="app"?"devices":"in unit "+scope.slice(2)}`,by:String(f.get("by")||""),date:String(f.get("date")),result:rolled?"rolled":f.get("result"),rolledBack:rolled,createdAt:now()});
+      if(!rolled)await Promise.all(targets.map(d=>{const o=Object.assign({},d);delete o.id;o.apps=Object.assign({},d.apps||{},{[r.app]:r.version});o.updatedAt=now();return setDoc("devices",d.id,o,`Deployed ${r.app} ${r.version}`)}));
+      closeModal();toast(`Logged on ${targets.length} devices`);
+    }catch(e){toast("Not saved: "+(e.code||e.message))}
+  };
+}
+function lightbox(id){
+  const s=byId("shots",id);if(!s)return;const d=byId("devices",s.deviceId);
+  $("#modalRoot").innerHTML=`<div class="scrim" data-close="1"><div class="modal wide lightbox"><h2>${d?`Room ${esc(d.room)} · ${esc(DEVTYPES[d.type]||d.type||"")}`:"Screenshot"}</h2><img src="${shotSrc(s)}" alt="${esc(s.caption||"Device screenshot")}"><div class="mfoot"><span class="who">${esc(s.caption||"")} · ${fdy((s.takenAt||"").slice(0,10))}${s.by?" · "+esc(s.by):""}</span><div class="r">${S.role==="hci"&&S.assets?`<button class="btn sec" id="delShot">Delete</button>`:""}${d?`<button class="btn sec" data-device="${esc(d.id)}">Open device</button>`:""}<button class="btn" data-close="1">Close</button></div></div></div></div>`;
+  const b=$("#delShot");if(b)b.onclick=async()=>{if(b.dataset.arm!=="1"){b.dataset.arm="1";b.textContent="Click again to delete";b.className="btn danger";return}
+    try{try{await S.assets.delete(s.assetId)}catch(_){}await delDoc("shots",s.id);closeModal();toast("Screenshot deleted")}catch(e){toast("Could not delete: "+(e.code||e.message))}};
+}
+async function uploadShot(file,devId){
+  if(!S.assets){toast("Uploading needs edit access");return}
+  const cap=($("#shotCap")?.value||"").trim();
+  try{toast("Uploading…");const r=await S.assets.upload(file);const dv=byId("devices",devId);
+    const doc={projectId:dv?dv.projectId:S.pid,deviceId:devId,assetId:r.id,caption:cap,takenAt:now(),by:S.me||""};
+    const ref=await addDoc("shots",doc,dv?"Room "+dv.room:"");
+    if(!S.cols.shots.some(x=>x.id===ref.id))S.cols.shots.push(Object.assign({id:ref.id},doc));
+    openForm("devices",devId);toast("Screenshot added")}
+  catch(e){toast("Upload failed: "+(e.code||e.message))}
+}
+function csvParse(txt){const rows=[];let r=[],c="",q=false;for(let i=0;i<txt.length;i++){const ch=txt[i];if(q){if(ch==='"'){if(txt[i+1]==='"'){c+='"';i++}else q=false}else c+=ch}else if(ch==='"')q=true;else if(ch===","){r.push(c);c=""}else if(ch==="\n"||ch==="\r"){if(ch==="\r"&&txt[i+1]==="\n")i++;r.push(c);rows.push(r);r=[];c=""}else c+=ch}if(c||r.length){r.push(c);rows.push(r)}return rows.filter(x=>x.some(v=>v.trim()))}
+async function importCSV(file){
+  const rows=csvParse(await file.text());if(rows.length<2){toast("The file has no rows");return}
+  const hd=rows[0].map(x=>x.trim().toLowerCase());const keys=["unit","room","bed","type","model","serial","mac","ip","vlan","hostname","os","apps","status"];let n=0;
+  for(const r of rows.slice(1)){const o={projectId:S.pid,createdAt:now()};keys.forEach(k=>{const i=hd.indexOf(k);if(i>=0)o[k]=(r[i]||"").trim()});o.apps=parseApps((o.apps||"").replace(/;/g,","));if(!o.room)continue;await addDoc("devices",o,"CSV import");n++}
+  toast(`Imported ${n} devices`);
+}
+async function exportCSV(){
+  const keys=["unit","room","bed","type","model","serial","mac","ip","vlan","hostname","os","apps","status"];
+  const q=v=>/[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;
+  const lines=[keys.join(",")].concat(ofP("devices",S.pid).map(d=>keys.map(k=>q(k==="apps"?opt(d.apps||{}).map(([a,v])=>a+" "+v).join("; "):String(d[k]??""))).join(",")));
+  try{await S.dl.save({filename:(P().name||"project").replace(/[^\w ]+/g,"").trim()+" installed base.csv",data:lines.join("\n")})}catch(e){if(e&&e.code!=="declined")toast("Export not available here")}
+}
+
+/* events */
+document.addEventListener("click",async e=>{
+  const t=e.target.closest("[data-go],[data-sub],[data-role],[data-filter],[data-ffilter],[data-afilter],[data-edit],[data-new],[data-toggle],[data-close],[data-act],[data-answer],[data-usedefault],[data-device],[data-shot],[data-comment]");
+  if(!t)return;
+  if(t.dataset.close){if(e.target===t||t.tagName==="BUTTON")closeModal();return}
+  if(t.dataset.go){e.stopPropagation();const s=t.dataset.go,i1=s.indexOf(":"),i2=s.indexOf(":",i1+1);const sc=s.slice(0,i1),vw=i2<0?s.slice(i1+1):s.slice(i1+1,i2),pid=i2<0?"":s.slice(i2+1);go(sc,vw,pid||S.pid);return}
+  if(t.dataset.sub){const [v,k]=t.dataset.sub.split(":");S.sub[v]=k;render();return}
+  if(t.dataset.role){if(S.locked)return;S.role=t.dataset.role;render();return}
+  if(t.dataset.filter){S.filter=t.dataset.filter;render();return}
+  if(t.dataset.ffilter){S.ffilter=t.dataset.ffilter;render();return}
+  if(t.dataset.afilter){S.afilter=t.dataset.afilter;render();return}
+  if(!S.db){toast("The Hub server is not reachable");return}
+  if(t.dataset.comment){const s=t.dataset.comment,i=s.indexOf(":");postComment(s.slice(0,i),s.slice(i+1));return}
+  if(t.dataset.answer){answer(t.dataset.answer,false);return}
+  if(t.dataset.usedefault){answer(t.dataset.usedefault,true);return}
+  if(t.dataset.toggle){const k=byId("tasks",t.dataset.toggle);if(!k||!editable("tasks",k))return;const o=Object.assign({},k);delete o.id;o.status=k.status==="done"?"open":"done";o.updatedAt=now();try{await setDoc("tasks",k.id,o)}catch(err){toast("Not saved: "+(err.code||err.message))}return}
+  if(t.dataset.device){openForm("devices",t.dataset.device);return}
+  if(t.dataset.shot){lightbox(t.dataset.shot);return}
+  if(t.dataset.edit){openForm(t.dataset.edit,t.dataset.id);return}
+  if(t.dataset.new){const p=P()||{};const d={tasks:{party:"hci",status:"open",visibility:"external",phase:Number(p.phase)||0},decisions:t.dataset.decided?{pending:false,date:today(),visibility:"external"}:{pending:true,visibility:"external"},meetings:{date:today(),visibility:"external"},interfaces:{status:"not_started"},people:{party:"customer"},devices:{status:"planned",type:"Door Sign"},releases:{date:today(),app:"Door Sign"},components:{status:"planned"},catalog:{category:"Software",basis:"each",active:true},access:{method:"vpn",status:"pending"},network:{dhcp:"static"},template:{phase:0,party:"hci",order:99},team:{}}[t.dataset.new];openForm(t.dataset.new,null,d);return}
+  if(t.dataset.act==="newproj"){openForm("projects",null,{status:"on_track",phase:0});return}
+  if(t.dataset.act==="deploy"){deployForm();return}
+  if(t.dataset.act==="export"){exportCSV();return}
+  if(t.dataset.act==="exportaudit"){exportAudit();return}
+});
+document.addEventListener("change",e=>{
+  if(e.target.id==="meIn"){S.me=e.target.value.trim();try{localStorage.setItem("hub.me",S.me)}catch(_){}toast(S.me?"Signed as "+S.me:"Name cleared");return}
+  if(e.target.id==="csvIn"&&e.target.files[0]){importCSV(e.target.files[0]).catch(err=>toast("Import failed: "+(err.code||err.message)));e.target.value=""}
+  if(e.target.id==="shotIn"&&e.target.files[0]){uploadShot(e.target.files[0],e.target.dataset.dev);e.target.value=""}
+});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&$("#modalRoot").innerHTML)closeModal()});
+document.addEventListener("focusout",e=>{if(e.target&&e.target.closest&&(e.target.closest(".pend")||e.target.id==="cmtText"||e.target.id==="meIn"))setTimeout(schedule,80)});
+
+/* documents: SharePoint through the Hub server (files.js) */
+const DOCTYPES=[["01","CON","Contracts, quotes, POs"],["02","DES","Design, mockups, floor plans"],["03","INT","Integration specs"],["04","NET","Network, VPN, site readiness"],["05","INS","Install photos, screenshots, punch lists"],["06","TRN","Training"],["07","APK","App builds and release notes"],["08","GOL","Go live and handoff"]];
+const DOCTYPE=Object.fromEntries(DOCTYPES.map(t=>[t[0],t]));
+const DOCROLE={dealer:["02","03","04","05","06","07","08"],partner:["03"]};
+const DOCS={};
+function docVisible(t){const r=DOCROLE[S.role];return !r||r.includes(t)}
+function docSize(n){n=Number(n)||0;return n>=1048576?(n/1048576).toFixed(1)+" MB":n>=1024?Math.round(n/1024)+" KB":n?n+" B":""}
+function docStamp(){const d=new Date();return d.getFullYear()+String(d.getMonth()+1).padStart(2,"0")+String(d.getDate()).padStart(2,"0")}
+function loadDocs(pid){const cur=DOCS[pid]||{};if(cur.loading)return;DOCS[pid]=Object.assign(cur,{loading:true,stale:false});
+  window.HUB_FILES.list(pid).then(j=>{DOCS[pid]={files:j.files||[],fileCode:j.fileCode,canRename:j.canRename,library:j.library,at:Date.now()};if(S.pid===pid&&S.view==="files")render()})
+  .catch(e=>{DOCS[pid]={err:e.message||"Could not load documents",setup:!!e.setup,files:null};if(S.pid===pid&&S.view==="files")render()})}
+const PREVIEWABLE=/\.(pdf|docx?|xlsx?|pptx?|png|jpe?g|gif|txt|csv|rtf|odt|ods|odp|vsdx?|html?|msg|eml)$/i;
+function docViewer(p,x){const t=DOCTYPE[x.type];const can=PREVIEWABLE.test(x.name);
+  if(can&&!S.dview){S.dview={id:x.id,url:"",loading:true};window.HUB_FILES.preview(p.id,x.id).then(j=>{if(S.dview&&S.dview.id===x.id){S.dview={id:x.id,url:j.url};render()}}).catch(e=>{if(S.dview&&S.dview.id===x.id){S.dview={id:x.id,err:e.message};render()}})}
+  const v=S.dview||{};
+  return `<section class="card docv" id="docview"><div class="card-h"><span class="label">${t?t[0]+" "+t[1]+" · ":""}${esc(t?x.desc:x.name)}${x.version?" · v"+esc(x.version):""}</span><span class="push"><button class="btn sec sm" data-dact="download" data-id="${esc(x.id)}">Download</button>${S.role==="hci"&&x.webUrl?`<a class="btn sec sm" href="${esc(x.webUrl)}" target="_blank" rel="noopener">Open in SharePoint</a>`:""}<button class="btn sec sm" data-dact="close">Close</button></span></div>
+  ${!can?`<div class="empty">No preview for this kind of file${/\.apk$/i.test(x.name)?" (an Android app build)":""}. Download it to use it.</div>`:v.err?`<div class="empty">${esc(v.err)}</div>`:v.url?`<iframe src="${esc(v.url)}" title="${esc(x.name)}" allowfullscreen></iframe>`:'<div class="empty">Opening…</div>'}
+  <div class="who" style="margin-top:8px;overflow-wrap:anywhere">${esc(x.name)}</div></section>`}
+function docNextVer(st,type,desc){const code=st.fileCode;let m=0;(st.files||[]).forEach(x=>{if(x.type===type&&x.customer===code&&x.desc.toLowerCase()===desc.toLowerCase())m=Math.max(m,parseInt(x.version,10)||0)});return m+1}
+function docCleanDesc(s){return String(s||"").replace(/[\\/:*?"<>|#%_]+/g," ").replace(/\s+/g," ").trim().slice(0,90)}
+function docUploadForm(p,st){const types=DOCTYPES.filter(t=>docVisible(t[0]));
+  return `<section class="card" id="docup" style="margin-bottom:16px"><div class="card-h"><span class="label">Add a document</span><button class="btn sec sm" data-dact="cancel">Cancel</button></div>
+  <div class="fgrid"><div class="field"><label for="dupType">Type</label><select id="dupType">${types.map(t=>`<option value="${t[0]}">${t[0]} ${t[1]} · ${esc(t[2])}</option>`).join("")}</select></div>
+  <div class="field"><label for="dupDesc">Short description</label><input id="dupDesc" placeholder="Epic ADT interface spec" maxlength="90"></div>
+  <div class="field"><label for="dupFile">File</label><input id="dupFile" type="file"></div>
+  <div class="field"><label for="dupVer">Version (optional)</label><input id="dupVer" placeholder="Next version automatically" maxlength="16"></div></div>
+  <div class="hint">Saved as <b id="dupName">choose a file</b></div><div style="margin-top:12px;display:flex;gap:10px;align-items:center"><button class="btn" data-dact="upload">Upload</button><span class="who" id="dupProg"></span></div></section>`}
+function docNamePreview(){const st=DOCS[S.pid];if(!st||!$("#dupName"))return;const t=DOCTYPE[$("#dupType").value];const d=docCleanDesc($("#dupDesc").value);const f=$("#dupFile").files[0];const ext=f?((/\.[A-Za-z0-9]{1,8}$/.exec(f.name)||[""])[0].toLowerCase()):"";const v=($("#dupVer").value||"").replace(/[^0-9.]/g,"")||docNextVer(st,t[0],d);
+  $("#dupName").textContent=d?`${t[0]}_${t[1]}_${st.fileCode}_${d}_v${v}_${docStamp()}${ext}`:"add a short description"}
+function docRenameForm(x,st){return `<div class="fgrid" style="margin-top:10px" data-stop="1"><div class="field"><label>Type</label><select id="renType">${DOCTYPES.map(t=>`<option value="${t[0]}">${t[0]} ${t[1]}</option>`).join("")}</select></div><div class="field"><label>Short description</label><input id="renDesc" value="${esc(docCleanDesc(x.name.replace(/\.[^.]+$/,"")))}" maxlength="90"></div><div class="field"><label>Version</label><input id="renVer" value="1" maxlength="16"></div><div class="field"><label>&nbsp;</label><span><button class="btn sm" data-dact="dorename" data-id="${esc(x.id)}">Rename</button> <button class="btn sec sm" data-dact="cancelren">Cancel</button></span></div></div>`}
+function saveBlob(blob,name){const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},3000)}
+document.addEventListener("click",async e=>{
+  const t=e.target.closest("[data-doc],[data-dfilter],[data-dact]");if(!t)return;
+  if(e.target.closest("[data-stop]")&&!t.dataset.dact)return;
+  const pid=S.pid;const st=DOCS[pid]||{};
+  if(t.dataset.dfilter){S.dfilter=t.dataset.dfilter;render();return}
+  if(t.dataset.doc){if(e.target.closest("button,input,select,a"))return;S.dsel=S.dsel===t.dataset.doc?null:t.dataset.doc;S.dview=null;render();const v=$("#docview");if(v&&innerWidth<=1100)v.scrollIntoView({behavior:"smooth",block:"start"});return}
+  const a=t.dataset.dact,id=t.dataset.id;
+  if(a==="close"){S.dsel=null;S.dview=null;render();return}
+  if(a==="add"){S.dup=true;render();setTimeout(()=>{docNamePreview();const d=$("#dupDesc");if(d)d.focus()},0);return}
+  if(a==="cancel"){S.dup=false;render();return}
+  if(a==="rename"){S.dren=id;render();return}
+  if(a==="cancelren"){S.dren=null;render();return}
+  if(a==="download"){const x=(st.files||[]).find(f=>f.id===id);toast("Downloading…");window.HUB_FILES.download(pid,id).then(j=>{const a=document.createElement("a");a.href=j.url;a.download=x?x.name:"";a.rel="noopener";document.body.appendChild(a);a.click();setTimeout(()=>a.remove(),2000)}).catch(err=>toast("Download failed: "+err.message));return}
+  if(a==="dorename"){const body={type:$("#renType").value,desc:docCleanDesc($("#renDesc").value),version:$("#renVer").value};if(!body.desc){toast("Add a description");return}
+    t.disabled=true;window.HUB_FILES.rename(pid,id,body).then(j=>{toast("Renamed to "+j.file.name);S.dren=null;DOCS[pid].stale=true;loadDocs(pid)}).catch(err=>{t.disabled=false;toast("Not renamed: "+err.message)});return}
+  if(a==="upload"){const f=$("#dupFile").files[0];const type=$("#dupType").value;const desc=docCleanDesc($("#dupDesc").value);
+    if(!f){toast("Choose a file");return}if(!desc){toast("Add a short description");return}
+    t.disabled=true;const prog=$("#dupProg");
+    window.HUB_FILES.upload(pid,f,type,desc,($("#dupVer").value||"").replace(/[^0-9.]/g,""),r=>{if(prog)prog.textContent=Math.round(r*100)+"%"}).then(j=>{toast("Saved as "+j.file.name);S.dup=false;S.dsel=j.file.id;S.dview=null;DOCS[pid].stale=true;loadDocs(pid)}).catch(err=>{t.disabled=false;if(prog)prog.textContent="";toast(err.message)});return}
+});
+document.addEventListener("input",e=>{
+  if(e.target.id==="dq"){const q=e.target.value.trim().toLowerCase();document.querySelectorAll("table.docs tbody tr[data-text]").forEach(r=>{r.style.display=!q||r.dataset.text.includes(q)?"":"none"});return}
+  if(e.target.closest&&e.target.closest("#docup"))docNamePreview();
+});
+document.addEventListener("change",e=>{if(e.target.closest&&e.target.closest("#docup"))docNamePreview()});
+
+/* boot */
+let rq=0;function schedule(){if(rq)return;rq=requestAnimationFrame(()=>{rq=0;const ae=document.activeElement;const busy=document.querySelector("#mform,#dform,.lightbox,#docview iframe,#docup,#renDesc")||(ae&&ae.closest&&(ae.closest(".pend")||ae.id==="cmtText"||ae.id==="meIn"))||(($("#cmtText")||{}).value||"").trim();if(!busy)render()})}
+(async()=>{
+  const c=window.claude;
+  const db=c&&c.use?await c.use("db"):null;
+  if(!db){$("#boot").textContent="Could not reach the Hub server.";return}
+  S.db=db;
+  if(window.HUB_IDENTITY){const id=window.HUB_IDENTITY;S.me=id.name||id.email||S.me;S.role=id.role||"hci";S.locked=true;if(S.role!=="hci"){S.scope="project";S.view="overview"}}
+  c.use("downloads").then(x=>{S.dl=x;schedule()}).catch(()=>{});
+  c.use("assets").then(x=>{S.assets=x;schedule()}).catch(()=>{});
+  let got=0;const all=(1<<COLS.length)-1;
+  COLS.forEach((col,i)=>{
+    db.collection(col).onSnapshot(snap=>{
+      S.cols[col]=snap.docs.map(d=>Object.assign({id:d.id},d.data()));
+      if(!S.ready){got|=1<<i;if(got===all){S.ready=true;render()}}else schedule();
+    },err=>toast("Live updates stopped: "+err.code));
+  });
+  setTimeout(()=>{if(!S.ready){S.ready=true;render()}},7000);
+})();
+})();
+</script>
+
+</body>
+</html>

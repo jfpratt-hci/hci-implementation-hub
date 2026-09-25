@@ -1,0 +1,98 @@
+{
+ "tp-01": {
+  "order": 1,
+  "party": "hci",
+  "phase": 0,
+  "title": "Kickoff meeting held; contacts, roles and meeting cadence set"
+ },
+ "tp-02": {
+  "order": 2,
+  "party": "hci",
+  "phase": 0,
+  "title": "Scope confirmed against the signed quote and loaded into the configuration"
+ },
+ "tp-03": {
+  "order": 1,
+  "party": "customer",
+  "phase": 1,
+  "title": "Room and bed list by unit"
+ },
+ "tp-04": {
+  "order": 2,
+  "party": "customer",
+  "phase": 1,
+  "title": "Logo, colors and facility assets sent to HCI"
+ },
+ "tp-05": {
+  "order": 3,
+  "party": "hci",
+  "phase": 1,
+  "title": "Customized mockups built for this customer"
+ },
+ "tp-06": {
+  "order": 4,
+  "party": "customer",
+  "phase": 1,
+  "title": "Mockups approved by customer lead"
+ },
+ "tp-07": {
+  "order": 1,
+  "party": "customer",
+  "phase": 2,
+  "title": "Interface specs and authorization forms signed"
+ },
+ "tp-08": {
+  "order": 2,
+  "party": "hci",
+  "phase": 2,
+  "title": "Interfaces built and passing test messages"
+ },
+ "tp-09": {
+  "order": 1,
+  "party": "customer",
+  "phase": 3,
+  "title": "Static IP plan by unit and room"
+ },
+ "tp-10": {
+  "order": 2,
+  "party": "customer",
+  "phase": 3,
+  "title": "Server provisioned with remote access for HCI recorded under Access"
+ },
+ "tp-11": {
+  "order": 3,
+  "party": "dealer",
+  "phase": 3,
+  "title": "Hardware ordered and received"
+ },
+ "tp-12": {
+  "order": 1,
+  "party": "dealer",
+  "phase": 4,
+  "title": "Every room installed, tested and recorded in the installed base"
+ },
+ "tp-13": {
+  "order": 1,
+  "party": "customer",
+  "phase": 5,
+  "title": "Super users and staff trained, sign off recorded"
+ },
+ "tp-14": {
+  "order": 1,
+  "party": "customer",
+  "phase": 6,
+  "title": "Go live checklist signed by customer lead"
+ },
+ "tp-15": {
+  "order": 1,
+  "party": "hci",
+  "phase": 7,
+  "title": "Support handoff complete"
+ },
+ "tp-16": {
+  "order": 2,
+  "party": "hci",
+  "phase": 7,
+  "title": "30 day check in held"
+ }
+}

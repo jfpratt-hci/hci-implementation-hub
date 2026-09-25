@@ -1,0 +1,34 @@
+# Push to main: copy the app to the Azure file share the container runs from, then restart it.
+name: Deploy to Azure
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  id-token: write
+  contents: read
+concurrency: deploy
+env:
+  RG: rg-hci-hub-aca
+  APP: hcione-hub
+  SA: hcionehubdata
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: azure/login@v2
+        with:
+          client-id: __CLIENT_ID__
+          tenant-id: __TENANT_ID__
+          subscription-id: __SUBSCRIPTION_ID__
+      - name: Upload the app to the file share
+        run: |
+          KEY=$(az storage account keys list -g "$RG" -n "$SA" --query "[0].value" -o tsv)
+          mkdir -p /tmp/app && cp -r server.js files.js package.json public data scripts manifest /tmp/app/
+          az storage file upload-batch --account-name "$SA" --account-key "$KEY" --destination hubdata --destination-path app --source /tmp/app -o none
+      - name: Restart the Hub
+        run: |
+          REV=$(az containerapp revision list -g "$RG" -n "$APP" --query "[0].name" -o tsv)
+          az containerapp revision restart -g "$RG" -n "$APP" --revision "$REV" -o none
+          echo "Deployed. The Hub is back in about two minutes."

@@ -1,0 +1,18 @@
+{
+ "rel-x01": {
+  "app": "Door Sign",
+  "date": "2026-09-01",
+  "example": true,
+  "knownIssues": "",
+  "notes": "Placeholder release to show the changelog. Replace with the real HCI release history.",
+  "version": "1.0.0"
+ },
+ "rel-x02": {
+  "app": "Whiteboard",
+  "date": "2026-09-01",
+  "example": true,
+  "knownIssues": "",
+  "notes": "Placeholder release to show the changelog. Replace with the real HCI release history.",
+  "version": "1.0.0"
+ }
+}
