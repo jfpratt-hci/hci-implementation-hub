@@ -15,15 +15,15 @@ env:
 jobs:
   deploy:
     # Skipped until deploy/github-setup.sh has been run and its client id filled in below.
-    if: ${{ !startsWith('__CLIENT_ID__', '__') }}
+    if: ${{ !startsWith('166d6725-c455-49f7-b204-729037accc11', '__') }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: azure/login@v2
         with:
-          client-id: __CLIENT_ID__
-          tenant-id: __TENANT_ID__
-          subscription-id: __SUBSCRIPTION_ID__
+          client-id: 166d6725-c455-49f7-b204-729037accc11
+          tenant-id: e55dab1c-8b8f-4c0b-bb05-f0fb52f04e62
+          subscription-id: f39eaa0e-c370-4bc6-a6c1-0e33978cb893
       - name: Upload the app to the file share
         run: |
           KEY=$(az storage account keys list -g "$RG" -n "$SA" --query "[0].value" -o tsv)
