@@ -194,6 +194,18 @@ module.exports = function filesRouter({ store, bump }) {
     res.json({ file: shape(out) });
   }));
 
+  // Used by the Designs tab: the raw bytes of one file in a project's library.
+  r.fetchItem = async (pid, itemId) => {
+    const p = store.projects[pid];
+    if (!p) throw Object.assign(new Error("No such project"), { status: 404 });
+    if (!configured) throw Object.assign(new Error("SharePoint is not connected to the Hub yet"), { status: 503 });
+    const f = await folderFor(p);
+    const j = await graph("GET", `/drives/${f.driveId}/items/${encodeURIComponent(itemId)}?$select=id,parentReference,@microsoft.graph.downloadUrl`);
+    if (!j.parentReference || j.parentReference.id !== f.itemId) throw Object.assign(new Error("That file is not in this project's library"), { status: 404 });
+    const d = await fetch(j["@microsoft.graph.downloadUrl"]);
+    if (!d.ok) throw Object.assign(new Error("Could not download the file"), { status: 502 });
+    return Buffer.from(await d.arrayBuffer());
+  };
   return r;
 };
 module.exports.parseName = parseName;

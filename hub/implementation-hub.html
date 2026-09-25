@@ -314,6 +314,14 @@ table.docs tr.on td{background:var(--chip-pos)}
 .pcard.new{border:2px dashed var(--card-brd);box-shadow:none;background:transparent;align-items:center;justify-content:center;color:var(--muted)}
 @media (max-width:1100px){.ocol{grid-column:span 6}.pcards{grid-template-columns:repeat(2,minmax(0,1fr))}.kpi2{grid-column:span 6}}
 @media (max-width:760px){.ocol{grid-column:span 12}.pcards{grid-template-columns:1fr}.phstrip{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.dzv{display:flex;justify-content:space-between;gap:8px;width:100%;border:0;background:transparent;text-align:left;padding:7px 8px;border-radius:10px;font-weight:700;font-size:13px}
+.dzv:hover{background:var(--pill)}.dzv.on{background:var(--chip-pos);color:var(--chip-pos-ink)}
+.dzframe{flex:1;min-height:420px;border-radius:12px;overflow:hidden;background:#fff;border:1px solid var(--card-brd)}
+.dzframe iframe{width:100%;height:100%;min-height:420px;border:0;display:block}
+.dhelp{background:var(--card);border-radius:var(--r);box-shadow:var(--shadow);padding:18px 20px;margin-bottom:16px;border:2px solid var(--hero)}
+.dhex{font-size:15px;font-weight:800;background:var(--pill);border-radius:10px;padding:10px 12px;overflow-wrap:anywhere}
+.dhgrid{display:grid;grid-template-columns:auto 1fr auto 1fr;gap:8px 12px;align-items:center;font-size:13px;font-weight:700}
+@media (max-width:760px){.dhgrid{grid-template-columns:auto 1fr}}
 </style>
 
 <div class="app">
@@ -332,9 +340,9 @@ const CSTATUS={planned:"Planned",quoted:"Quoted",ordered:"Ordered",received:"Rec
 const CCAT=["Software","Hardware","Integration","Server","Service"];
 const BASIS={each:"Each",bed:"Per bed",room:"Per room",unit:"Per unit",station:"Per station",hour:"Hours"};
 const DEVTYPES={"Door Sign":"Door sign","Whiteboard":"Whiteboard","Patient TV":"Patient TV","Unit Status Board":"Unit status board","Camera":"Camera","Server":"Server","Workstation":"Workstation","Other":"Other"};
-const APPS=["Whiteboard","Door Sign","Patient TV","Unit Status Board","eSitter","Virtual Nursing","Launcher"];
-const COLS=["projects","tasks","decisions","meetings","interfaces","people","devices","releases","deployments","components","catalog","access","network","template","team","shots","comments","audit"];
-const PVIEWS=[["overview","Overview"],["plan","Plan"],["decisions","Decisions"],["files","Files"],["system","System"],["integrations","Integrations"],["team","Team"]];
+const APPS=["Whiteboard","Door Sign","Patient TV","Unit Status Board","Rounding","eSitter","Virtual Nursing","Launcher"];
+const COLS=["projects","tasks","decisions","meetings","interfaces","people","devices","releases","deployments","components","catalog","access","network","template","team","shots","comments","audit","designs"];
+const PVIEWS=[["overview","Overview"],["plan","Plan"],["decisions","Decisions"],["files","Files"],["designs","Designs"],["system","System"],["integrations","Integrations"],["team","Team"]];
 /* tabs that hold more than one screen */
 const SUBS={system:[["config","Configuration"],["installed","Installed base"],["changelog","App changelog"]],integrations:[["integrations","Integrations"],["access","Access and network"]],team:[["people","People"],["feed","Feed"],["audit","History"]]};
 /* old screen names still used by links and saved navigation */
@@ -356,9 +364,10 @@ const FORMS={
  access:[["name","Name","text",1],["method","Method","select",0,0,{vpn:"VPN",teamviewer:"TeamViewer",jump:"Jump box",rdp:"RDP",ssh:"SSH",web:"Web console",other:"Other"}],["endpoint","Endpoint or ID","text"],["account","Account name","text"],["credentialLocation","Where the password is kept","text",0,1],["client","Client software","text"],["contact","Customer IT contact","text"],["status","Status","select",0,0,{working:"Working",pending:"Pending",broken:"Not working"}],["lastVerified","Last verified","date"],["notes","Notes","area",0,1]],
  network:[["name","Network","text",1],["vlan","VLAN","text"],["subnet","Subnet","text"],["gateway","Gateway","text"],["dns","DNS","text"],["dhcp","Addressing","select",0,0,{static:"Static",dhcp:"DHCP",reserved:"DHCP reservations"}],["ports","Firewall and ports","text",0,1],["notes","Notes","area",0,1]],
  template:[["title","Task","text",1,1],["phase","Phase","select",0,0,PHASES],["party","Party","select",0,0,PARTIES],["order","Order","number"]],
- team:[["name","Name","text",1],["role","Role","text"],["email","Email","text",0,1]]
+ team:[["name","Name","text",1],["role","Role","text"],["email","Email","text",0,1]],
+ designs:[["app","App","select",1,0,Object.fromEntries(APPS.map(a=>[a,a]))],["name","Title","text",1],["version","Version","text"],["status","Status","select",0,0,{draft:"Draft",review:"Ready for review",approved:"Approved by customer"}],["notes","What changed","area",0,1],["visibility","Who can see it","select",0,0,{external:"Everyone on the project",internal:"HCI only"}]]
 };
-const TITLES={tasks:"task",decisions:"decision",meetings:"meeting",interfaces:"integration",people:"person",devices:"device",releases:"release",projects:"project",components:"component",catalog:"catalog item",access:"remote access",network:"network",template:"template task",team:"team member"};
+const TITLES={tasks:"task",decisions:"decision",meetings:"meeting",interfaces:"integration",people:"person",devices:"device",releases:"release",projects:"project",components:"component",catalog:"catalog item",access:"remote access",network:"network",template:"template task",team:"team member",designs:"design"};
 const GLOBAL=new Set(["releases","catalog","template","team","projects"]);
 
 const S={db:null,dl:null,assets:null,cols:{},pid:null,scope:"portfolio",view:"portfolio",role:"hci",filter:"open",ffilter:"all",me:"",ready:false,sub:{},channel:false};
@@ -396,8 +405,8 @@ const vis=(c,pid)=>ofP(c,pid||S.pid).filter(x=>canSee(x,c));
 const netOK=()=>S.role==="hci"||S.role==="customer";
 function allowed(){
   if(S.role==="partner")return["overview","plan","integrations","team"];
-  if(S.role==="dealer")return["overview","plan","decisions","files","system","team"];
-  if(S.role==="customer")return["overview","plan","decisions","files","integrations","team"];
+  if(S.role==="dealer")return["overview","plan","decisions","files","designs","system","team"];
+  if(S.role==="customer")return["overview","plan","decisions","files","designs","integrations","team"];
   return PVIEWS.map(v=>v[0]);
 }
 function subsFor(v){const r=S.role;return (SUBS[v]||[]).filter(([k])=>{if(k==="changelog")return r==="hci";if(k==="audit")return r==="hci";if(k==="access")return r==="hci"||r==="customer";if(k==="installed")return r!=="partner";return true})}
@@ -448,7 +457,7 @@ function render(){
   if(S.scope==="project"&&!allowed().includes(S.view))S.view="overview";
   renderSide();
   const main=$("#main");
-  const FILL={overview:1,plan:1,decisions:1,portfolio:1};
+  const FILL={overview:1,plan:1,decisions:1,portfolio:1,designs:1};
   main.classList.toggle("fill",!!FILL[S.view]&&S.scope!=="admin");
   if(S.scope==="portfolio"){main.innerHTML=PORT[S.view]?PORT[S.view]():PORT.portfolio();return}
   if(S.scope==="admin"){main.innerHTML=ADMIN[S.view]?ADMIN[S.view]():ADMIN.catalog();return}
@@ -535,6 +544,26 @@ feed(p){
   <div class="filters">${opt(fl).map(([k,l])=>`<button class="fchip ${f===k?"on":""}" data-ffilter="${k}">${l}</button>`).join("")}</div>
   <section class="card"><div class="feed">${shown.map(feedItem).join("")||'<div class="empty">Nothing here yet. Post the first update above, or comment on any task, decision or integration.</div>'}</div></section>`;
 },
+designs(p){
+  const all=vis("designs").sort((a,b)=>(b.updatedAt||"").localeCompare(a.updatedAt||""));
+  const hosted=!!window.HUB_FILES;
+  const sw=ofP("components",p.id).map(c=>catOf(c)).filter(k=>k.category==="Software").map(k=>{const n=(k.name||"").toLowerCase();return APPS.find(a=>n.includes(a.toLowerCase()))||k.name}).filter(Boolean);
+  const apps=[...new Set([...sw,...all.map(d=>d.app)])];
+  const latest=a=>all.filter(d=>d.app===a).sort((x,y)=>(Number(y.version)||0)-(Number(x.version)||0)||(y.updatedAt||"").localeCompare(x.updatedAt||""))[0];
+  let selId=S.dzsel&&all.some(d=>d.id===S.dzsel)?S.dzsel:(latest(apps.find(a=>latest(a)))||{}).id;
+  const sel=all.find(d=>d.id===selId);
+  const hci=S.role==="hci";
+  const stPill=d=>d.status==="approved"?'<span class="pill good">Approved</span>':d.status==="review"?'<span class="pill warn">For review</span>':'<span class="pill">Draft</span>';
+  const list=apps.map(a=>{const vs=all.filter(d=>d.app===a).sort((x,y)=>(Number(y.version)||0)-(Number(x.version)||0));
+    return `<div class="ask" style="margin-bottom:10px"><div style="display:flex;align-items:center;gap:8px"><b style="flex:1">${esc(a)}</b>${vs[0]?stPill(vs[0]):'<span class="pill">No prototype yet</span>'}</div>
+     ${vs.map(d=>`<button type="button" class="dzv ${sel&&sel.id===d.id?"on":""}" data-dz="${esc(d.id)}"><span>${esc(d.name||a)}</span><span class="who">v${esc(d.version||"1")} · ${fd((d.updatedAt||"").slice(0,10))}</span></button>`).join("")}
+     ${hci&&hosted?`<button type="button" class="qbtn" data-dzact="add" data-app="${esc(a)}">+ Add a version</button>`:""}</div>`}).join("");
+  const up=S.dzup?designUploadForm(p,S.dzup):"";
+  const viewer=sel?`<section class="card c8"><div class="card-h"><span class="label">${esc(sel.app)} · ${esc(sel.name||"")} · v${esc(sel.version||"1")}</span><span class="push">${stPill(sel)}<a class="btn sec sm" href="/_design/${esc(sel.file)}" target="_blank" rel="noopener">Open full screen</a>${hci?`<button class="btn sec sm" data-edit="designs" data-id="${esc(sel.id)}">Edit</button>`:""}</span></div>
+     ${sel.notes?`<div class="who" style="margin:-6px 0 10px">${esc(sel.notes)}</div>`:""}<div class="dzframe"><iframe src="/_design/${esc(sel.file)}" title="${esc(sel.app+" prototype")}" sandbox="allow-scripts allow-forms allow-popups allow-modals" loading="lazy"></iframe></div></section>`
+    :`<section class="card c8"><div class="empty">${hosted?(hci?"No prototypes yet. Add the first one for any app on the left: upload an HTML file, or pick one from the project's documents.":"HCI has not shared a prototype yet."):"Prototypes open here on the hosted Hub."}</div></section>`;
+  return `${up}<div class="fit rows1"><section class="card c4"><div class="card-h"><span class="label">Apps on this project<span class="n">${apps.length}</span></span>${hci&&hosted?'<button class="btn sm" data-dzact="add" data-app="">Add prototype</button>':""}</div><div class="scroll">${list||'<div class="empty">Add the apps to System, Configuration and they show here.</div>'}</div></section>${viewer}</div>`;
+},
 files(p){
   const base=(p.sharepointUrl||"").trim().replace(/\/+$/,"");
   if(!window.HUB_FILES){
@@ -558,7 +587,7 @@ files(p){
     return `<tr class="click${on?" on":""}" data-doc="${esc(x.id)}" data-text="${esc((x.name+" "+x.by).toLowerCase())}"><td>${t?`<span class="pill">${t[0]} ${t[1]}</span>`:'<span class="pill warn">Not named</span>'}</td>
     <td><b>${esc(t?x.desc:x.name)}</b>${S.dren===x.id?docRenameForm(x,st):""}</td><td class="num">${x.version?"v"+esc(x.version):""}</td><td class="who">${x.date?esc(fdy(x.date.slice(0,4)+"-"+x.date.slice(4,6)+"-"+x.date.slice(6,8))):""}</td><td class="num who xcol">${docSize(x.size)}</td><td class="who xcol">${esc(x.by)}</td>
     <td class="num">${!t&&canRename&&S.dren!==x.id?`<button class="btn sec sm" data-dact="rename" data-id="${esc(x.id)}">Name it</button>`:""}</td></tr>`};
-  return `${up}<div class="filters">${chips.map(([k,l,n])=>`<button class="fchip ${f===k?"on":""}" data-dfilter="${k}">${esc(l)}${n?` · ${n}`:""}</button>`).join("")}<span class="push"><input id="dq" class="dq" type="search" placeholder="Search documents" aria-label="Search documents">${S.dup?"":'<button class="btn" data-dact="add">Add document</button>'}</span></div>
+  return `${up}<div class="filters">${chips.map(([k,l,n])=>`<button class="fchip ${f===k?"on":""}" data-dfilter="${k}">${esc(l)}${n?` · ${n}`:""}</button>`).join("")}<span class="push"><input id="dq" class="dq" type="search" placeholder="Search documents" aria-label="Search documents"><button class="iconbtn" data-dact="help" aria-label="How files are named" title="How files are named" aria-expanded="${S.dhelp?"true":"false"}">?</button>${S.dup?"":'<button class="btn" data-dact="add">Add document</button>'}</span></div>${S.dhelp?docHelp(st):""}
   <div class="docsplit${sel?" has":""}"><section class="card"><div class="tbl-wrap"><table class="docs"><thead><tr><th>Type</th><th>Document</th><th class="num">Ver</th><th>Date</th><th class="num xcol">Size</th><th class="xcol">Updated by</th><th></th></tr></thead><tbody>${shown.map(row).join("")||'<tr><td colspan="7" class="empty">No documents here yet. Add the first one above.</td></tr>'}</tbody></table></div>
   <div class="hint">One list for the whole project, sorted by name, so the numbers keep it in project order: ${DOCTYPES.map(t=>t[0]+" "+t[1]).join(", ")}. The Hub names each upload for you.${S.role==="hci"&&st.library?` <a href="${esc(st.library)}" target="_blank" rel="noopener">Open the library in SharePoint</a>`:""}</div></section>${sel?docViewer(p,sel):""}</div>`;
 },
@@ -965,6 +994,12 @@ function docViewer(p,x){const t=DOCTYPE[x.type];const can=PREVIEWABLE.test(x.nam
   ${!can?`<div class="empty">No preview for this kind of file${/\.apk$/i.test(x.name)?" (an Android app build)":""}. Download it to use it.</div>`:v.err?`<div class="empty">${esc(v.err)}</div>`:v.url?`<iframe src="${esc(v.url)}" title="${esc(x.name)}" allowfullscreen></iframe>`:'<div class="empty">Opening…</div>'}
   <div class="who" style="margin-top:8px;overflow-wrap:anywhere">${esc(x.name)}</div></section>`}
 function docNextVer(st,type,desc){const code=st.fileCode;let m=0;(st.files||[]).forEach(x=>{if(x.type===type&&x.customer===code&&x.desc.toLowerCase()===desc.toLowerCase())m=Math.max(m,parseInt(x.version,10)||0)});return m+1}
+function docHelp(st){const code=st.fileCode||"CUSTOMER";
+  return `<div class="dhelp" role="dialog" aria-label="How files are named"><div class="card-h"><span class="label">How files are named</span><button class="btn sec sm" data-dact="help">Close</button></div>
+  <div class="mono dhex">##_CODE_${esc(code)}_Description_vN_YYYYMMDD.ext</div>
+  <p class="who" style="margin:8px 0 12px">Every document sits in one list. The number puts it in project order, the code says what kind of document it is, then the customer, a short description, the version and the date. The Hub names uploads for you, so you only pick the type and type a description.</p>
+  <div class="dhgrid">${DOCTYPES.map(t=>`<span class="pill">${t[0]} ${t[1]}</span><span>${esc(t[2])}</span>`).join("")}</div>
+  <div class="who" style="margin-top:12px">Example: <b class="mono">03_INT_${esc(code)}_Epic ADT interface spec_v2_20260925.pdf</b>. Upload the same description again and it becomes v3.</div></div>`}
 function docCleanDesc(s){return String(s||"").replace(/[\\/:*?"<>|#%_]+/g," ").replace(/\s+/g," ").trim().slice(0,90)}
 function docUploadForm(p,st){const types=DOCTYPES.filter(t=>docVisible(t[0]));
   return `<section class="card" id="docup" style="margin-bottom:16px"><div class="card-h"><span class="label">Add a document</span><button class="btn sec sm" data-dact="cancel">Cancel</button></div>
@@ -985,6 +1020,7 @@ document.addEventListener("click",async e=>{
   if(t.dataset.doc){if(e.target.closest("button,input,select,a"))return;S.dsel=S.dsel===t.dataset.doc?null:t.dataset.doc;S.dview=null;render();const v=$("#docview");if(v&&innerWidth<=1100)v.scrollIntoView({behavior:"smooth",block:"start"});return}
   const a=t.dataset.dact,id=t.dataset.id;
   if(a==="close"){S.dsel=null;S.dview=null;render();return}
+  if(a==="help"){S.dhelp=!S.dhelp;render();return}
   if(a==="add"){S.dup=true;render();setTimeout(()=>{docNamePreview();const d=$("#dupDesc");if(d)d.focus()},0);return}
   if(a==="cancel"){S.dup=false;render();return}
   if(a==="rename"){S.dren=id;render();return}
@@ -1003,8 +1039,35 @@ document.addEventListener("input",e=>{
 });
 document.addEventListener("change",e=>{if(e.target.closest&&e.target.closest("#docup"))docNamePreview()});
 
+
+/* designs: working HTML prototypes, stored and served by the Hub server */
+function designUploadForm(p,app){const htmls=((DOCS[p.id]||{}).files||[]).filter(f=>/\.html?$/i.test(f.name));if(!DOCS[p.id]&&window.HUB_FILES)loadDocs(p.id);
+  return `<section class="card" id="dzup" style="margin-bottom:16px"><div class="card-h"><span class="label">Add a prototype</span><button class="btn sec sm" data-dzact="cancel">Cancel</button></div>
+  <div class="fgrid"><div class="field"><label for="dzApp">App</label><select id="dzApp">${APPS.map(a=>`<option ${a===app?"selected":""}>${esc(a)}</option>`).join("")}</select></div>
+  <div class="field"><label for="dzName">Title</label><input id="dzName" placeholder="Landscape door sign, Ball Blue" maxlength="80"></div>
+  <div class="field"><label for="dzFile">HTML file from your computer</label><input id="dzFile" type="file" accept=".html,.htm,text/html"></div>
+  <div class="field"><label for="dzDoc">Or a file already in Documents</label><select id="dzDoc"><option value="">None</option>${htmls.map(f=>`<option value="${esc(f.id)}">${esc(f.name)}</option>`).join("")}</select></div>
+  <div class="field full"><label for="dzNotes">What changed</label><input id="dzNotes" maxlength="200"></div></div>
+  <div style="margin-top:12px;display:flex;gap:10px;align-items:center"><button class="btn" data-dzact="save">Save prototype</button><span class="who" id="dzProg"></span></div></section>`}
+document.addEventListener("click",async e=>{
+  const t=e.target.closest("[data-dz],[data-dzact]");if(!t)return;
+  if(t.dataset.dz){S.dzsel=t.dataset.dz;render();return}
+  const a=t.dataset.dzact;const p=P();if(!p)return;
+  if(a==="add"){S.dzup=t.dataset.app||APPS[0];render();return}
+  if(a==="cancel"){S.dzup=null;render();return}
+  if(a==="save"){const app=$("#dzApp").value,name=($("#dzName").value||"").trim()||app,notes=($("#dzNotes").value||"").trim();const f=$("#dzFile").files[0],doc=$("#dzDoc").value;
+    if(!f&&!doc){toast("Choose an HTML file or a document");return}
+    t.disabled=true;$("#dzProg").textContent="Saving…";
+    try{
+      const r=f?await fetch("/api/design-file",{method:"POST",headers:{"Content-Type":"text/html"},body:await f.text()}):await fetch("/api/design-file/from-doc/"+encodeURIComponent(p.id)+"/"+encodeURIComponent(doc),{method:"POST"});
+      const j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j.error||r.statusText);
+      const prev=S.cols.designs.filter(d=>d.projectId===p.id&&d.app===app).reduce((m,d)=>Math.max(m,Number(d.version)||0),0);
+      const ref=await addDoc("designs",{projectId:p.id,app,name,notes,file:j.file,version:String(prev+1),status:"draft",visibility:"external",updatedAt:now(),by:S.me||""});
+      S.dzup=null;S.dzsel=ref.id;toast("Prototype saved");render();
+    }catch(err){t.disabled=false;$("#dzProg").textContent="";toast("Not saved: "+err.message)}}
+});
 /* boot */
-let rq=0;function schedule(){if(rq)return;rq=requestAnimationFrame(()=>{rq=0;const ae=document.activeElement;const busy=document.querySelector("#mform,#dform,.lightbox,#docview iframe,#docup,#renDesc")||(ae&&ae.closest&&(ae.closest(".pend")||ae.id==="cmtText"||ae.id==="meIn"))||(($("#cmtText")||{}).value||"").trim();if(!busy)render()})}
+let rq=0;function schedule(){if(rq)return;rq=requestAnimationFrame(()=>{rq=0;const ae=document.activeElement;const busy=document.querySelector("#mform,#dform,.lightbox,#docview iframe,#docup,#renDesc,#dzup")||(ae&&ae.closest&&(ae.closest(".pend")||ae.id==="cmtText"||ae.id==="meIn"))||(($("#cmtText")||{}).value||"").trim();if(!busy)render()})}
 (async()=>{
   const c=window.claude;
   const db=c&&c.use?await c.use("db"):null;

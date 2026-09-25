@@ -10,7 +10,7 @@ const crypto = require("crypto");
 const PORT = process.env.PORT || 3000;
 const DATA_DIR = process.env.HUB_DATA_DIR || path.join(__dirname, "data");
 const UPLOAD_DIR = process.env.HUB_UPLOAD_DIR || path.join(__dirname, "uploads");
-const COLS = ["projects","tasks","decisions","meetings","interfaces","people","devices","releases","deployments","components","catalog","access","network","template","team","shots","comments","audit"];
+const COLS = ["projects","tasks","decisions","meetings","interfaces","people","devices","releases","deployments","components","catalog","access","network","template","team","shots","comments","audit","designs"];
 const MIME = { "image/png": ".png", "image/jpeg": ".jpg", "image/webp": ".webp", "image/gif": ".gif" };
 // Identity. With REQUIRE_AUTH on, every /api call needs a signed in user from App Service Authentication (Entra ID).
 const REQUIRE_AUTH = /^(1|true|yes)$/i.test(process.env.REQUIRE_AUTH || "");
@@ -197,8 +197,34 @@ app.get("/api/me", (req, res) => {
   const me = req.me;
   res.json({ email: me.email, name: me.name, role: me.role, projects: me.projects, dev: !!me.dev, logout: me.dev ? "" : LOGOUT_PATH });
 });
+// Designs: working HTML prototypes. The file is stored here and served from /_design/<id>
+// in a sandbox (scripts run, but cannot reach the Hub's data or sign in).
+const DESIGN_DIR = path.join(UPLOAD_DIR, "designs");
+fs.mkdirSync(DESIGN_DIR, { recursive: true });
+function saveDesign(buf) { const id = crypto.randomBytes(16).toString("hex"); fs.writeFileSync(path.join(DESIGN_DIR, id + ".html"), buf); return id; }
+app.post("/api/design-file", express.raw({ type: () => true, limit: "20mb" }), (req, res) => {
+  if (req.me.role !== "hci") return res.status(403).json({ error: "Only HCI can add prototypes" });
+  if (!Buffer.isBuffer(req.body) || !req.body.length) return res.status(400).json({ error: "The file is empty" });
+  res.json({ file: saveDesign(req.body) });
+});
+app.post("/api/design-file/from-doc/:pid/:item", async (req, res) => {
+  if (req.me.role !== "hci") return res.status(403).json({ error: "Only HCI can add prototypes" });
+  try {
+    const r = await filesApi.fetchItem(req.params.pid, req.params.item);
+    res.json({ file: saveDesign(r) });
+  } catch (e) { res.status(e.status || 500).json({ error: e.message }); }
+});
+app.get("/_design/:id", (req, res) => {
+  const id = String(req.params.id).replace(/[^a-f0-9]/g, "");
+  const f = path.join(DESIGN_DIR, id + ".html");
+  if (!id || !fs.existsSync(f)) return res.status(404).send("Prototype not found");
+  res.setHeader("Content-Security-Policy", "sandbox allow-scripts allow-forms allow-popups allow-modals; frame-ancestors 'self' https://teams.microsoft.com https://*.teams.microsoft.com https://*.office.com https://*.microsoft365.com https://*.cloud.microsoft");
+  res.setHeader("Cache-Control", "private, max-age=300");
+  res.type("html").sendFile(f);
+});
 // SharePoint documents for each project (see files.js)
-app.use("/api/files", require("./files")({ store, bump }));
+const filesApi = require("./files")({ store, bump });
+app.use("/api/files", filesApi);
 app.use("/api/:col", (req, res, next) => {
   if (req.method === "GET" || req.params.col === "all" || req.params.col === "me" || req.params.col === "upload") return next();
   if (!okCol(req.params.col)) return res.status(404).json({ error: "unknown collection" });
