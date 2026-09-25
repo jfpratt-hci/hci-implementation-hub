@@ -14,6 +14,8 @@ env:
   SA: hcionehubdata
 jobs:
   deploy:
+    # Skipped until deploy/github-setup.sh has been run and its client id filled in below.
+    if: ${{ !startsWith('__CLIENT_ID__', '__') }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
