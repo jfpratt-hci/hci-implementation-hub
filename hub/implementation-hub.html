@@ -374,6 +374,8 @@ const S={db:null,dl:null,assets:null,cols:{},pid:null,scope:"portfolio",view:"po
 COLS.forEach(c=>S.cols[c]=[]);
 try{const v=window.HUB_PRESELECT||JSON.parse(localStorage.getItem("hub.nav")||"{}");if(v.pid){S.pid=v.pid}if(v.scope){S.scope=v.scope;S.view=v.view}if(window.HUB_PRESELECT&&window.HUB_PRESELECT.pid)S.channel=true}catch(e){}
 try{S.me=localStorage.getItem("hub.me")||""}catch(e){}
+/* the file naming guide starts open; once someone closes it, it stays closed for them */
+S.dhelp=true;try{S.dhelp=localStorage.getItem("hub.dhelp")!=="closed"}catch(e){}
 
 const $=s=>document.querySelector(s);
 const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -1020,7 +1022,7 @@ document.addEventListener("click",async e=>{
   if(t.dataset.doc){if(e.target.closest("button,input,select,a"))return;S.dsel=S.dsel===t.dataset.doc?null:t.dataset.doc;S.dview=null;render();const v=$("#docview");if(v&&innerWidth<=1100)v.scrollIntoView({behavior:"smooth",block:"start"});return}
   const a=t.dataset.dact,id=t.dataset.id;
   if(a==="close"){S.dsel=null;S.dview=null;render();return}
-  if(a==="help"){S.dhelp=!S.dhelp;render();return}
+  if(a==="help"){S.dhelp=!S.dhelp;try{localStorage.setItem("hub.dhelp",S.dhelp?"open":"closed")}catch(_){}render();return}
   if(a==="add"){S.dup=true;render();setTimeout(()=>{docNamePreview();const d=$("#dupDesc");if(d)d.focus()},0);return}
   if(a==="cancel"){S.dup=false;render();return}
   if(a==="rename"){S.dren=id;render();return}
