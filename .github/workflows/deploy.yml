@@ -27,7 +27,7 @@ jobs:
       - name: Upload the app to the file share
         run: |
           KEY=$(az storage account keys list -g "$RG" -n "$SA" --query "[0].value" -o tsv)
-          mkdir -p /tmp/app && cp -r server.js files.js package.json public data scripts manifest /tmp/app/
+          mkdir -p /tmp/app && cp -r server.js files.js helpdesk.js package.json public data scripts manifest /tmp/app/
           az storage file upload-batch --account-name "$SA" --account-key "$KEY" --destination hubdata --destination-path app --source /tmp/app -o none
       - name: Restart the Hub
         run: |

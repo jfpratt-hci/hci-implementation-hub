@@ -32,7 +32,7 @@ az storage share-rm create -g "$RG" --storage-account "$SA" -n hubdata --quota 5
 
 echo "== Upload the app code"
 SRC=$(mktemp -d)
-cp -r server.js files.js package.json public data scripts manifest "$SRC"/
+cp -r server.js files.js helpdesk.js package.json public data scripts manifest "$SRC"/
 az storage directory create --account-name "$SA" --account-key "$KEY" --share-name hubdata --name app -o none
 az storage file upload-batch --account-name "$SA" --account-key "$KEY" --destination hubdata --destination-path app --source "$SRC" -o none
 rm -rf "$SRC"

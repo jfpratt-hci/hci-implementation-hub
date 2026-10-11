@@ -10,7 +10,7 @@ const crypto = require("crypto");
 const PORT = process.env.PORT || 3000;
 const DATA_DIR = process.env.HUB_DATA_DIR || path.join(__dirname, "data");
 const UPLOAD_DIR = process.env.HUB_UPLOAD_DIR || path.join(__dirname, "uploads");
-const COLS = ["projects","tasks","decisions","meetings","interfaces","people","devices","releases","deployments","components","catalog","access","network","template","team","shots","comments","audit","designs"];
+const COLS = ["projects","tasks","decisions","meetings","interfaces","people","devices","releases","deployments","components","catalog","access","network","template","team","shots","comments","audit","designs","tickets","ticketMessages"];
 const MIME = { "image/png": ".png", "image/jpeg": ".jpg", "image/webp": ".webp", "image/gif": ".gif" };
 // Identity. With REQUIRE_AUTH on, every /api call needs a signed in user from App Service Authentication (Entra ID).
 const REQUIRE_AUTH = /^(1|true|yes)$/i.test(process.env.REQUIRE_AUTH || "");
@@ -66,6 +66,8 @@ function titleOf(col, d) {
   if (col === "devices") return "Room " + (d.room || "") + " " + (DEVTYPES[d.type] || d.type || "");
   if (col === "components") return ((store.catalog || {})[d.catalogId] || {}).name || d.catalogId || "Component";
   if (col === "releases" || col === "deployments") return (d.app || "") + " " + (d.version || "");
+  if (col === "tickets") return "HD-" + (d.number || "") + " " + (d.title || "");
+  if (col === "ticketMessages") return "Ticket message";
   if (col === "shots") return "Screenshot" + (d.caption ? " · " + d.caption : "");
   return d.name || col;
 }
@@ -100,6 +102,9 @@ app.use((req, res, next) => {
   next();
 });
 app.use(express.json({ limit: "2mb" }));
+// Help Desk (see helpdesk.js). The Twilio webhook sits outside /api: Twilio's signature, not a sign in, proves the sender.
+const helpdesk = require("./helpdesk")({ store, bump, audit: (...a) => audit(...a) });
+app.use("/hooks", helpdesk.hooks);
 
 // ---- who is calling ----
 // App Service Authentication validates the Entra session cookie or a bearer token (Teams single sign on)
@@ -155,6 +160,11 @@ function canSee(me, col, doc) {
   if (col === "releases") return me.role !== "partner";
   if (!me.projects.includes(col === "projects" ? doc.__id : doc.projectId)) return false;
   if (doc.visibility === "internal") return false;
+  if (col === "tickets" || col === "ticketMessages") {
+    // Help Desk: only on projects with the add on, and never for integration partners
+    const p = store.projects[doc.projectId];
+    return me.role !== "partner" && !!p && p.supportPlan === "enterprise" && (p.helpdesk === true || p.helpdesk === "true");
+  }
   if (col === "comments") return commentVisible(me, doc);
   if (me.role === "partner") return col === "projects" || col === "interfaces" || col === "people" || (col === "tasks" && doc.party === "partner");
   if (col === "access" || col === "network") return me.role === "customer";
@@ -225,6 +235,7 @@ app.get("/_design/:id", (req, res) => {
 // SharePoint documents for each project (see files.js)
 const filesApi = require("./files")({ store, bump });
 app.use("/api/files", filesApi);
+app.use("/api/helpdesk", helpdesk.router);
 app.use("/api/:col", (req, res, next) => {
   if (req.method === "GET" || req.params.col === "all" || req.params.col === "me" || req.params.col === "upload") return next();
   if (!okCol(req.params.col)) return res.status(404).json({ error: "unknown collection" });

@@ -15,6 +15,7 @@ HCI's own implementation management app (replaces the idea of buying Rocketlane 
 - `hub/implementation-hub.html`: the whole page (views, forms, styles). Build `public/index.html` from it with `python3 scripts/page.py` and commit both
 - `server.js`: JSON API, identity and role rules, audit trail, design prototype files
 - `files.js`: SharePoint documents per project through Microsoft Graph
+- `helpdesk.js`: Help Desk tickets, the Twilio text webhook at /hooks/sms and on call paging (add on to 24x7 Enterprise Support)
 - `public/hub-data.js`: data layer the page uses (API, Teams sign in, documents)
 
 ## Decisions John made (keep them)

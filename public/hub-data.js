@@ -118,6 +118,13 @@
     },
     rename: function(pid,id,body){ return fetch("/api/files/"+encodeURIComponent(pid)+"/rename/"+encodeURIComponent(id),{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)}).then(jget); }
   };
+  // Help Desk (server side, see helpdesk.js)
+  window.HUB_HELPDESK = {
+    status: function(){ return fetch("/api/helpdesk/status",{cache:"no-store"}).then(jget); },
+    create: function(pid,body){ return req("POST","/api/helpdesk/"+encodeURIComponent(pid)+"/tickets",body); },
+    reply: function(id,body){ return req("POST","/api/helpdesk/tickets/"+encodeURIComponent(id)+"/reply",body); },
+    update: function(id,body){ return req("POST","/api/helpdesk/tickets/"+encodeURIComponent(id)+"/update",body); }
+  };
   var caps = { db: db, downloads: downloads, assets: assets };
   // Sign in first: inside Teams through single sign on, in a browser through the App Service sign in page.
   function signInScreen(login) {
