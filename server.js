@@ -180,7 +180,7 @@ function viewFor(me) {
       if (!canSee(me, col, Object.assign({ __id: id }, doc))) continue;
       let d = doc;
       if (col === "devices" && me.role !== "customer") { d = Object.assign({}, doc); for (const k of NET_FIELDS) delete d[k]; }
-      if (col === "projects") { d = Object.assign({}, doc); delete d.hubspot; }
+      if (col === "projects") { d = Object.assign({}, doc); delete d.hubspot; delete d.remoteUrl; }
       out[col][id] = d;
     }
   }
