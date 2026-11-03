@@ -193,7 +193,7 @@
       else { state.armed = t.id; clearTimeout(armTimer); armTimer = setTimeout(function () { state.armed = null; redraw(); }, 3500); redraw(); }
     });
     meta.appendChild(del);
-    var kids = [el("div", { class: "drow" }, [cb, el("label", { class: "dtxt", text: t.title || "" })]), meta];
+    var kids = [el("div", { class: "drow" }, [cb, (function () { var x = el("div", { class: "dtxt", text: t.title || "", title: "Click to edit", style: "cursor:pointer" }); x.addEventListener("click", function () { openEdit(t); }); return x; })()]), meta];
     if (state.open[t.id]) {
       var box = el("div", { class: "dcom" });
       cs.forEach(function (c) { box.appendChild(el("div", { class: "dc" }, [el("div", { text: c.text || "" }), el("small", { text: (c.by || "Someone") + " · " + fmtStamp(c.at) })])); });
@@ -216,7 +216,7 @@
     sd.addEventListener("change", function () { state.showDone = sd.checked; try { localStorage.setItem("hub.daily.showDone", state.showDone ? "1" : "0"); } catch (e) {} redraw(); });
     var addBtn = el("button", { type: "button", class: "btn sm", text: "New task" }); addBtn.addEventListener("click", function () { openEdit(null); });
     root.appendChild(el("div", { class: "dtop" }, [el("span", { class: "dsync", text: syncText() }), el("div", { class: "dstats" }, [
-      el("span", null, [el("b", { text: String(open) }), document.createTextNode(" open · "), el("b", { text: String(done) }), document.createTextNode(" done")]),
+      el("span", null, [el("b", { text: String(open) }), document.createTextNode(" open · "), el("b", { text: String(all.filter(isWait).length) }), document.createTextNode(" stuck on others · "), el("b", { text: String(all.filter(isOver).length) }), document.createTextNode(" overdue · "), el("b", { text: String(done) }), document.createTextNode(" done")]),
       el("label", { style: "display:inline-flex;gap:6px;align-items:center;cursor:pointer" }, [sd, document.createTextNode("Show done")]), addBtn])]));
     var chips = el("div", { class: "dchips", role: "group", "aria-label": "Filter by project or hospital" });
     var mk = function (label, val, n) {
@@ -258,7 +258,7 @@
     names.forEach(function (n) { lane(n, pool.filter(function (t) { return t.owner === n && !isWait(t); }), false, n); });
     var un = pool.filter(function (t) { return !teamName(t.owner) && !isWait(t); });
     if (un.length) lane("Unassigned", un, false, "");
-    lane("Stuck, waiting on others", pool.filter(isWait), true, "");
+    lane("Stuck, waiting on others", pool.filter(isWait).sort(function (x, y) { return waitLabel(x).name.localeCompare(waitLabel(y).name); }), true, "");
     root.appendChild(board);
   }
 

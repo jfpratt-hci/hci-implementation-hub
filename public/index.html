@@ -360,7 +360,7 @@ const PVIEWS=[["overview","Overview"],["plan","Plan"],["decisions","Decisions"],
 const SUBS={system:[["config","Configuration"],["installed","Installed base"],["changelog","App changelog"]],integrations:[["integrations","Integrations"],["access","Access and network"]],team:[["people","People"],["feed","Feed"],["audit","History"]]};
 /* old screen names still used by links and saved navigation */
 const LEGACY={config:["system","config"],installed:["system","installed"],changelog:["system","changelog"],access:["integrations","access"],feed:["team","feed"],people:["team","people"],audit:["team","audit"],meetings:["plan",""]};
-const PORTTABS=[["dash","Dashboard"],["daily","Board"],["portfolio","Projects"],["alldecisions","Decisions waiting"],["allwork","Overdue work"],["helpdesk","Help Desk"]];
+const PORTTABS=[["daily","Board"],["portfolio","Projects"],["alldecisions","Decisions waiting"],["allwork","Overdue work"],["helpdesk","Help Desk"]];
 const AVIEWS=[["catalog","Component catalog"],["template","Project template"],["team","HCI team"],["releases","Releases"],["projects","All projects"]];
 const opt=o=>Object.entries(o);
 const FORMS={
@@ -383,9 +383,10 @@ const FORMS={
 const TITLES={tasks:"task",decisions:"decision",meetings:"meeting",interfaces:"integration",people:"person",devices:"device",releases:"release",projects:"project",components:"component",catalog:"catalog item",access:"remote access",network:"network",template:"template task",team:"team member",designs:"design",tickets:"ticket",ticketMessages:"ticket message"};
 const GLOBAL=new Set(["releases","catalog","template","team","projects"]);
 
-const S={db:null,dl:null,assets:null,cols:{},pid:null,scope:"portfolio",view:"dash",role:"hci",filter:"open",ffilter:"all",me:"",ready:false,sub:{},channel:false};
+const S={db:null,dl:null,assets:null,cols:{},pid:null,scope:"portfolio",view:"daily",role:"hci",filter:"open",ffilter:"all",me:"",ready:false,sub:{},channel:false};
 COLS.forEach(c=>S.cols[c]=[]);
 try{const v=window.HUB_PRESELECT||JSON.parse(localStorage.getItem("hub.nav")||"{}");if(v.pid){S.pid=v.pid}if(v.scope){S.scope=v.scope;S.view=v.view}if(window.HUB_PRESELECT&&window.HUB_PRESELECT.pid)S.channel=true}catch(e){}
+if(S.view==="dash")S.view="daily";
 try{S.me=localStorage.getItem("hub.me")||""}catch(e){}
 /* the file naming guide starts open; once someone closes it, it stays closed for them */
 S.dhelp=true;try{S.dhelp=localStorage.getItem("hub.dhelp")!=="closed"}catch(e){}
@@ -450,7 +451,7 @@ function renderSide(){
   let h="";
   if(S.scope==="project"&&P()){
     const p=P();const st=stats(p.id);const gl=days(p.goLive);const ph=Number(p.phase)||0;
-    const back=staff&&!S.channel?`<button class="iconbtn" data-go="portfolio:dash" aria-label="Dashboard" title="Dashboard">${BACK}</button>`:"";
+    const back=staff&&!S.channel?`<button class="iconbtn" data-go="portfolio:daily" aria-label="Board" title="Board">${BACK}</button>`:"";
     const roleBar=S.locked?"":`<div class="viewas" role="group" aria-label="Preview as">${[["hci","HCI"],["customer","Customer"],["dealer","Dealer"],["partner","Partner"]].map(([k,l])=>`<button class="seg ${S.role===k?"on":""}" data-role="${k}">${l}</button>`).join("")}</div>`;
     const counts={plan:[vis("tasks").filter(t=>t.status!=="done").length,st.over?"bad":""],decisions:[vis("decisions").filter(d=>d.pending).length,"warn"],integrations:[S.role==="dealer"?0:vis("interfaces").filter(i=>i.status==="blocked").length,"bad"],helpdesk:[ofP("tickets",p.id).filter(t=>t.status==="new"||(S.role==="hci"?t.status==="hci":t.status==="customer")).length,"warn"]};
     h=`<div class="bar-top">${back}<div class="bar-title"><span class="eyebrow">${esc(p.customer||"")}${p.site?" · "+esc(p.site):""}</span><h1>${esc(p.name)}</h1></div>
@@ -461,8 +462,8 @@ function renderSide(){
     h=`<div class="bar-top"><button class="iconbtn" data-go="portfolio:portfolio" aria-label="All projects" title="All projects">${BACK}</button><div class="bar-title"><span class="eyebrow">HCI ONE · Implementation Hub</span><h1>Admin</h1></div><span class="pill int">HCI only</span><div class="bar-right">${meBlock()}</div></div>
      <nav class="tabs" aria-label="Admin">${AVIEWS.map(([k,l])=>tab(S.view===k,`data-go="admin:${k}"`,l)).join("")}</nav>`;
   }else{
-    h=`<div class="bar-top"><div class="bar-title"><span class="eyebrow">HCI ONE · Implementation Hub</span><h1>${S.view==="dash"||S.view==="daily"?"Daily dashboard":"All projects"}</h1></div><div class="bar-right">${staff?'<button class="btn sm" data-act="newproj">New project</button>':""}${gear}${meBlock()}</div></div>
-     <nav class="tabs" aria-label="Portfolio">${PORTTABS.filter(([k])=>k!=="helpdesk"||staff).map(([k,l])=>tab(S.view===k,`data-go="portfolio:${k}"`,l,k==="portfolio"?projs.length:k==="alldecisions"?totDec:k==="helpdesk"?S.cols.tickets.filter(t=>t.status==="new"||t.status==="hci").length:k==="daily"||k==="dash"?0:totOver,k==="alldecisions"||k==="helpdesk"?"warn":k==="allwork"?"bad":"")).join("")}</nav>`;
+    h=`<div class="bar-top"><div class="bar-title"><span class="eyebrow">HCI ONE · Implementation Hub</span><h1>${S.view==="daily"?"Daily board":"All projects"}</h1></div><div class="bar-right">${staff?'<button class="btn sm" data-act="newproj">New project</button>':""}${gear}${meBlock()}</div></div>
+     <nav class="tabs" aria-label="Portfolio">${PORTTABS.filter(([k])=>k!=="helpdesk"||staff).map(([k,l])=>tab(S.view===k,`data-go="portfolio:${k}"`,l,k==="portfolio"?projs.length:k==="alldecisions"?totDec:k==="helpdesk"?S.cols.tickets.filter(t=>t.status==="new"||t.status==="hci").length:k==="daily"?0:totOver,k==="alldecisions"||k==="helpdesk"?"warn":k==="allwork"?"bad":"")).join("")}</nav>`;
   }
   $("#side").innerHTML=h+ownersList();
 }
@@ -471,14 +472,14 @@ function renderSide(){
 function render(){
   if(!S.ready)return;
   if(S.locked&&S.role!=="hci"){S.scope="project";if(!P())S.pid=(S.cols.projects[0]||{}).id||null;if(!P()){renderSide();$("#main").innerHTML='<div class="loading">You are not on a project team yet. Ask HCI to add you to the project.</div>';return}}
-  if(S.scope==="project"&&!P()){S.scope="portfolio";S.view="dash"}
+  if(S.scope==="project"&&!P()){S.scope="portfolio";S.view="daily"}
   if(S.scope==="project"&&LEGACY[S.view]){const [v,sub]=LEGACY[S.view];if(sub)S.sub[v]=sub;S.view=v}
   if(S.scope==="project"&&!allowed().includes(S.view))S.view="overview";
   renderSide();
   const main=$("#main");
   const FILL={overview:1,plan:1,decisions:1,portfolio:1,designs:1,helpdesk:1,daily:1,dash:1};
   main.classList.toggle("fill",!!FILL[S.view]&&S.scope!=="admin");
-  if(S.scope==="portfolio"){main.innerHTML=PORT[S.view]?PORT[S.view]():PORT.portfolio();if((S.view==="daily"||S.view==="dash")&&window.HUB_DAILY)window.HUB_DAILY.mount(document.getElementById("dailyMount"),S.view==="daily"?"board":"dash",dailyCtx());return}
+  if(S.scope==="portfolio"){main.innerHTML=PORT[S.view]?PORT[S.view]():PORT.portfolio();if(S.view==="daily"&&window.HUB_DAILY)window.HUB_DAILY.mount(document.getElementById("dailyMount"),"board",dailyCtx());return}
   if(S.scope==="admin"){main.innerHTML=ADMIN[S.view]?ADMIN[S.view]():ADMIN.catalog();return}
   const p=P();
   const banner=S.role!=="hci"&&!S.locked?`<div class="banner">Previewing the ${PARTIES[S.role].toLowerCase()} portal. ${S.role==="partner"?"Partners see only their own tasks, integrations and the project team.":S.role==="dealer"?"Dealers see project work without IP addresses, MACs, remote access or HCI only notes.":"Customers see everything marked for the whole project; HCI only items are hidden."}</div>`:"";
