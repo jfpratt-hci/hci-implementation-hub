@@ -964,7 +964,7 @@ function openForm(col,id,defaults){
     out.updatedAt=now();
     try{
       if(id)await setDoc(col,id,out);
-      else{out.createdAt=out.updatedAt;const r=await addDoc(col,out,col==="projects"?"Created with the project template":"");if(col==="projects"){await seedTemplate(r.id);S.pid=r.id;S.scope="project";S.view="overview";saveNav()}}
+      else{out.createdAt=out.updatedAt;const r=await addDoc(col,out,"");if(col==="projects"){S.pid=r.id;S.scope="project";S.view="overview";saveNav()}}
       closeModal();toast("Saved");
     }catch(e){toast("Not saved: "+(e.code||e.message))}
   };
