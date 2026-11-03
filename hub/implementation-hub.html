@@ -262,7 +262,7 @@ table.docs tr.on td{background:var(--chip-pos)}
 .iconbtn svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .me{display:flex;flex-direction:column;align-items:flex-end;line-height:1.2;font-size:12px;font-weight:800;max-width:180px}
 .me a,.me .who{font-size:11px}.me input{border:1px solid var(--card-brd);background:var(--card2);border-radius:var(--r-pill);padding:6px 12px;font-weight:700;width:150px}
-.bar-top.hastabs{padding-block:0}.tabs.inbar{margin-left:18px;padding:0;min-width:0}.tabs.inbar .tab{height:58px}.tabs{display:flex;align-items:stretch;gap:2px;padding:0 16px;overflow-x:auto;scrollbar-width:none}
+.bar-top.hastabs{padding-block:0}.subrow{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-right:24px}.subrow .tabs{min-width:0}.subright{flex:none}.gnav{flex:none;overflow:visible}.bar-meta{min-width:0;flex-wrap:wrap}.bar-top.hastabs .bar-title{flex:1 1 auto;min-width:160px}.vsep{width:1px;align-self:stretch;margin:12px 4px;background:var(--card-brd)}.tabs.inbar{margin-left:0;padding:0;min-width:0}.tabs.inbar .tab{height:58px}.tabs{display:flex;align-items:stretch;gap:2px;padding:0 16px;overflow-x:auto;scrollbar-width:none}
 .tabs::-webkit-scrollbar{display:none}
 .tab{border:0;background:transparent;height:44px;padding:0 14px;font-weight:700;font-size:13px;color:var(--muted);border-bottom:3px solid transparent;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
 .tab:hover{color:var(--ink)}
@@ -438,21 +438,24 @@ function renderSide(){
   const totOver=S.cols.tasks.filter(t=>over(t)&&byId("projects",t.projectId)?.status!=="done").length;
   const tab=(on,attrs,label,count,cls)=>`<button class="tab ${on?"on":""}" ${attrs}${on?' aria-current="page"':""}>${label}${count?`<span class="count ${cls||""}">${count}</span>`:""}</button>`;
   const gear=staff?`<button class="iconbtn" data-go="admin:catalog" aria-label="Admin" title="Admin">${GEAR}</button>`:"";
+  const openTasks=S.cols.tasks.filter(t=>t.status!=="done").length,openTix=S.cols.tickets.filter(t=>t.status!=="closed").length;
+  const gnav=on=>`<nav class="tabs inbar gnav" aria-label="Main">${PORTTABS.filter(([k])=>k!=="helpdesk"||staff).map(([k,l])=>tab(on===k,`data-go="portfolio:${k}"`,l,k==="portfolio"?S.cols.customers.length:k==="helpdesk"?openTix:k==="daily"?openTasks:0,k==="helpdesk"&&openTix?"warn":"")).join("")}</nav>`;
   let h="";
   if(S.scope==="project"&&P()){
     const p=P();const st=stats(p.id);const gl=days(p.goLive);const ph=Number(p.phase)||0;
     const back=staff&&!S.channel?`<button class="iconbtn" data-go="portfolio:daily" aria-label="Board" title="Board">${BACK}</button>`:"";
     const roleBar=S.locked?"":`<div class="viewas" role="group" aria-label="Preview as">${[["hci","HCI"],["customer","Customer"],["dealer","Dealer"],["partner","Partner"]].map(([k,l])=>`<button class="seg ${S.role===k?"on":""}" data-role="${k}">${l}</button>`).join("")}</div>`;
     const counts={plan:[vis("tasks").filter(t=>t.status!=="done").length,st.over?"bad":""],decisions:[vis("decisions").filter(d=>d.pending).length,"warn"],integrations:[S.role==="dealer"?0:vis("interfaces").filter(i=>i.status==="blocked").length,"bad"],helpdesk:[ofP("tickets",p.id).filter(t=>t.status==="new"||(S.role==="hci"?t.status==="hci":t.status==="customer")).length,"warn"]};
-    h=`<div class="bar-top">${back}<div class="bar-title"><span class="eyebrow">${esc(p.customer||"")}${p.site?" · "+esc(p.site):""}</span><h1>${esc(p.name)}</h1></div>
-     <div class="bar-meta">${stPill(p.status)}${mini(ph)}<span class="who">Phase ${ph+1} of ${PHASES.length} · ${esc(PHASES[ph])}</span></div>
-     <div class="bar-right">${roleBar}<div class="golive"><small>Go live</small><b>${p.goLive?fd(p.goLive)+(gl!=null?` · ${gl<0?Math.abs(gl)+" days past":gl+" days"}`:""):"Not set"}</b></div>${S.role==="hci"&&p.remoteUrl?`<a class="btn sec sm" href="${esc(p.remoteUrl)}" target="_blank" rel="noopener" title="Open this site's Board Remote in a new tab">Board Remote</a>`:""}${S.role==="hci"?`<button class="btn sec sm" data-edit="projects" data-id="${esc(p.id)}">Edit</button>`:""}${gear}${meBlock()}</div></div>
-     <nav class="tabs" aria-label="Project">${PVIEWS.filter(v=>allowed().includes(v[0])).map(([k,l])=>{const c=counts[k]||[0,""];return tab(S.view===k,`data-go="project:${k}:${esc(p.id)}"`,l,c[0],c[1])}).join("")}</nav>`;
+    const inNav=staff&&!S.channel;
+    h=`<div class="bar-top${inNav?" hastabs":""}">${inNav?gnav(""):back}${inNav?'<span class="vsep"></span>':""}<div class="bar-title"><span class="eyebrow">${esc(p.customer||"")}${p.site?" · "+esc(p.site):""}</span><h1>${esc(p.name)}</h1></div>
+     <div class="bar-meta">${stPill(p.status)}${mini(ph)}<span class="who">Phase ${ph+1} · ${esc(PHASES[ph])}</span><span class="who">·</span><span class="who">Go live <b>${p.goLive?fd(p.goLive)+(gl!=null?` (${gl<0?Math.abs(gl)+" days past":gl+" days"})`:""):"not set"}</b></span></div>
+     <div class="bar-right">${S.role==="hci"&&p.remoteUrl?`<a class="btn sec sm" href="${esc(p.remoteUrl)}" target="_blank" rel="noopener" title="Open this site's Board Remote in a new tab">Board Remote</a>`:""}${S.role==="hci"?`<button class="btn sec sm" data-edit="projects" data-id="${esc(p.id)}">Edit</button>`:""}${gear}${meBlock()}</div></div>
+     <div class="subrow"><nav class="tabs" aria-label="Project">${PVIEWS.filter(v=>allowed().includes(v[0])).map(([k,l])=>{const c=counts[k]||[0,""];return tab(S.view===k,`data-go="project:${k}:${esc(p.id)}"`,l,c[0],c[1])}).join("")}</nav><div class="subright">${roleBar}</div></div>`;
   }else if(S.scope==="admin"){
     h=`<div class="bar-top"><button class="iconbtn" data-go="portfolio:portfolio" aria-label="All projects" title="All projects">${BACK}</button><div class="bar-title"><span class="eyebrow">HCI ONE · Implementation Hub</span><h1>Admin</h1></div><span class="pill int">HCI only</span><div class="bar-right">${meBlock()}</div></div>
      <nav class="tabs" aria-label="Admin">${AVIEWS.map(([k,l])=>tab(S.view===k,`data-go="admin:${k}"`,l)).join("")}</nav>`;
   }else{
-    h=`<div class="bar-top hastabs"><div class="bar-title"><span class="eyebrow">HCI ONE</span><h1>${S.view==="daily"?"Daily board":"Customers"}</h1></div><nav class="tabs inbar" aria-label="Portfolio">${PORTTABS.filter(([k])=>k!=="helpdesk"||staff).map(([k,l])=>tab(S.view===k,`data-go="portfolio:${k}"`,l,k==="portfolio"?S.cols.customers.length:k==="alldecisions"?totDec:k==="helpdesk"?S.cols.tickets.filter(t=>t.status==="new"||t.status==="hci").length:k==="daily"?0:totOver,k==="alldecisions"||k==="helpdesk"?"warn":k==="allwork"?"bad":"")).join("")}</nav><div class="bar-right">${staff?'<button class="btn sm" data-new="customers">New customer</button>':""}${gear}${meBlock()}</div></div>`;
+    h=`<div class="bar-top hastabs"><div class="bar-title"><span class="eyebrow">HCI ONE</span><h1>${S.view==="daily"?"Daily board":"Customers"}</h1></div>${gnav(S.view)}<div class="bar-right">${staff?'<button class="btn sm" data-new="customers">New customer</button>':""}${gear}${meBlock()}</div></div>`;
   }
   $("#side").innerHTML=h+ownersList();
 }
@@ -1057,11 +1060,12 @@ document.addEventListener("keydown",e=>{
   if(tn==="input"||tn==="textarea"||tn==="select"||(tg&&tg.isContentEditable))return;
   if($("#modalRoot").innerHTML)return;
   const k=e.key;
-  if(/^[1-9]$/.test(k)){const t=document.querySelectorAll("#side .tab")[Number(k)-1];if(t){e.preventDefault();t.click()}return}
-  if(k==="b"||k==="B"){const bk=document.querySelector("#side .bar-top .iconbtn[data-go]");if(bk){e.preventDefault();bk.click()}return}
+  if(/^[1-9]$/.test(k)){const sub=document.querySelectorAll("#side .tabs:not(.gnav) .tab");const t=(sub.length?sub:document.querySelectorAll("#side .gnav .tab"))[Number(k)-1];if(t){e.preventDefault();t.click()}return}
+  if(k==="c"||k==="C"||k==="h"||k==="H"){const g=document.querySelectorAll("#side .gnav .tab");const t=g[/c/i.test(k)?1:2];if(t){e.preventDefault();t.click()}return}
+  if(k==="b"||k==="B"){const bk=document.querySelector("#side .gnav .tab")||document.querySelector("#side .bar-top .iconbtn[data-go]");if(bk){e.preventDefault();bk.click()}return}
   if(k==="n"||k==="N"){const nb=[...document.querySelectorAll("#dailyRoot .btn")].find(x=>x.textContent.trim()==="New task")||document.querySelector('#main [data-new="tasks"]')||document.querySelector('#side [data-new="customers"]');if(nb){e.preventDefault();nb.click()}return}
   if(k==="o"||k==="O"){const ob=[...document.querySelectorAll("#dailyRoot .fchip")].find(x=>/^Overdue/.test(x.textContent));if(ob){e.preventDefault();ob.click()}return}
-  if(k==="?"){toast("Keys: 1 2 3 switch tabs · N new task · O overdue filter · B back · Esc closes a window")}
+  if(k==="?"){toast("Keys: B board · C customers · H help desk · 1 2 3 tabs on a screen · N new task · O overdue filter · Esc closes a window")}
 });
 document.addEventListener("focusout",e=>{if(e.target&&e.target.closest&&(e.target.closest(".pend")||e.target.id==="cmtText"||e.target.id==="meIn"))setTimeout(schedule,80)});
 
