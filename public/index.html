@@ -283,6 +283,7 @@ table.docs tr.on td{background:var(--chip-pos)}
 .subnav2{display:inline-flex;gap:2px;padding:4px;background:var(--card);border-radius:var(--r-pill);box-shadow:var(--shadow);margin-bottom:14px}
 .subnav2 .seg{padding:7px 16px}
 /* screens that fit the window: cards fill the height and long lists scroll inside their card */
+.ov3{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,4.4fr) minmax(0,3.6fr);gap:16px;flex:1;min-height:0;align-items:stretch}.ovcol{display:flex;flex-direction:column;gap:16px;min-height:0;overflow:auto}@media(max-width:1000px){.ov3{grid-template-columns:minmax(0,1fr);overflow:auto}.ovcol{overflow:visible}}
 .fit{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:16px;align-content:start}
 .fit>.card{display:flex;flex-direction:column;min-height:0}
 .scroll{overflow:auto;min-height:0}
@@ -355,12 +356,12 @@ const BASIS={each:"Each",bed:"Per bed",room:"Per room",unit:"Per unit",station:"
 const DEVTYPES={"Door Sign":"Door sign","Whiteboard":"Whiteboard","Patient TV":"Patient TV","Unit Status Board":"Unit status board","Camera":"Camera","Server":"Server","Workstation":"Workstation","Other":"Other"};
 const APPS=["Whiteboard","Door Sign","Patient TV","Unit Status Board","Rounding","eSitter","Virtual Nursing","Launcher"];
 const COLS=["projects","tasks","decisions","meetings","interfaces","people","devices","releases","deployments","components","catalog","access","network","template","team","shots","comments","audit","designs","tickets","ticketMessages","dailyMeta","customers"];
-const PVIEWS=[["overview","Overview"],["plan","Plan"],["decisions","Decisions"],["files","Files"],["designs","Designs"],["helpdesk","Help Desk"],["system","System"],["integrations","Integrations"],["team","Team"]];
+const PVIEWS=[["overview","Overview"],["plan","Plan"],["files","Files"],["helpdesk","Help Desk"]];
 /* tabs that hold more than one screen */
 const SUBS={system:[["config","Configuration"],["installed","Installed base"],["changelog","App changelog"]],integrations:[["integrations","Integrations"],["access","Access and network"]],team:[["people","People"],["feed","Feed"],["audit","History"]]};
 /* old screen names still used by links and saved navigation */
-const LEGACY={config:["system","config"],installed:["system","installed"],changelog:["system","changelog"],access:["integrations","access"],feed:["team","feed"],people:["team","people"],audit:["team","audit"],meetings:["plan",""]};
-const PORTTABS=[["daily","Board"],["portfolio","Customers"],["alldecisions","Decisions waiting"],["allwork","Overdue work"],["helpdesk","Help Desk"]];
+const LEGACY={config:["overview",""],installed:["overview",""],changelog:["overview",""],system:["overview",""],integrations:["overview",""],team:["overview",""],feed:["overview",""],people:["overview",""],decisions:["overview",""],designs:["files",""],meetings:["plan",""]};
+const PORTTABS=[["daily","Board"],["portfolio","Customers"],["allwork","Overdue work"],["helpdesk","Help Desk"]];
 const AVIEWS=[["catalog","Component catalog"],["template","Project template"],["team","HCI team"],["releases","Releases"],["projects","All projects"]];
 const opt=o=>Object.entries(o);
 const FORMS={
@@ -378,7 +379,7 @@ const FORMS={
  network:[["name","Network","text",1],["vlan","VLAN","text"],["subnet","Subnet","text"],["gateway","Gateway","text"],["dns","DNS","text"],["dhcp","Addressing","select",0,0,{static:"Static",dhcp:"DHCP",reserved:"DHCP reservations"}],["ports","Firewall and ports","text",0,1],["notes","Notes","area",0,1]],
  template:[["title","Task","text",1,1],["phase","Phase","select",0,0,PHASES],["party","Party","select",0,0,PARTIES],["order","Order","number"]],
  team:[["name","Name","text",1],["role","Role","text"],["email","Email","text",0,1]],
- customers:[["name","Customer name","text",1,1],["contact","Main contact","text"],["notes","Notes","area",0,1]],
+ customers:[["name","Customer name","text",1,1],["githubUrl","GitHub repository link","text",0,1],["contact","Main contact","text"],["notes","Notes","area",0,1]],
  designs:[["app","App","select",1,0,Object.fromEntries(APPS.map(a=>[a,a]))],["name","Title","text",1],["version","Version","text"],["status","Status","select",0,0,{draft:"Draft",review:"Ready for review",approved:"Approved by customer"}],["notes","What changed","area",0,1],["visibility","Who can see it","select",0,0,{external:"Everyone on the project",internal:"HCI only"}]]
 };
 const TITLES={tasks:"task",decisions:"decision",meetings:"meeting",interfaces:"integration",people:"person",devices:"device",releases:"release",projects:"project",components:"component",catalog:"catalog item",access:"remote access",network:"network",template:"template task",team:"team member",designs:"design",tickets:"ticket",ticketMessages:"ticket message",customers:"customer"};
@@ -422,10 +423,10 @@ const vis=(c,pid)=>ofP(c,pid||S.pid).filter(x=>canSee(x,c));
 const netOK=()=>S.role==="hci"||S.role==="customer";
 function allowed(){
   const hd=hdOn(P())?["helpdesk"]:[];
-  if(S.role==="partner")return["overview","plan","integrations","team"];
-  if(S.role==="dealer")return["overview","plan","decisions","files","designs",...hd,"system","team"];
-  if(S.role==="customer")return["overview","plan","decisions","files","designs",...hd,"integrations","team"];
-  return PVIEWS.map(v=>v[0]).filter(v=>v!=="helpdesk"||hd.length);
+  if(S.role==="partner")return["overview","plan"];
+  if(S.role==="dealer")return["overview","plan","files",...hd];
+  if(S.role==="customer")return["overview","plan","files",...hd,"access"];
+  return PVIEWS.map(v=>v[0]).filter(v=>v!=="helpdesk"||hd.length).concat(["access","audit"]);
 }
 /* Help Desk: an add on to 24x7 Enterprise Support only */
 const yes=v=>v===true||v==="true";
@@ -484,7 +485,8 @@ function render(){
   if(S.scope==="admin"){main.innerHTML=ADMIN[S.view]?ADMIN[S.view]():ADMIN.catalog();return}
   const p=P();
   const banner=S.role!=="hci"&&!S.locked?`<div class="banner">Previewing the ${PARTIES[S.role].toLowerCase()} portal. ${S.role==="partner"?"Partners see only their own tasks, integrations and the project team.":S.role==="dealer"?"Dealers see project work without IP addresses, MACs, remote access or HCI only notes.":"Customers see everything marked for the whole project; HCI only items are hidden."}</div>`:"";
-  main.innerHTML=banner+(S.view==="integrations"?VIEW.integrations2(p):VIEW[S.view](p));
+  const back2=(S.view==="access"||S.view==="audit")?`<div class="filters"><button class="btn sec sm" data-go="project:overview:${esc(p.id)}">Back to overview</button></div>`:"";
+  main.innerHTML=banner+back2+VIEW[S.view](p);
   if(S.view==="helpdesk"){const th=main.querySelector(".c7 .scroll");if(th)th.scrollTop=th.scrollHeight}
 }
 function head(title,sub,right){return (sub||right)?`<div class="filters"><span class="who">${sub||""}</span><span class="push">${right||""}</span></div>`:""}
@@ -529,7 +531,7 @@ portfolio(){
   const tk=S.cols.tasks.filter(t=>t.status!=="done");
   const row=p=>{const s=stats(p.id);const gl=days(p.goLive);const ph=Number(p.phase)||0;const n=tk.filter(t=>t.projectId===p.id).length;
     return `<button type="button" class="pcard" data-go="project:overview:${esc(p.id)}" style="min-height:0;padding:12px 14px;gap:6px;box-shadow:none;border:1px solid var(--line)"><div style="display:flex;gap:10px;align-items:center;width:100%"><div class="nm" style="flex:1;min-width:0;font-size:14.5px">${esc(p.name)}</div>${stPill(p.status)}</div>
-     ${mini(ph)}<div class="foot" style="margin-top:0"><span>Phase ${ph+1} · ${esc(PHASES[ph])}</span><span>${n} open task${n===1?"":"s"}</span><span>${p.goLive?"Go live "+fd(p.goLive):"No go live date"}${gl!=null&&gl<0?` · ${Math.abs(gl)} days past`:""}</span>${s.dec?`<span style="color:var(--chip-caution-ink)">${s.dec} to decide</span>`:""}${s.over?`<span style="color:var(--warn-deep)">${s.over} overdue</span>`:""}</div></button>`};
+     ${mini(ph)}<div class="foot" style="margin-top:0"><span>Phase ${ph+1} · ${esc(PHASES[ph])}</span><span>${n} open task${n===1?"":"s"}</span><span>${p.goLive?"Go live "+fd(p.goLive):"No go live date"}${gl!=null&&gl<0?` · ${Math.abs(gl)} days past`:""}</span>${s.over?`<span style="color:var(--warn-deep)">${s.over} overdue</span>`:""}</div></button>`};
   const card=g=>{const c=g.c;const pids=new Set(g.ps.map(p=>p.id));
     const mine=tk.filter(t=>c.id?(t.customerId===c.id||pids.has(t.projectId)):pids.has(t.projectId));
     const stuck=mine.filter(t=>t.status==="waiting").length,od=mine.filter(over).length,np=mine.filter(t=>!t.projectId).length;
@@ -537,7 +539,7 @@ portfolio(){
     return `<section class="card" style="display:flex;flex-direction:column;gap:10px;align-content:start"><div style="display:flex;gap:10px;align-items:baseline"><h2 style="margin:0;font-size:18px;flex:1;min-width:0">${esc(c.name)}</h2>${staff&&c.id?`<button type="button" ${lk} data-edit="customers" data-id="${esc(c.id)}">Edit</button>`:""}</div>
       <div class="who">${g.ps.length} project${g.ps.length===1?"":"s"} · ${mine.length} open task${mine.length===1?"":"s"}${stuck?` · ${stuck} stuck`:""}${od?` · <span style="color:var(--warn-deep)">${od} overdue</span>`:""}${np?` · ${np} not on a project yet`:""}</div>
       ${g.ps.map(row).join("")||'<div class="who">No projects yet.</div>'}
-      <div style="display:flex;gap:16px;margin-top:2px">${c.id?`<button type="button" ${lk} data-act="custboard" data-cust="${esc(c.id)}">Tasks (${mine.length})</button>`:""}${staff&&c.id?`<button type="button" ${lk} data-act="newproj" data-cust="${esc(c.id)}">+ Add project</button>`:""}</div></section>`};
+      <div style="display:flex;gap:16px;margin-top:2px">${c.id?`<button type="button" ${lk} data-act="custboard" data-cust="${esc(c.id)}">Tasks (${mine.length})</button>`:""}${staff&&c.id?`<button type="button" ${lk} data-act="newproj" data-cust="${esc(c.id)}">+ Add project</button>`:""}${c.githubUrl&&/^https?:\/\//i.test(c.githubUrl)?`<a ${lk} href="${esc(c.githubUrl)}" target="_blank" rel="noopener" style="text-decoration:none">GitHub</a>`:staff&&c.id?`<button type="button" ${lk} data-edit="customers" data-id="${esc(c.id)}">+ GitHub link</button>`:""}</div></section>`};
   return `<div style="flex:1;min-height:0;width:100%;overflow:auto;padding:2px 2px 20px"><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(400px,1fr));gap:14px;align-items:start">${groups.map(card).join("")}</div></div>`;
 },
 alldecisions(){
@@ -582,34 +584,44 @@ system(p){return subView("system",p)},
 integrations2(p){return subView("integrations",p)},
 team(p){return subView("team",p)},
 overview(p){
-  const tasks=vis("tasks"),open=tasks.filter(t=>t.status!=="done"),od=open.filter(over).sort((a,b)=>a.due.localeCompare(b.due));
-  const pend=vis("decisions").filter(d=>d.pending).sort((a,b)=>(a.neededBy||"9").localeCompare(b.neededBy||"9"));
-  const dev=ofP("devices",p.id),live=dev.filter(d=>d.status==="installed"||d.status==="online").length;
+  const hci=S.role==="hci",role=S.role;
+  const su=u=>/^https?:\/\//i.test(u||"")?u:"";
+  const cu=byId("customers",p.customerId)||null;
+  const open=vis("tasks").filter(t=>t.status!=="done");
+  const mineOnly=!hci&&role!=="partner"?open.filter(t=>t.party===role):role==="partner"?open:open;
+  const od=mineOnly.filter(over).length,stuck=mineOnly.filter(t=>t.status==="waiting").length;
+  const sorted=l=>l.slice().sort((a,b)=>(over(b)-over(a))||(a.due||"9").localeCompare(b.due||"9"));
+  const li=t=>`<div class="li"><button class="chk" data-toggle="${esc(t.id)}" aria-label="Mark done"></button><span class="grow t" data-edit="tasks" data-id="${esc(t.id)}" style="cursor:pointer">${esc(t.title)}</span>${waitPill(t)}${t.due?`<span class="due ${over(t)?"over":""}">${over(t)?"Overdue · ":""}${fd(t.due)}</span>`:""}</div>`;
+  let work="";
+  if(hci){
+    const owners=[...new Set(mineOnly.filter(t=>t.party==="hci").map(t=>t.owner||"Unassigned"))].sort();
+    work=owners.map(o=>{const l=sorted(mineOnly.filter(t=>t.party==="hci"&&(t.owner||"Unassigned")===o));return `<div class="label" style="margin-top:10px">${esc(o)} · ${l.length}</div>${l.slice(0,6).map(li).join("")}${l.length>6?`<div class="who">+ ${l.length-6} more in the plan</div>`:""}`}).join("");
+    const oth=sorted(mineOnly.filter(t=>t.party!=="hci"));
+    if(oth.length)work+=`<div class="label" style="margin-top:10px">Customer, dealer and partner · ${oth.length}</div>${oth.slice(0,6).map(t=>li(t)).join("")}${oth.length>6?`<div class="who">+ ${oth.length-6} more in the plan</div>`:""}`;
+  }else work=sorted(mineOnly).slice(0,14).map(li).join("");
+  const comp=ofP("components",p.id),showHw=hci||role==="dealer";
+  const hw=CCAT.map(cat=>{const it=comp.filter(c=>(catOf(c).category||c.category)===cat&&c.status!=="removed").sort((a,b)=>(catOf(a).name||"").localeCompare(catOf(b).name||""));if(!it.length)return "";
+    return `<tr class="grp"><td colspan="3">${esc(cat)}</td></tr>`+it.map(c=>{const k=catOf(c);return `<tr class="click" ${hci?`data-edit="components" data-id="${esc(c.id)}"`:""}><td><b>${esc(k.name||c.name||"Removed item")}</b>${c.detail?`<div class="who">${esc(c.detail)}</div>`:""}</td><td class="num">${c.qty!==""&&c.qty!=null?`<b>${esc(c.qty)}</b>`:'<span class="pill warn">Qty needed</span>'}</td><td>${cPill(c.status)}</td></tr>`}).join("")}).join("");
+  const ppl=ofP("people",p.id).sort((a,b)=>Object.keys(PARTIES).indexOf(a.party)-Object.keys(PARTIES).indexOf(b.party));
   const ints=vis("interfaces").filter(i=>i.status!=="out"),ilive=ints.filter(i=>i.status==="live").length,iblk=ints.filter(i=>i.status==="blocked").length;
-  const mine=S.role!=="hci"&&S.role!=="partner"?open.filter(t=>t.party===S.role):null;
-  const week=open.filter(t=>!over(t)&&(!t.due||days(t.due)<=7)).sort((a,b)=>(a.due||"9").localeCompare(b.due||"9"));
-  const pp=Object.fromEntries(ofP("people",p.id).map(x=>[x.name,x]));
-  const late=d=>{if(!d.neededBy)return "";const n=days(d.neededBy);return n<0?`<span class="pill bad">${Math.abs(n)} day${n===-1?"":"s"} late</span>`:`<span class="pill warn">Due ${fd(d.neededBy)}</span>`};
-  const byOver={};od.forEach(t=>byOver[t.party]=(byOver[t.party]||0)+1);
-  const kpi=(k,v,cls,small)=>`<div class="kpi2"><div class="k">${k}</div><div class="v ${cls||""}">${v}${small?`<small>${small}</small>`:""}</div></div>`;
-  const hi=S.me?String(S.me).split(" ")[0]:"";
-  const ask=d=>`<div class="ask"><div class="q">${esc(d.question)}</div><div class="meta">${late(d)}${d.askedOf?`<span class="who">${esc(d.askedOf)}</span>`:""}<span class="push"><button class="btn sm" data-go="project:decisions:${esc(p.id)}">Answer</button></span></div></div>`;
-  const first=mine?`<section class="card c5"><div class="card-h"><span class="label">${hi?"Good to see you, "+esc(hi):"Your to do"}</span><span class="who">${mine.length} with ${esc(PARTIES[S.role]||"")}</span></div><div class="scroll">${mine.map(t=>taskRow(t)).join("")||'<div class="empty">Nothing on your list right now.</div>'}</div></section>`
-    :`<section class="card c5"><div class="card-h"><span class="label">Needs an answer<span class="n">${pend.length}</span></span><button class="btn sec sm" data-go="project:decisions:${esc(p.id)}">All decisions</button></div><div class="scroll" style="display:flex;flex-direction:column;gap:8px">${pend.slice(0,4).map(ask).join("")||'<div class="empty">Nothing waiting.</div>'}${pend.length>4?`<button class="qbtn" data-go="project:decisions:${esc(p.id)}">+ ${pend.length-4} more</button>`:""}
-      ${od.length?`<div class="label" style="margin-top:8px">Overdue</div>${od.slice(0,5).map(t=>`<div class="li"><span class="dotr"></span><span class="grow t" data-edit="tasks" data-id="${esc(t.id)}" style="cursor:pointer">${esc(t.title)}</span><span class="who">${esc(PARTIES[t.party]||"")} · ${Math.abs(days(t.due))}d</span></div>`).join("")}${od.length>5?`<button class="qbtn" data-go="project:plan:${esc(p.id)}">+ ${od.length-5} more overdue</button>`:""}`:""}</div></section>`;
-  return `<div class="fit rows2">
-   ${kpi("Decisions waiting",pend.length,pend.length?"warn":"",pend[0]&&pend[0].neededBy?"next due "+fd(pend[0].neededBy):"")}
-   ${kpi("Overdue work",od.length,od.length?"bad":"",opt(byOver).map(([k,n])=>n+" "+(PARTIES[k]||k)).join(" · "))}
-   ${S.role==="dealer"?kpi("Open work",open.length,""):kpi("Integrations live",`${ilive} of ${ints.length}`,"",iblk?iblk+" blocked":"")}
-   ${kpi("Devices installed",`${live}`,"",dev.length?"of "+dev.length+" logged"+(p.beds?" · "+p.beds+" beds":""):(p.beds?p.beds+" beds":""))}
-   ${first}
-   <section class="card c4"><div class="card-h"><span class="label">${mine?"What HCI is doing":"Coming up"}</span><button class="btn sec sm" data-go="project:plan:${esc(p.id)}">Full plan</button></div>
-    <div class="scroll">${p.nextMeeting?`<div class="ask" style="margin-bottom:10px"><span class="label">Next meeting</span><div class="q">${esc(p.nextMeeting)}</div><div class="who">${esc(p.meetingAttendees||"")}</div></div>`:""}
-    ${(mine?open.filter(t=>t.party==="hci"):week).slice(0,7).map(t=>`<div class="li"><button class="chk ${t.status==="done"?"on":""}" data-toggle="${esc(t.id)}" aria-label="Mark done"></button><span class="grow" data-edit="tasks" data-id="${esc(t.id)}" style="cursor:pointer">${esc(t.title)}</span><span class="pill ${esc(t.party)}">${esc(PARTIES[t.party]||"")}</span></div>`).join("")||'<div class="empty">Nothing due this week.</div>'}</div></section>
-   <section class="card c3 stand"><div class="card-h"><span class="label">Where it stands</span>${S.role==="hci"?`<button class="btn sec sm" data-edit="projects" data-id="${esc(p.id)}">Update</button>`:""}</div>
-    <div class="scroll note">${esc(p.statusNote||"No status note yet.")}</div>
-    <dl><dt>Scope</dt><dd>${esc(p.scope||"")}</dd>${p.dealer?`<dt>Dealer</dt><dd>${esc(p.dealer)}</dd>`:""}<dt>HCI lead</dt><dd>${esc(p.lead||"")}</dd></dl></section>
-  </div>`;
+  const gl=days(p.goLive);
+  const dl=(k,v)=>v?`<dt>${k}</dt><dd>${esc(v)}</dd>`:"";
+  const ed=(col,id,label)=>hci?`<button class="btn sec sm" data-edit="${col}" data-id="${esc(id)}">${label||"Edit"}</button>`:"";
+  const link=(l,u,note)=>su(u)?`<div class="li"><a href="${esc(u)}" target="_blank" rel="noopener" class="grow" style="color:var(--hero-deep);font-weight:700;text-decoration:none">${l}</a>${note?`<span class="who">${note}</span>`:""}</div>`:"";
+  const gh=cu&&su(cu.githubUrl)?link("GitHub repository",cu.githubUrl,esc(cu.name)):(hci&&cu?`<div class="li"><span class="grow who">GitHub repository: not linked yet</span><button class="btn sec sm" data-edit="customers" data-id="${esc(cu.id)}">Add link</button></div>`:hci?`<div class="li"><span class="grow who">GitHub repository: choose a customer for this project first</span></div>`:"");
+  const links=gh+link("SharePoint library",p.sharepointUrl)+(hci?link("HubSpot project",p.hubspot)+link("Board Remote",p.remoteUrl):"")
+    +(hci||role==="customer"?`<div class="li"><button class="btn sec sm" data-go="project:access:${esc(p.id)}">Remote access and network</button>${hci?`<button class="btn sec sm" data-go="project:audit:${esc(p.id)}">History</button>`:""}</div>`:"");
+  const col1=`<section class="card" style="min-height:0;display:flex;flex-direction:column"><div class="card-h"><span class="label">${hci?"Work":"Your to do"}<span class="n">${mineOnly.length}</span></span><span class="who">${od?`<span style="color:var(--warn-deep)">${od} overdue</span>`:""}${od&&stuck?" · ":""}${stuck?`${stuck} stuck on others`:""}</span><span style="display:flex;gap:6px"><button class="btn sm" data-new="tasks">Add task</button><button class="btn sec sm" data-go="project:plan:${esc(p.id)}">Full plan</button></span></div><div class="scroll" style="min-height:0">${work||'<div class="empty">Nothing open.</div>'}</div></section>`;
+  const col2=`<section class="card"><div class="card-h"><span class="label">Where it stands</span>${ed("projects",p.id)}</div>
+    <div class="note" style="margin-bottom:8px;font-size:13.5px;line-height:1.45">${esc(p.statusNote||"No status note yet.")}</div>
+    <dl class="kv"><dt>Status</dt><dd>${stPill(p.status)}</dd><dt>Phase</dt><dd>${esc(PHASES[Number(p.phase)||0])}</dd><dt>Go live</dt><dd>${p.goLive?fd(p.goLive)+(gl!=null?` · ${gl<0?Math.abs(gl)+" days past":gl+" days"}`:""):"Not set"}</dd>${dl("Scope",p.scope)}${dl("Site",p.site)}${dl("HCI lead",p.lead)}${dl("Dealer",p.dealer)}${dl("Next meeting",p.nextMeeting)}${dl("Attendees",p.meetingAttendees)}${hci||role==="customer"?dl("Support plan",{standard:"Standard",advanced:"Advanced",enterprise:"24x7 Enterprise"}[p.supportPlan]||""):""}${hci?dl("File code",p.fileCode):""}</dl></section>
+    ${showHw?`<section class="card" style="min-height:0"><div class="card-h"><span class="label">Size and hardware</span><span style="display:flex;gap:6px">${hci?'<button class="btn sm" data-new="components">Add item</button><button class="btn sec sm" data-go="admin:catalog">Catalog</button>':""}</span></div>
+      <div style="display:flex;gap:22px;margin-bottom:10px"><div><div class="who">Beds</div><div style="font-size:22px;font-weight:800">${esc(p.beds||"–")}</div></div><div><div class="who">Rooms</div><div style="font-size:22px;font-weight:800">${esc(p.rooms||"–")}</div></div><div><div class="who">Units</div><div style="font-size:22px;font-weight:800">${esc(p.units||"–")}</div></div></div>
+      <div class="tbl-wrap"><table><thead><tr><th>Purchased</th><th class="num">Qty</th><th>Status</th></tr></thead><tbody>${hw||'<tr><td colspan="3" class="empty">Nothing added yet.</td></tr>'}</tbody></table></div></section>`:""}`;
+  const col3=`<section class="card"><div class="card-h"><span class="label">Team<span class="n">${ppl.length}</span></span>${hci?'<button class="btn sm" data-new="people">Add</button>':""}</div>${ppl.map(x=>`<div class="li" ${hci?`data-edit="people" data-id="${esc(x.id)}" style="cursor:pointer"`:""}><div class="grow"><b>${esc(x.name)}</b><div class="who">${esc([x.role,x.org].filter(Boolean).join(" · "))}</div></div><span class="pill ${esc(x.party)}">${PARTIES[x.party]||""}</span></div>`).join("")||'<div class="empty">No one added yet.</div>'}</section>
+    ${role==="dealer"?"":`<section class="card"><div class="card-h"><span class="label">Integrations<span class="n">${ilive} of ${ints.length} live</span></span>${hci?'<button class="btn sm" data-new="interfaces">Add</button>':""}</div>${iblk?`<div class="who" style="color:var(--warn-deep);margin-bottom:4px">${iblk} blocked</div>`:""}${ints.map(i=>{const c={live:"good",in_progress:"hci",testing:"hci",blocked:"bad",confirm:"warn",not_started:"",deferred:""}[i.status]||"";return `<div class="li" ${hci||role!=="partner"?`data-edit="interfaces" data-id="${esc(i.id)}" style="cursor:pointer"`:""}><span class="grow">${esc(i.system)}</span><span class="pill ${c}">${ISTATUS[i.status]||esc(i.status||"")}</span></div>`}).join("")||'<div class="empty">None yet.</div>'}</section>`}
+    ${links?`<section class="card"><div class="card-h"><span class="label">Links</span></div>${links}</section>`:""}`;
+  return `<div class="ov3"><div class="ovcol">${col1}</div><div class="ovcol">${col2}</div><div class="ovcol">${col3}</div></div>`;
 },
 feed(p){
   const items=feedItems(p.id);const f=S.ffilter||"all";
