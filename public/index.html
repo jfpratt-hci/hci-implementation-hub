@@ -354,17 +354,17 @@ const CCAT=["Software","Hardware","Integration","Server","Service"];
 const BASIS={each:"Each",bed:"Per bed",room:"Per room",unit:"Per unit",station:"Per station",hour:"Hours"};
 const DEVTYPES={"Door Sign":"Door sign","Whiteboard":"Whiteboard","Patient TV":"Patient TV","Unit Status Board":"Unit status board","Camera":"Camera","Server":"Server","Workstation":"Workstation","Other":"Other"};
 const APPS=["Whiteboard","Door Sign","Patient TV","Unit Status Board","Rounding","eSitter","Virtual Nursing","Launcher"];
-const COLS=["projects","tasks","decisions","meetings","interfaces","people","devices","releases","deployments","components","catalog","access","network","template","team","shots","comments","audit","designs","tickets","ticketMessages"];
+const COLS=["projects","tasks","decisions","meetings","interfaces","people","devices","releases","deployments","components","catalog","access","network","template","team","shots","comments","audit","designs","tickets","ticketMessages","dailyMeta"];
 const PVIEWS=[["overview","Overview"],["plan","Plan"],["decisions","Decisions"],["files","Files"],["designs","Designs"],["helpdesk","Help Desk"],["system","System"],["integrations","Integrations"],["team","Team"]];
 /* tabs that hold more than one screen */
 const SUBS={system:[["config","Configuration"],["installed","Installed base"],["changelog","App changelog"]],integrations:[["integrations","Integrations"],["access","Access and network"]],team:[["people","People"],["feed","Feed"],["audit","History"]]};
 /* old screen names still used by links and saved navigation */
 const LEGACY={config:["system","config"],installed:["system","installed"],changelog:["system","changelog"],access:["integrations","access"],feed:["team","feed"],people:["team","people"],audit:["team","audit"],meetings:["plan",""]};
-const PORTTABS=[["portfolio","Projects"],["daily","Daily Update"],["alldecisions","Decisions waiting"],["allwork","Overdue work"],["helpdesk","Help Desk"]];
+const PORTTABS=[["dash","Dashboard"],["daily","Board"],["portfolio","Projects"],["alldecisions","Decisions waiting"],["allwork","Overdue work"],["helpdesk","Help Desk"]];
 const AVIEWS=[["catalog","Component catalog"],["template","Project template"],["team","HCI team"],["releases","Releases"],["projects","All projects"]];
 const opt=o=>Object.entries(o);
 const FORMS={
- tasks:[["title","Task","text",1,1],["owner","Owner","text",0,0,null,"owners"],["party","Party","select",0,0,PARTIES],["due","Due","date"],["phase","Phase","select",0,0,PHASES],["visibility","Who can see it","select",0,0,{external:"Everyone on the project",internal:"HCI only"}],["status","Status","select",0,0,{open:"Open",done:"Done"}],["note","Notes","area",0,1]],
+ tasks:[["title","Task","text",1,1],["owner","Owner","text",0,0,null,"owners"],["party","Party","select",0,0,PARTIES],["due","Due","date"],["phase","Phase","select",0,0,PHASES],["visibility","Who can see it","select",0,0,{external:"Everyone on the project",internal:"HCI only"}],["status","Status","select",0,0,{open:"Open",waiting:"Stuck, waiting on someone else",done:"Done"}],["waitingOnId","Waiting on (person on this project)","select",0,0,()=>Object.assign({"":"Not picked"},Object.fromEntries(S.cols.people.filter(x=>x.projectId===S.pid&&x.party!=="hci").map(x=>[x.id,x.name+(x.org?" · "+x.org:"")])))],["waitingOnName","Or type who we are waiting on","text"],["projectId","Project","select",0,0,()=>Object.fromEntries(S.cols.projects.filter(x=>x.status!=="done").map(x=>[x.id,x.name]))],["note","Notes","area",0,1]],
  decisions:[["question","Question","text",1,1],["answer","Decision","area",0,1],["pending","Status","select",0,0,{"true":"Waiting for an answer","false":"Decided"}],["askedOf","Asked of","text",0,0,null,"owners"],["neededBy","Needed by","date"],["decidedBy","Decided by","text",0,0,null,"owners"],["date","Date decided","date"],["defaultIfSilent","Default if no answer","text",0,1],["source","Source","text",0,1],["visibility","Who can see it","select",0,0,{external:"Everyone on the project",internal:"HCI only"}]],
  meetings:[["title","Meeting","text",1,1],["date","Date","date"],["attendees","Attendees","text"],["notes","Summary and action items","area",0,1],["undecided","Not decided","text",0,1],["visibility","Who can see it","select",0,0,{external:"Everyone on the project",internal:"HCI only"}]],
  interfaces:[["system","System","text",1],["type","Type","text"],["vendor","Vendor contact","text"],["status","Status","select",0,0,ISTATUS],["note","Detail","area",0,1]],
@@ -383,7 +383,7 @@ const FORMS={
 const TITLES={tasks:"task",decisions:"decision",meetings:"meeting",interfaces:"integration",people:"person",devices:"device",releases:"release",projects:"project",components:"component",catalog:"catalog item",access:"remote access",network:"network",template:"template task",team:"team member",designs:"design",tickets:"ticket",ticketMessages:"ticket message"};
 const GLOBAL=new Set(["releases","catalog","template","team","projects"]);
 
-const S={db:null,dl:null,assets:null,cols:{},pid:null,scope:"portfolio",view:"portfolio",role:"hci",filter:"open",ffilter:"all",me:"",ready:false,sub:{},channel:false};
+const S={db:null,dl:null,assets:null,cols:{},pid:null,scope:"portfolio",view:"dash",role:"hci",filter:"open",ffilter:"all",me:"",ready:false,sub:{},channel:false};
 COLS.forEach(c=>S.cols[c]=[]);
 try{const v=window.HUB_PRESELECT||JSON.parse(localStorage.getItem("hub.nav")||"{}");if(v.pid){S.pid=v.pid}if(v.scope){S.scope=v.scope;S.view=v.view}if(window.HUB_PRESELECT&&window.HUB_PRESELECT.pid)S.channel=true}catch(e){}
 try{S.me=localStorage.getItem("hub.me")||""}catch(e){}
@@ -450,7 +450,7 @@ function renderSide(){
   let h="";
   if(S.scope==="project"&&P()){
     const p=P();const st=stats(p.id);const gl=days(p.goLive);const ph=Number(p.phase)||0;
-    const back=staff&&!S.channel?`<button class="iconbtn" data-go="portfolio:portfolio" aria-label="All projects" title="All projects">${BACK}</button>`:"";
+    const back=staff&&!S.channel?`<button class="iconbtn" data-go="portfolio:dash" aria-label="Dashboard" title="Dashboard">${BACK}</button>`:"";
     const roleBar=S.locked?"":`<div class="viewas" role="group" aria-label="Preview as">${[["hci","HCI"],["customer","Customer"],["dealer","Dealer"],["partner","Partner"]].map(([k,l])=>`<button class="seg ${S.role===k?"on":""}" data-role="${k}">${l}</button>`).join("")}</div>`;
     const counts={plan:[vis("tasks").filter(t=>t.status!=="done").length,st.over?"bad":""],decisions:[vis("decisions").filter(d=>d.pending).length,"warn"],integrations:[S.role==="dealer"?0:vis("interfaces").filter(i=>i.status==="blocked").length,"bad"],helpdesk:[ofP("tickets",p.id).filter(t=>t.status==="new"||(S.role==="hci"?t.status==="hci":t.status==="customer")).length,"warn"]};
     h=`<div class="bar-top">${back}<div class="bar-title"><span class="eyebrow">${esc(p.customer||"")}${p.site?" · "+esc(p.site):""}</span><h1>${esc(p.name)}</h1></div>
@@ -461,8 +461,8 @@ function renderSide(){
     h=`<div class="bar-top"><button class="iconbtn" data-go="portfolio:portfolio" aria-label="All projects" title="All projects">${BACK}</button><div class="bar-title"><span class="eyebrow">HCI ONE · Implementation Hub</span><h1>Admin</h1></div><span class="pill int">HCI only</span><div class="bar-right">${meBlock()}</div></div>
      <nav class="tabs" aria-label="Admin">${AVIEWS.map(([k,l])=>tab(S.view===k,`data-go="admin:${k}"`,l)).join("")}</nav>`;
   }else{
-    h=`<div class="bar-top"><div class="bar-title"><span class="eyebrow">HCI ONE · Implementation Hub</span><h1>All projects</h1></div><div class="bar-right">${staff?'<button class="btn sm" data-act="newproj">New project</button>':""}${gear}${meBlock()}</div></div>
-     <nav class="tabs" aria-label="Portfolio">${PORTTABS.filter(([k])=>k!=="helpdesk"||staff).map(([k,l])=>tab(S.view===k,`data-go="portfolio:${k}"`,l,k==="portfolio"?projs.length:k==="alldecisions"?totDec:k==="helpdesk"?S.cols.tickets.filter(t=>t.status==="new"||t.status==="hci").length:k==="daily"?0:totOver,k==="alldecisions"||k==="helpdesk"?"warn":k==="allwork"?"bad":"")).join("")}</nav>`;
+    h=`<div class="bar-top"><div class="bar-title"><span class="eyebrow">HCI ONE · Implementation Hub</span><h1>${S.view==="dash"||S.view==="daily"?"Daily dashboard":"All projects"}</h1></div><div class="bar-right">${staff?'<button class="btn sm" data-act="newproj">New project</button>':""}${gear}${meBlock()}</div></div>
+     <nav class="tabs" aria-label="Portfolio">${PORTTABS.filter(([k])=>k!=="helpdesk"||staff).map(([k,l])=>tab(S.view===k,`data-go="portfolio:${k}"`,l,k==="portfolio"?projs.length:k==="alldecisions"?totDec:k==="helpdesk"?S.cols.tickets.filter(t=>t.status==="new"||t.status==="hci").length:k==="daily"||k==="dash"?0:totOver,k==="alldecisions"||k==="helpdesk"?"warn":k==="allwork"?"bad":"")).join("")}</nav>`;
   }
   $("#side").innerHTML=h+ownersList();
 }
@@ -471,14 +471,14 @@ function renderSide(){
 function render(){
   if(!S.ready)return;
   if(S.locked&&S.role!=="hci"){S.scope="project";if(!P())S.pid=(S.cols.projects[0]||{}).id||null;if(!P()){renderSide();$("#main").innerHTML='<div class="loading">You are not on a project team yet. Ask HCI to add you to the project.</div>';return}}
-  if(S.scope==="project"&&!P()){S.scope="portfolio";S.view="portfolio"}
+  if(S.scope==="project"&&!P()){S.scope="portfolio";S.view="dash"}
   if(S.scope==="project"&&LEGACY[S.view]){const [v,sub]=LEGACY[S.view];if(sub)S.sub[v]=sub;S.view=v}
   if(S.scope==="project"&&!allowed().includes(S.view))S.view="overview";
   renderSide();
   const main=$("#main");
-  const FILL={overview:1,plan:1,decisions:1,portfolio:1,designs:1,helpdesk:1,daily:1};
+  const FILL={overview:1,plan:1,decisions:1,portfolio:1,designs:1,helpdesk:1,daily:1,dash:1};
   main.classList.toggle("fill",!!FILL[S.view]&&S.scope!=="admin");
-  if(S.scope==="portfolio"){main.innerHTML=PORT[S.view]?PORT[S.view]():PORT.portfolio();if(S.view==="daily"&&window.HUB_DAILY)window.HUB_DAILY.mount(document.getElementById("dailyMount"));return}
+  if(S.scope==="portfolio"){main.innerHTML=PORT[S.view]?PORT[S.view]():PORT.portfolio();if((S.view==="daily"||S.view==="dash")&&window.HUB_DAILY)window.HUB_DAILY.mount(document.getElementById("dailyMount"),S.view==="daily"?"board":"dash",dailyCtx());return}
   if(S.scope==="admin"){main.innerHTML=ADMIN[S.view]?ADMIN[S.view]():ADMIN.catalog();return}
   const p=P();
   const banner=S.role!=="hci"&&!S.locked?`<div class="banner">Previewing the ${PARTIES[S.role].toLowerCase()} portal. ${S.role==="partner"?"Partners see only their own tasks, integrations and the project team.":S.role==="dealer"?"Dealers see project work without IP addresses, MACs, remote access or HCI only notes.":"Customers see everything marked for the whole project; HCI only items are hidden."}</div>`:"";
@@ -490,7 +490,27 @@ function mini(ph){ph=Number(ph)||0;return `<div class="mini" title="${esc(PHASES
 function stPill(s){const m={on_track:"good",watch:"warn",at_risk:"bad",off_track:"bad",done:""};return `<span class="pill ${m[s]||""}">${STATUS[s]||"No status"}</span>`}
 
 /* portfolio */
+function dailyCtx(){
+  const mt=(S.cols.dailyMeta.find(x=>x.id==="sync")||{});
+  const staff=S.role==="hci";
+  return {
+    tasks:S.cols.tasks.filter(t=>canSee(t,"tasks")),team:S.cols.team,people:S.cols.people,projects:{all:S.cols.projects.filter(p=>p.status!=="done"&&p.status!=="archived")},
+    meta:mt,me:S.me,staff,today,esc,
+    comments:id=>threadOf("tasks",id).map(c=>({text:c.text,by:c.by,at:c.at})),
+    save:async(id,fields)=>{const k=byId("tasks",id);if(!k)return;const o=Object.assign({},k,fields);delete o.id;o.updatedAt=now();await setDoc("tasks",id,o)},
+    add:async d=>{const o=Object.assign({},d);o.updatedAt=now();const r=await addDoc("tasks",o);if(!S.cols.tasks.some(x=>x.id===r.id))S.cols.tasks.push(Object.assign({id:r.id},o));return r},
+    del:async id=>{await delDoc("tasks",id)},
+    addComment:async(t,text)=>{if(!S.me){toast("Put your name in the sidebar first");return}const doc={projectId:t.projectId||"",recordType:"tasks",recordId:t.id,text,by:S.me,at:now(),visibility:"internal"};const r=await S.db.collection("comments").add(doc);if(!S.cols.comments.some(x=>x.id===r.id))S.cols.comments.push(Object.assign({id:r.id},doc));render()},
+    refresh:()=>render(),
+    openProject:pid=>go("project","plan",pid),
+    openTab:v=>go("portfolio",v)
+  };
+}
 const PORT={
+dash(){
+  if(!window.HUB_DAILY)return `<div class="loading">The dashboard runs in the hosted Hub.</div>`;
+  return `<div id="dailyMount" style="flex:1;min-height:0"></div>`;
+},
 daily(){
   if(!window.HUB_DAILY)return `<div class="loading">The Daily Update board runs in the hosted Hub.</div>`;
   return `<div id="dailyMount" style="flex:1;min-height:0"></div>`;
@@ -639,7 +659,7 @@ plan(){
   const parties=["hci","customer","dealer","partner"].filter(k=>k!=="dealer"||t.some(x=>x.party==="dealer")||p.dealer).filter(k=>S.role==="partner"?k==="partner":true);
   const card=x=>{const d=x.status==="done";const n=x.due?days(x.due):null;
     return `<div class="tcard"><button class="chk ${d?"on":""}" data-toggle="${esc(x.id)}" aria-label="${d?"Reopen":"Mark done"}">${d?check:""}</button><div><div class="t ${d?"done-t":""}" data-edit="tasks" data-id="${esc(x.id)}">${esc(x.title)}</div>
-     <div class="meta"><span class="pill">${esc(PHASES[Number(x.phase)||0])}</span>${x.owner?`<span class="who">${esc(x.owner)}</span>`:""}${x.visibility==="internal"?'<span class="pill int">HCI only</span>':""}${cntPill("tasks",x.id)}${x.due?`<span class="due ${over(x)?"over":""}">${over(x)?Math.abs(n)+(n===-1?" day late":" days late"):n===0?"Due today":fd(x.due)}</span>`:""}</div></div></div>`};
+     <div class="meta"><span class="pill">${esc(PHASES[Number(x.phase)||0])}</span>${x.owner?`<span class="who">${esc(x.owner)}</span>`:""}${waitPill(x)}${x.visibility==="internal"?'<span class="pill int">HCI only</span>':""}${cntPill("tasks",x.id)}${x.due?`<span class="due ${over(x)?"over":""}">${over(x)?Math.abs(n)+(n===-1?" day late":" days late"):n===0?"Due today":fd(x.due)}</span>`:""}</div></div></div>`};
   const cols=parties.map(k=>{const items=t.filter(x=>x.party===k).sort((a,b)=>(over(b)-over(a))||(a.due||"9").localeCompare(b.due||"9"));
     return `<section class="card ocol"><div class="card-h"><span class="label">${esc(k==="customer"?(p.customer||"Customer"):PARTIES[k])}<span class="n">${items.length}</span></span></div><div class="scroll">${items.map(card).join("")||'<div class="empty">Nothing here.</div>'}</div></section>`}).join("");
   const m=vis("meetings").sort((a,b)=>(b.date||"").localeCompare(a.date||""));
@@ -829,10 +849,12 @@ const catOf=c=>byId("catalog",c.catalogId)||{};
 function cPill(s,label){const m={planned:"",quoted:"warn",ordered:"hci",received:"hci",in_progress:"hci",installed:"good",live:"good",deferred:"",removed:"bad"};return `<span class="pill ${m[s]||""}">${esc(label||CSTATUS[s]||s||"")}</span>`}
 function devStatus(s){const m={planned:"",shipped:"warn",installed:"hci",online:"good",offline:"bad"};const l={planned:"Planned",shipped:"Shipped",installed:"Installed",online:"Online",offline:"Offline"};return s?`<span class="pill ${m[s]||""}">${l[s]||esc(s)}</span>`:""}
 function projTag(pid){const p=byId("projects",pid);return p?`<span class="pill proj" data-go="project:overview:${esc(p.id)}">${esc(p.name)}</span>`:""}
+const waitName=t=>{const p=t.waitingOnId&&byId("people",t.waitingOnId);return (p&&p.name)||t.waitingOnName||"someone"};
+const waitPill=t=>t.status==="waiting"?`<span class="pill warn">Waiting on ${esc(waitName(t))}</span>`:"";
 function taskRow(t,withP){
   const d=t.status==="done";
   return `<div class="row"><button class="chk ${d?"on":""}" data-toggle="${esc(t.id)}" aria-label="${d?"Reopen":"Mark done"}">${d?check:""}</button>
-  <div><div class="t ${d?"done-t":""}" data-edit="tasks" data-id="${esc(t.id)}">${esc(t.title)}</div><div class="meta">${withP?projTag(t.projectId):""}<span class="who">${esc(t.owner||"Unassigned")}</span><span class="pill ${esc(t.party)}">${PARTIES[t.party]||""}</span>${t.visibility==="internal"?'<span class="pill int">HCI only</span>':""}${cntPill("tasks",t.id)}${t.note?`<span class="who">· ${esc(t.note)}</span>`:""}</div></div>
+  <div><div class="t ${d?"done-t":""}" data-edit="tasks" data-id="${esc(t.id)}">${esc(t.title)}</div><div class="meta">${withP?projTag(t.projectId):""}<span class="who">${esc(t.owner||"Unassigned")}</span><span class="pill ${esc(t.party)}">${PARTIES[t.party]||""}</span>${waitPill(t)}${t.visibility==="internal"?'<span class="pill int">HCI only</span>':""}${cntPill("tasks",t.id)}${t.note?`<span class="who">· ${esc(t.note)}</span>`:""}</div></div>
   <div class="right">${t.due?`<span class="due ${over(t)?"over":""}">${over(t)?"Overdue · ":""}${fd(t.due)}</span>`:""}</div></div>`;
 }
 function pendCard(d,withP){
@@ -875,7 +897,7 @@ function openForm(col,id,defaults){
   if(col==="decisions")vals.pending=String(cur.pending!==false);
   if(col==="catalog")vals.active=String(cur.active!==false);
   const hideNet=col==="devices"&&!netOK();
-  const fields=FORMS[col].filter(f=>!(hideNet&&["mac","ip","vlan","hostname"].includes(f[0])));
+  const fields=FORMS[col].filter(f=>!(hideNet&&["mac","ip","vlan","hostname"].includes(f[0]))).filter(f=>!(col==="tasks"&&S.role!=="hci"&&["waitingOnId","waitingOnName","projectId"].includes(f[0])));
   const fh=fields.map(([k,l,t,req,full,opts,list])=>{
     const v=vals[k]??"";const idA=`f_${col}_${k}`;let inp;
     if(t==="select"){const o0=typeof opts==="function"?opts():opts;const o=Array.isArray(o0)?o0.map((n,i)=>[String(i),n]):opt(o0);inp=`<select id="${idA}" name="${k}" ${ro?"disabled":""}>${o.map(([ov,ol])=>`<option value="${esc(ov)}" ${String(v)===ov?"selected":""}>${esc(ol)}</option>`).join("")}</select>`}
@@ -908,6 +930,8 @@ function openForm(col,id,defaults){
     if(col==="releases")delete out.example;
     if(col==="decisions"){const was=id&&cur.pending!==false;if(out.pending===false&&!out.date)out.date=today();if(!out.pending&&(!id||was)){out.history=(cur.history||[]).concat([{at:now(),what:"Decided: "+(out.answer||""),by:out.decidedBy||""}])}else if(!id){out.askedDate=today();out.history=[{at:now(),what:"Question asked"}]}}
     if(!GLOBAL.has(col)&&!out.projectId)out.projectId=S.pid;
+    if(col==="tasks"){const w=out.status==="waiting";if(w){const pr=out.waitingOnId&&byId("people",out.waitingOnId);if(pr)out.waitingOnName=pr.name;out.waitingSince=cur.status==="waiting"&&cur.waitingSince?cur.waitingSince:now()}else{out.waitingOnId="";out.waitingOnName="";out.waitingSince=""}
+      out.doneAt=out.status==="done"?(cur.doneAt||now()):"";const pj=byId("projects",out.projectId);if(pj)out.hospital=pj.customer||pj.name}
     out.updatedAt=now();
     try{
       if(id)await setDoc(col,id,out);
@@ -998,11 +1022,11 @@ document.addEventListener("click",async e=>{
   if(t.dataset.comment){const s=t.dataset.comment,i=s.indexOf(":");postComment(s.slice(0,i),s.slice(i+1));return}
   if(t.dataset.answer){answer(t.dataset.answer,false);return}
   if(t.dataset.usedefault){answer(t.dataset.usedefault,true);return}
-  if(t.dataset.toggle){const k=byId("tasks",t.dataset.toggle);if(!k||!editable("tasks",k))return;const o=Object.assign({},k);delete o.id;o.status=k.status==="done"?"open":"done";o.updatedAt=now();try{await setDoc("tasks",k.id,o)}catch(err){toast("Not saved: "+(err.code||err.message))}return}
+  if(t.dataset.toggle){const k=byId("tasks",t.dataset.toggle);if(!k||!editable("tasks",k))return;const o=Object.assign({},k);delete o.id;o.status=k.status==="done"?"open":"done";o.doneAt=o.status==="done"?now():"";if(o.status==="done"||o.status==="open"){o.waitingOnId="";o.waitingOnName="";o.waitingSince=""}o.updatedAt=now();try{await setDoc("tasks",k.id,o)}catch(err){toast("Not saved: "+(err.code||err.message))}return}
   if(t.dataset.device){openForm("devices",t.dataset.device);return}
   if(t.dataset.shot){lightbox(t.dataset.shot);return}
   if(t.dataset.edit){openForm(t.dataset.edit,t.dataset.id);return}
-  if(t.dataset.new){const p=P()||{};const d={tasks:{party:"hci",status:"open",visibility:"external",phase:Number(p.phase)||0},decisions:t.dataset.decided?{pending:false,date:today(),visibility:"external"}:{pending:true,visibility:"external"},meetings:{date:today(),visibility:"external"},interfaces:{status:"not_started"},people:{party:"customer"},devices:{status:"planned",type:"Door Sign"},releases:{date:today(),app:"Door Sign"},components:{status:"planned"},catalog:{category:"Software",basis:"each",active:true},access:{method:"vpn",status:"pending"},network:{dhcp:"static"},template:{phase:0,party:"hci",order:99},team:{}}[t.dataset.new];openForm(t.dataset.new,null,d);return}
+  if(t.dataset.new){const p=P()||{};const d={tasks:{party:"hci",status:"open",visibility:"external",phase:Number(p.phase)||0,projectId:p.id||""},decisions:t.dataset.decided?{pending:false,date:today(),visibility:"external"}:{pending:true,visibility:"external"},meetings:{date:today(),visibility:"external"},interfaces:{status:"not_started"},people:{party:"customer"},devices:{status:"planned",type:"Door Sign"},releases:{date:today(),app:"Door Sign"},components:{status:"planned"},catalog:{category:"Software",basis:"each",active:true},access:{method:"vpn",status:"pending"},network:{dhcp:"static"},template:{phase:0,party:"hci",order:99},team:{}}[t.dataset.new];openForm(t.dataset.new,null,d);return}
   if(t.dataset.act==="newproj"){openForm("projects",null,{status:"on_track",phase:0});return}
   if(t.dataset.act==="deploy"){deployForm();return}
   if(t.dataset.act==="export"){exportCSV();return}
@@ -1149,7 +1173,7 @@ document.addEventListener("click",async e=>{
     }catch(err){t.disabled=false;$("#dzProg").textContent="";toast("Not saved: "+err.message)}}
 });
 /* boot */
-let rq=0;function schedule(){if(rq)return;rq=requestAnimationFrame(()=>{rq=0;const ae=document.activeElement;const busy=document.querySelector("#mform,#dform,.lightbox,#docview iframe,#docup,#renDesc,#dzup")||(ae&&ae.closest&&(ae.closest(".pend")||ae.id==="cmtText"||ae.id==="meIn"))||(($("#cmtText")||{}).value||"").trim();if(!busy)render()})}
+let rq=0;function schedule(){if(rq)return;rq=requestAnimationFrame(()=>{rq=0;const ae=document.activeElement;const busy=document.querySelector("#mform,#dform,.lightbox,#docview iframe,#docup,#renDesc,#dzup")||(ae&&ae.closest&&(ae.closest(".pend")||ae.id==="cmtText"||ae.id==="meIn"||ae.closest('#dailyRoot input[type=text]')))||(($("#cmtText")||{}).value||"").trim();if(!busy)render()})}
 (async()=>{
   const c=window.claude;
   const db=c&&c.use?await c.use("db"):null;

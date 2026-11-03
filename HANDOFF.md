@@ -32,8 +32,15 @@ HCI's own implementation management app (replaces the idea of buying Rocketlane 
 - Ball Health apps: door sign, whiteboard, unit status board, rounding app. Prototypes to add in Designs
 - Later: email and Teams notifications, HubSpot deal to project sync, Postgres instead of JSON files, custom domain hub.hci-tv.com, per site SharePoint grants
 
-## Daily Update tab (added Nov 3 2026)
-Portfolio tab "Daily Update": the team's task board built from the Granola Daily Update notes. Cards sit in owner lanes (John, Greg, Arpan, Li, Waiting on others), tagged by hospital, with hospital filter chips, check off with a Done section below open cards, edit, delete (two clicks) and comments. HCI only.
-- `daily.js` (server) and `public/daily.js` (the tab). The server records who did what in the audit trail from the Microsoft sign in; a hospital tag that matches a Hub project also lands the card's changes in that project's History.
-- Step 2 (now): `DAILY_BACKEND` unset means the cards live in the Supabase tables `daily_board_tasks` and `daily_board_meta` (project yiccxfqhctcmepcrdlzi), the same ones the standalone page on hci-tv.com uses, so both always match. The public anon key is built in; override with `DAILY_SUPABASE_URL` and `DAILY_SUPABASE_KEY`.
-- Step 3 (cutover): POST `/api/daily/import-from-supabase` once while signed in as HCI, then set container env `DAILY_BACKEND=local`. Cards then live in the Hub store (`dailyTasks`, `dailyMeta`). Set `DAILY_INGEST_TOKEN` and point the 9:15 AM refresh at POST `/hooks/daily` with `Authorization: Bearer <token>` and body `{tasks:[{id,text,owner,hospital,source,sourceDate}],lastMeeting}`. Then retire the Supabase tables and the standalone page.
+
+## Daily dashboard and board (Nov 3 2026)
+
+One task list. The Hub `tasks` collection is the only place tasks live; the Plan tab, the Board tab and the front Dashboard all read and write it.
+
+- Dashboard (default front tab): open tasks per HCI person, plus a "Stuck, waiting on third parties" panel grouped by who we are waiting on. Click a task to edit it.
+- Board tab: lanes per HCI person plus a stuck lane, project chips, comments, edit window, two click delete.
+- Plan tab: tasks have status Open, Stuck waiting on someone else, or Done. A stuck task can name a dealer, vendor or customer person on that project (waitingOnId) or a typed name (waitingOnName). Tasks also carry a Project select.
+- Fields added to tasks: waitingOnId, waitingOnName, waitingSince, hospital, source, sourceDate, createdAt, doneAt.
+- Inbox sync: server `daily.js` pulls new cards every 3 minutes from the Supabase tables `daily_board_tasks` and `daily_board_meta` (written by the 9:15 AM weekday scheduled task) and creates Hub tasks once per card id (tracked in `dailyMeta.imported`). Hospital names that match a Hub project are filed on that project. Cards in the waiting lane become stuck tasks owned by John Pratt. After import the Hub copy is the only one that counts. Env: DAILY_SUPABASE_URL, DAILY_SUPABASE_KEY (public anon key is the default), DAILY_FIRST_PULL_MS for tests.
+- Client: `public/daily.js` exposes `HUB_DAILY.mount(el, "dash"|"board", ctx)`; ctx is built by `dailyCtx()` in the page.
+- Deploy: `daily.js` must stay in the copy list in .github/workflows/deploy.yml.
