@@ -10,7 +10,7 @@ const crypto = require("crypto");
 const PORT = process.env.PORT || 3000;
 const DATA_DIR = process.env.HUB_DATA_DIR || path.join(__dirname, "data");
 const UPLOAD_DIR = process.env.HUB_UPLOAD_DIR || path.join(__dirname, "uploads");
-const COLS = ["projects","tasks","decisions","meetings","interfaces","people","devices","releases","deployments","components","catalog","access","network","template","team","shots","comments","audit","designs","tickets","ticketMessages"];
+const COLS = ["projects","tasks","decisions","meetings","interfaces","people","devices","releases","deployments","components","catalog","access","network","template","team","shots","comments","audit","designs","tickets","ticketMessages","dailyTasks","dailyMeta"];
 const MIME = { "image/png": ".png", "image/jpeg": ".jpg", "image/webp": ".webp", "image/gif": ".gif" };
 // Identity. With REQUIRE_AUTH on, every /api call needs a signed in user from App Service Authentication (Entra ID).
 const REQUIRE_AUTH = /^(1|true|yes)$/i.test(process.env.REQUIRE_AUTH || "");
@@ -105,6 +105,8 @@ app.use(express.json({ limit: "2mb" }));
 // Help Desk (see helpdesk.js). The Twilio webhook sits outside /api: Twilio's signature, not a sign in, proves the sender.
 const helpdesk = require("./helpdesk")({ store, bump, audit: (...a) => audit(...a) });
 app.use("/hooks", helpdesk.hooks);
+const daily = require("./daily")({ store, bump, audit: (...a) => audit(...a) });
+app.use("/hooks", daily.hooks);
 
 // ---- who is calling ----
 // App Service Authentication validates the Entra session cookie or a bearer token (Teams single sign on)
@@ -236,6 +238,7 @@ app.get("/_design/:id", (req, res) => {
 const filesApi = require("./files")({ store, bump });
 app.use("/api/files", filesApi);
 app.use("/api/helpdesk", helpdesk.router);
+app.use("/api/daily", daily.router);
 app.use("/api/:col", (req, res, next) => {
   if (req.method === "GET" || req.params.col === "all" || req.params.col === "me" || req.params.col === "upload") return next();
   if (!okCol(req.params.col)) return res.status(404).json({ error: "unknown collection" });

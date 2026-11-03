@@ -348,7 +348,7 @@ const PVIEWS=[["overview","Overview"],["plan","Plan"],["decisions","Decisions"],
 const SUBS={system:[["config","Configuration"],["installed","Installed base"],["changelog","App changelog"]],integrations:[["integrations","Integrations"],["access","Access and network"]],team:[["people","People"],["feed","Feed"],["audit","History"]]};
 /* old screen names still used by links and saved navigation */
 const LEGACY={config:["system","config"],installed:["system","installed"],changelog:["system","changelog"],access:["integrations","access"],feed:["team","feed"],people:["team","people"],audit:["team","audit"],meetings:["plan",""]};
-const PORTTABS=[["portfolio","Projects"],["alldecisions","Decisions waiting"],["allwork","Overdue work"],["helpdesk","Help Desk"]];
+const PORTTABS=[["portfolio","Projects"],["daily","Daily Update"],["alldecisions","Decisions waiting"],["allwork","Overdue work"],["helpdesk","Help Desk"]];
 const AVIEWS=[["catalog","Component catalog"],["template","Project template"],["team","HCI team"],["releases","Releases"],["projects","All projects"]];
 const opt=o=>Object.entries(o);
 const FORMS={
@@ -450,7 +450,7 @@ function renderSide(){
      <nav class="tabs" aria-label="Admin">${AVIEWS.map(([k,l])=>tab(S.view===k,`data-go="admin:${k}"`,l)).join("")}</nav>`;
   }else{
     h=`<div class="bar-top"><div class="bar-title"><span class="eyebrow">HCI ONE · Implementation Hub</span><h1>All projects</h1></div><div class="bar-right">${staff?'<button class="btn sm" data-act="newproj">New project</button>':""}${gear}${meBlock()}</div></div>
-     <nav class="tabs" aria-label="Portfolio">${PORTTABS.filter(([k])=>k!=="helpdesk"||staff).map(([k,l])=>tab(S.view===k,`data-go="portfolio:${k}"`,l,k==="portfolio"?projs.length:k==="alldecisions"?totDec:k==="helpdesk"?S.cols.tickets.filter(t=>t.status==="new"||t.status==="hci").length:totOver,k==="alldecisions"||k==="helpdesk"?"warn":k==="allwork"?"bad":"")).join("")}</nav>`;
+     <nav class="tabs" aria-label="Portfolio">${PORTTABS.filter(([k])=>k!=="helpdesk"||staff).map(([k,l])=>tab(S.view===k,`data-go="portfolio:${k}"`,l,k==="portfolio"?projs.length:k==="alldecisions"?totDec:k==="helpdesk"?S.cols.tickets.filter(t=>t.status==="new"||t.status==="hci").length:k==="daily"?0:totOver,k==="alldecisions"||k==="helpdesk"?"warn":k==="allwork"?"bad":"")).join("")}</nav>`;
   }
   $("#side").innerHTML=h+ownersList();
 }
@@ -464,9 +464,9 @@ function render(){
   if(S.scope==="project"&&!allowed().includes(S.view))S.view="overview";
   renderSide();
   const main=$("#main");
-  const FILL={overview:1,plan:1,decisions:1,portfolio:1,designs:1,helpdesk:1};
+  const FILL={overview:1,plan:1,decisions:1,portfolio:1,designs:1,helpdesk:1,daily:1};
   main.classList.toggle("fill",!!FILL[S.view]&&S.scope!=="admin");
-  if(S.scope==="portfolio"){main.innerHTML=PORT[S.view]?PORT[S.view]():PORT.portfolio();return}
+  if(S.scope==="portfolio"){main.innerHTML=PORT[S.view]?PORT[S.view]():PORT.portfolio();if(S.view==="daily"&&window.HUB_DAILY)window.HUB_DAILY.mount(document.getElementById("dailyMount"));return}
   if(S.scope==="admin"){main.innerHTML=ADMIN[S.view]?ADMIN[S.view]():ADMIN.catalog();return}
   const p=P();
   const banner=S.role!=="hci"&&!S.locked?`<div class="banner">Previewing the ${PARTIES[S.role].toLowerCase()} portal. ${S.role==="partner"?"Partners see only their own tasks, integrations and the project team.":S.role==="dealer"?"Dealers see project work without IP addresses, MACs, remote access or HCI only notes.":"Customers see everything marked for the whole project; HCI only items are hidden."}</div>`:"";
@@ -479,6 +479,10 @@ function stPill(s){const m={on_track:"good",watch:"warn",at_risk:"bad",off_track
 
 /* portfolio */
 const PORT={
+daily(){
+  if(!window.HUB_DAILY)return `<div class="loading">The Daily Update board runs in the hosted Hub.</div>`;
+  return `<div id="dailyMount" style="flex:1;min-height:0"></div>`;
+},
 portfolio(){
   const ps=active().sort((a,b)=>{const r={at_risk:0,off_track:0,watch:1,on_track:2};return (r[a.status]??3)-(r[b.status]??3)||(a.goLive||"9").localeCompare(b.goLive||"9")});
   const staff=!S.locked||S.role==="hci";
