@@ -12,6 +12,13 @@
     st.textContent = [
       "#dailyRoot{display:flex;flex-direction:column;gap:12px;height:100%;min-height:0}",
       "#dailyRoot .dtop{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center;justify-content:space-between}",
+      "#dailyRoot .dleft{display:flex;align-items:center;gap:18px;flex-wrap:wrap;min-width:0}",
+      "#dailyRoot .dmini{display:flex;gap:10px;flex-wrap:wrap}",
+      "#dailyRoot .dmt{display:flex;flex-direction:column;align-items:flex-start;gap:2px;min-width:92px;padding:8px 14px;border-radius:14px;border:1px solid var(--card-brd);background:var(--card);font:inherit;color:var(--ink);text-align:left}",
+      "#dailyRoot button.dmt{cursor:pointer} #dailyRoot button.dmt:hover{border-color:var(--hero)}",
+      "#dailyRoot .dmt .dn{font-size:30px;font-weight:800;line-height:1}",
+      "#dailyRoot .dmt .dl{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}",
+      "#dailyRoot .dmt.bad .dn{color:var(--bad)} #dailyRoot .dmt.warn .dn{color:var(--chip-caution-ink)} #dailyRoot .dmt.good .dn{color:var(--hero-deep)}",
       "#dailyRoot .dsync{color:var(--muted);font-size:12.5px;font-weight:600}",
       "#dailyRoot .dstats{display:flex;gap:14px;align-items:center;font-size:13px;color:var(--muted);font-weight:700;flex-wrap:wrap}",
       "#dailyRoot .dstats b{color:var(--ink)} #dailyRoot .dstats .bad b{color:var(--bad)} #dailyRoot .dstats .warn b{color:var(--chip-caution-ink)}",
@@ -225,9 +232,16 @@
     var sd = el("input", { type: "checkbox" }); sd.checked = state.showDone;
     sd.addEventListener("change", function () { state.showDone = sd.checked; try { localStorage.setItem("hub.daily.showDone", state.showDone ? "1" : "0"); } catch (e) {} redraw(); });
     var addBtn = el("button", { type: "button", class: "btn sm", text: "New task" }); addBtn.addEventListener("click", function () { openEdit(null); });
-    root.appendChild(el("div", { class: "dtop" }, [el("span", { class: "dsync", text: syncText() }), el("div", { class: "dstats" }, [
-      el("span", null, [el("b", { text: String(open) }), document.createTextNode(" open · "), el("b", { text: String(all.filter(isWait).length) }), document.createTextNode(" stuck on others · "), el("b", { text: String(all.filter(isOver).length) }), document.createTextNode(" overdue · "), el("b", { text: String(done) }), document.createTextNode(" done")]),
-      el("label", { style: "display:inline-flex;gap:6px;align-items:center;cursor:pointer" }, [sd, document.createTextNode("Show done")]), addBtn])]));
+    function tile(n, label, cls, onClick) {
+      var b = el(onClick ? "button" : "div", { class: "dmt " + (cls || ""), type: onClick ? "button" : undefined }, [el("span", { class: "dn", text: String(n) }), el("span", { class: "dl", text: label })]);
+      if (onClick) b.addEventListener("click", onClick); return b;
+    }
+    var nStuck = all.filter(isWait).length, nOver = all.filter(isOver).length;
+    root.appendChild(el("div", { class: "dtop" }, [
+      el("div", { class: "dleft" }, [el("span", { class: "dsync", text: syncText() }), el("div", { class: "dmini" }, [
+        tile(open, "Open", ""), tile(nStuck, "Stuck on others", nStuck ? "warn" : ""),
+        tile(nOver, "Overdue", nOver ? "bad" : "", function () { state.overdueOnly = !state.overdueOnly; redraw(); }), tile(done, "Done", "good")])]),
+      el("div", { class: "dstats" }, [el("label", { style: "display:inline-flex;gap:6px;align-items:center;cursor:pointer" }, [sd, document.createTextNode("Show done")]), addBtn])]));
     var chips = el("div", { class: "dchips", role: "group", "aria-label": "Filter by customer" });
     var mk = function (label, val, n) {
       var b = el("button", { type: "button", class: "fchip" + (state.filter === val ? " on" : ""), "aria-pressed": state.filter === val ? "true" : "false", text: label + " " + n });
