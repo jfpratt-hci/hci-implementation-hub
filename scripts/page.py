@@ -10,7 +10,7 @@ html = html.replace('Open this page in Claude to make changes', 'The Hub server 
 head = ('<!doctype html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n'
         '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">\n'
         '<meta name="color-scheme" content="light dark">\n'
-        '<script src="/teams-js/MicrosoftTeams.min.js"></script>\n<script src="/hub-data.js"></script>\n'
+        '<script src="/teams-js/MicrosoftTeams.min.js"></script>\n<script src="/hub-data.js"></script>\n<script src="/daily.js"></script>\n'
         '<style>body{margin:0} img{max-width:100%} [hidden]{display:none!important}</style>\n')
 i = html.index('<div class="app">')
 (ROOT / "public" / "index.html").write_text(head + html[:i] + "</head>\n<body>\n" + html[i:] + "\n</body>\n</html>\n")

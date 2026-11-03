@@ -125,6 +125,7 @@
     reply: function(id,body){ return req("POST","/api/helpdesk/tickets/"+encodeURIComponent(id)+"/reply",body); },
     update: function(id,body){ return req("POST","/api/helpdesk/tickets/"+encodeURIComponent(id)+"/update",body); }
   };
+  window.HUB_FETCH = fetch;   // fetch with the Teams sign in token, for modules such as daily.js
   var caps = { db: db, downloads: downloads, assets: assets };
   // Sign in first: inside Teams through single sign on, in a browser through the App Service sign in page.
   function signInScreen(login) {
