@@ -93,15 +93,8 @@
     return names;
   }
   function teamName(o) { for (var i = 0; i < ctx.team.length; i++) if (ctx.team[i].name === o) return o; return ""; }
-  // The daily work list: anything stuck on someone else, plus HCI tasks that are assigned to a person, came from the Daily Update, or have no project.
-  function workTasks() {
-    var team = {}; ctx.team.forEach(function (m) { team[m.name] = 1; });
-    return ctx.tasks.filter(function (t) {
-      if (isWait(t)) return true;
-      if ((t.party || "hci") !== "hci") return false;
-      return !!t.source || !t.projectId || !!(t.owner && team[t.owner]);
-    });
-  }
+  // One task list: the Board shows every task the Plan tabs show, for every customer and project.
+  function workTasks() { return ctx.tasks; }
   function peopleFor(pid, cid) {
     var ids = pid ? [pid] : (cid ? projsOf(cid).map(function (p) { return p.id; }) : []);
     return ctx.people.filter(function (p) { return ids.indexOf(p.projectId) >= 0 && p.party !== "hci"; });
@@ -135,6 +128,8 @@
       '<div class="field"><label for="e_owner">HCI person</label><select id="e_owner" name="owner">' + opts(ownerList, cur.owner, "Unassigned") + "</select></div>" +
       '<div class="field"><label for="e_cust">Customer</label><select id="e_cust" name="customerId">' + opts(custList, cur.customerId, "No customer (HCI general)") + "</select></div>" +
       '<div class="field"><label for="e_proj">Project</label><select id="e_proj" name="projectId"></select></div>' +
+      '<div class="field"><label for="e_party">Who does it</label><select id="e_party" name="party">' + opts([["hci", "HCI"], ["customer", "Customer"], ["dealer", "Dealer"], ["partner", "Partner"]], cur.party || "hci") + "</select></div>" +
+      '<div class="field"><label for="e_vis">Who can see it</label><select id="e_vis" name="visibility">' + opts([["internal", "HCI only"], ["external", "Everyone on the project"]], cur.visibility || "internal") + "</select></div>" +
       '<div class="field"><label for="e_status">Status</label><select id="e_status" name="status">' + opts([["open", "Open"], ["waiting", "Stuck, waiting on someone else"], ["done", "Done"]], cur.status) + "</select></div>" +
       '<div class="field"><label for="e_due">Due</label><input id="e_due" type="date" name="due" value="' + ctx.esc(cur.due || "") + '"></div>' +
       '<div class="field full" id="e_waitbox"><label for="e_wait">Waiting on (dealer, vendor or customer on the project)</label><select id="e_wait" name="waitingOnId"></select>' +
@@ -162,7 +157,7 @@
       var cid = f.customerId.value, pid = f.projectId.value, st = f.status.value, wid = st === "waiting" ? f.waitingOnId.value : "";
       var person = wid && ctx.people.filter(function (x) { return x.id === wid; })[0];
       var fields = {
-        title: title, owner: f.owner.value, projectId: pid, customerId: cid, status: st, due: f.due.value,
+        title: title, owner: f.owner.value, party: f.party.value, visibility: f.visibility.value, projectId: pid, customerId: cid, status: st, due: f.due.value,
         hospital: custById(cid) ? custById(cid).name : "General",
         waitingOnId: wid, waitingOnName: st === "waiting" ? (person ? person.name : f.waitingOnName.value.trim()) : "",
         waitingSince: st === "waiting" ? (cur.status === "waiting" && cur.waitingSince ? cur.waitingSince : new Date().toISOString()) : "",
@@ -171,7 +166,7 @@
       var p = proj(pid); fields.phase = p ? Number(p.phase) || 0 : (cur.phase || 0);
       root.innerHTML = "";
       if (isNew) {
-        ctx.add(Object.assign({ party: "hci", visibility: "internal", note: "", source: "Added in the Hub", sourceDate: ctx.today(), createdAt: new Date().toISOString() }, fields)).then(function () { ctx.refresh(); }).catch(fail);
+        ctx.add(Object.assign({ note: "", source: "Added in the Hub", sourceDate: ctx.today(), createdAt: new Date().toISOString() }, fields)).then(function () { ctx.refresh(); }).catch(fail);
       } else save(t, fields);
     };
   }
@@ -188,6 +183,7 @@
       var pl = el("button", { type: "button", class: "dtag dlink", title: "Open the project plan", text: proj(t.projectId).name });
       pl.addEventListener("click", function () { ctx.openProject(t.projectId); }); meta.appendChild(pl);
     } else if (custOf(t)) meta.appendChild(el("span", { class: "dtag", text: "No project yet" }));
+    if ((t.party || "hci") !== "hci") meta.appendChild(el("span", { class: "dtag", text: PARTY[t.party] || t.party }));
     if (isWait(t)) { var w = waitLabel(t); meta.appendChild(el("span", { class: "dtag wait", text: "Waiting on " + (w.name || "someone") + (t.waitingSince ? " · " + daysSince(t.waitingSince) + "d" : ""), title: w.org })); }
     if (t.due) meta.appendChild(el("span", { class: "dtag" + (isOver(t) ? " old" : ""), text: (isOver(t) ? "Overdue · " : "Due ") + fmtDay(t.due) }));
     var as = el("select", { class: "dassign", "aria-label": "HCI person" });
@@ -271,8 +267,10 @@
     }
     var names = owners();
     names.forEach(function (n) { lane(n, pool.filter(function (t) { return t.owner === n && !isWait(t); }), false, n); });
-    var un = pool.filter(function (t) { return !teamName(t.owner) && !isWait(t); });
+    var un = pool.filter(function (t) { return (t.party || "hci") === "hci" && !teamName(t.owner) && !isWait(t); });
     if (un.length) lane("Unassigned", un, false, "");
+    var oth = pool.filter(function (t) { return (t.party || "hci") !== "hci" && !isWait(t); });
+    if (oth.length) lane("Customer, dealer and partner", oth, false, "");
     lane("Stuck, waiting on others", pool.filter(isWait).sort(function (x, y) { return waitLabel(x).name.localeCompare(waitLabel(y).name); }), true, "");
     root.appendChild(board);
   }
