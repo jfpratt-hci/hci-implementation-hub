@@ -451,7 +451,7 @@ function renderSide(){
     h=`<div class="bar-top"><button class="iconbtn" data-go="portfolio:portfolio" aria-label="All projects" title="All projects">${BACK}</button><div class="bar-title"><span class="eyebrow">HCI ONE · Implementation Hub</span><h1>Admin</h1></div><span class="pill int">HCI only</span><div class="bar-right">${meBlock()}</div></div>
      <nav class="tabs" aria-label="Admin">${AVIEWS.map(([k,l])=>tab(S.view===k,`data-go="admin:${k}"`,l)).join("")}</nav>`;
   }else{
-    h=`<div class="bar-top"><div class="bar-title"><span class="eyebrow">HCI ONE · Implementation Hub</span><h1>${S.view==="daily"?"Daily board":"Customers"}</h1></div><div class="bar-right">${staff?'<button class="btn sm" data-act="newproj">New project</button>':""}${gear}${meBlock()}</div></div>
+    h=`<div class="bar-top"><div class="bar-title"><span class="eyebrow">HCI ONE · Implementation Hub</span><h1>${S.view==="daily"?"Daily board":"Customers"}</h1></div><div class="bar-right">${staff?'<button class="btn sm" data-new="customers">New customer</button>':""}${gear}${meBlock()}</div></div>
      <nav class="tabs" aria-label="Portfolio">${PORTTABS.filter(([k])=>k!=="helpdesk"||staff).map(([k,l])=>tab(S.view===k,`data-go="portfolio:${k}"`,l,k==="portfolio"?S.cols.customers.length:k==="alldecisions"?totDec:k==="helpdesk"?S.cols.tickets.filter(t=>t.status==="new"||t.status==="hci").length:k==="daily"?0:totOver,k==="alldecisions"||k==="helpdesk"?"warn":k==="allwork"?"bad":"")).join("")}</nav>`;
   }
   $("#side").innerHTML=h+ownersList();
@@ -515,19 +515,18 @@ portfolio(){
   const loose=ps.filter(p=>!p.customerId||!byId("customers",p.customerId));
   if(loose.length)groups.push({c:{id:"",name:"No customer yet"},ps:loose});
   const tk=S.cols.tasks.filter(t=>t.status!=="done");
-  const card=p=>{const s=stats(p.id);const gl=days(p.goLive);const ph=Number(p.phase)||0;const n=tk.filter(t=>t.projectId===p.id).length;
-    return `<button type="button" class="pcard" data-go="project:overview:${esc(p.id)}" style="min-height:150px"><div style="display:flex;gap:10px;align-items:flex-start;width:100%"><div style="flex:1;min-width:0"><div class="nm">${esc(p.name)}</div><div class="who">${esc([p.dealer,p.scope].filter(Boolean).join(" · "))}</div></div>${stPill(p.status)}</div>
-     ${mini(ph)}<div class="who">Phase ${ph+1} · ${esc(PHASES[ph])}</div>
-     <div class="foot"><span>${n} open task${n===1?"":"s"}</span><span>${p.goLive?"Go live "+fd(p.goLive)+(gl!=null?` · ${gl<0?Math.abs(gl)+" days past":gl+" days"}`:""):"No go live date"}</span>${s.dec?`<span style="color:var(--chip-caution-ink)">${s.dec} to decide</span>`:""}${s.over?`<span style="color:var(--warn-deep)">${s.over} overdue</span>`:""}</div></button>`};
-  const sec=g=>{const c=g.c;const pids=new Set(g.ps.map(p=>p.id));
+  const row=p=>{const s=stats(p.id);const gl=days(p.goLive);const ph=Number(p.phase)||0;const n=tk.filter(t=>t.projectId===p.id).length;
+    return `<button type="button" class="pcard" data-go="project:overview:${esc(p.id)}" style="min-height:0;padding:12px 14px;gap:6px;box-shadow:none;border:1px solid var(--line)"><div style="display:flex;gap:10px;align-items:center;width:100%"><div class="nm" style="flex:1;min-width:0;font-size:14.5px">${esc(p.name)}</div>${stPill(p.status)}</div>
+     ${mini(ph)}<div class="foot" style="margin-top:0"><span>Phase ${ph+1} · ${esc(PHASES[ph])}</span><span>${n} open task${n===1?"":"s"}</span><span>${p.goLive?"Go live "+fd(p.goLive):"No go live date"}${gl!=null&&gl<0?` · ${Math.abs(gl)} days past`:""}</span>${s.dec?`<span style="color:var(--chip-caution-ink)">${s.dec} to decide</span>`:""}${s.over?`<span style="color:var(--warn-deep)">${s.over} overdue</span>`:""}</div></button>`};
+  const card=g=>{const c=g.c;const pids=new Set(g.ps.map(p=>p.id));
     const mine=tk.filter(t=>c.id?(t.customerId===c.id||pids.has(t.projectId)):pids.has(t.projectId));
     const stuck=mine.filter(t=>t.status==="waiting").length,od=mine.filter(over).length,np=mine.filter(t=>!t.projectId).length;
-    return `<section style="margin-bottom:22px"><div style="display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;margin-bottom:10px"><h2 style="margin:0;font-size:18px">${esc(c.name)}</h2>
-      <span class="who">${g.ps.length} project${g.ps.length===1?"":"s"} · ${mine.length} open task${mine.length===1?"":"s"}${stuck?` · ${stuck} stuck`:""}${od?` · ${od} overdue`:""}${np?` · ${np} not on a project yet`:""}</span>
-      <span style="margin-left:auto;display:flex;gap:6px;flex-wrap:wrap">${c.id?`<button type="button" class="btn sec sm" data-act="custboard" data-cust="${esc(c.id)}">Tasks</button>`:""}${staff&&c.id?`<button type="button" class="btn sec sm" data-edit="customers" data-id="${esc(c.id)}">Edit</button><button type="button" class="btn sec sm" data-act="newproj" data-cust="${esc(c.id)}">Add project</button>`:""}</span></div>
-      <div class="pcards" style="grid-auto-rows:auto">${g.ps.map(card).join("")||'<div class="who">No projects yet. Tasks can still be filed on this customer from the Board.</div>'}</div></section>`};
-  return `<div style="flex:1;min-height:0;width:100%;overflow:auto;padding:2px 2px 20px"><div>${groups.map(sec).join("")}
-    ${staff?'<div style="display:flex;gap:8px"><button type="button" class="btn" data-new="customers">New customer</button><button type="button" class="btn sec" data-act="newproj">New project</button></div>':""}</div></div>`;
+    const lk='style="background:none;border:0;padding:0;font-weight:800;font-size:12.5px;color:var(--hero-deep);cursor:pointer"';
+    return `<section class="card" style="display:flex;flex-direction:column;gap:10px;align-content:start"><div style="display:flex;gap:10px;align-items:baseline"><h2 style="margin:0;font-size:18px;flex:1;min-width:0">${esc(c.name)}</h2>${staff&&c.id?`<button type="button" ${lk} data-edit="customers" data-id="${esc(c.id)}">Edit</button>`:""}</div>
+      <div class="who">${g.ps.length} project${g.ps.length===1?"":"s"} · ${mine.length} open task${mine.length===1?"":"s"}${stuck?` · ${stuck} stuck`:""}${od?` · <span style="color:var(--warn-deep)">${od} overdue</span>`:""}${np?` · ${np} not on a project yet`:""}</div>
+      ${g.ps.map(row).join("")||'<div class="who">No projects yet.</div>'}
+      <div style="display:flex;gap:16px;margin-top:2px">${c.id?`<button type="button" ${lk} data-act="custboard" data-cust="${esc(c.id)}">Tasks (${mine.length})</button>`:""}${staff&&c.id?`<button type="button" ${lk} data-act="newproj" data-cust="${esc(c.id)}">+ Add project</button>`:""}</div></section>`};
+  return `<div style="flex:1;min-height:0;width:100%;overflow:auto;padding:2px 2px 20px"><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(400px,1fr));gap:14px;align-items:start">${groups.map(card).join("")}</div></div>`;
 },
 alldecisions(){
   const ps=active();const ids=new Set(ps.map(p=>p.id));
