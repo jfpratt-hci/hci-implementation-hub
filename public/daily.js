@@ -2,7 +2,7 @@
 // Both read and write the same task list as each project's Plan tab. The page hands in a ctx object (see dailyCtx in the page).
 (function () {
   "use strict";
-  var state = { filter: "all", showDone: true, open: {}, drafts: {}, armed: null, editing: null };
+  var state = { filter: "all", overdueOnly: false, showDone: true, open: {}, drafts: {}, armed: null, editing: null };
   try { var s = localStorage.getItem("hub.daily.showDone"); if (s !== null) state.showDone = s === "1"; } catch (e) {}
   var mount = null, view = "", ctx = null, armTimer = null;
 
@@ -233,6 +233,9 @@
       var b = el("button", { type: "button", class: "fchip" + (state.filter === val ? " on" : ""), "aria-pressed": state.filter === val ? "true" : "false", text: label + " " + n });
       b.addEventListener("click", function () { state.filter = val; redraw(); }); chips.appendChild(b);
     };
+    var odN = all.filter(isOver).length;
+    var ob = el("button", { type: "button", class: "fchip" + (state.overdueOnly ? " on" : ""), "aria-pressed": state.overdueOnly ? "true" : "false", text: "Overdue " + odN, style: "margin-right:8px" });
+    ob.addEventListener("click", function () { state.overdueOnly = !state.overdueOnly; redraw(); }); chips.appendChild(ob);
     mk("All", "all", total);
     var nameOf = function (k) { return k === "__none" ? "General" : (custById(k) ? custById(k).name : k); };
     Object.keys(chipsCount).sort(function (a, b) { return nameOf(a).localeCompare(nameOf(b)); }).forEach(function (g) { mk(nameOf(g), g, chipsCount[g]); });
@@ -242,6 +245,7 @@
     var board = el("div", { class: "dboard" });
     var pool = all.filter(function (t) { return state.filter === "all" || (custOf(t) || "__none") === state.filter; });
     if (!state.showDone) pool = pool.filter(function (t) { return !isDone(t); });
+    if (state.overdueOnly) pool = pool.filter(isOver);
     function sortFn(x, y) { return String(ageIso(x)).localeCompare(String(ageIso(y))) || String(x.createdAt || "").localeCompare(String(y.createdAt || "")) || String(x.id).localeCompare(String(y.id)); }
     function lane(name, items, stuck, ownerName) {
       var o = items.filter(function (t) { return !isDone(t); }).sort(sortFn), d = items.filter(isDone).sort(sortFn);

@@ -349,7 +349,7 @@ const PVIEWS=[["overview","Overview"],["plan","Plan"],["files","Files"],["helpde
 const SUBS={system:[["config","Configuration"],["installed","Installed base"],["changelog","App changelog"]],integrations:[["integrations","Integrations"],["access","Access and network"]],team:[["people","People"],["feed","Feed"],["audit","History"]]};
 /* old screen names still used by links and saved navigation */
 const LEGACY={config:["overview",""],installed:["overview",""],changelog:["overview",""],system:["overview",""],integrations:["overview",""],team:["overview",""],feed:["overview",""],people:["overview",""],decisions:["overview",""],designs:["files",""],meetings:["plan",""]};
-const PORTTABS=[["daily","Board"],["portfolio","Customers"],["allwork","Overdue work"],["helpdesk","Help Desk"]];
+const PORTTABS=[["daily","Board"],["portfolio","Customers"],["helpdesk","Help Desk"]];
 const AVIEWS=[["catalog","Component catalog"],["template","Project template"],["team","HCI team"],["releases","Releases"],["projects","All projects"]];
 const opt=o=>Object.entries(o);
 const FORMS={
@@ -542,16 +542,7 @@ helpdesk(){
   const projs=S.cols.projects.filter(hdOn);
   return head("Help Desk",`${all.length} open across ${projs.length} project${projs.length===1?"":"s"} with the add on`)+`<div class="fit rows1"><section class="card c12"><div class="card-h"><span class="label">Queue<span class="n">${all.length}</span></span><span class="who">Critical first, then by response target</span></div><div class="scroll"><div class="tbl-wrap"><table><thead><tr><th>Ticket</th><th>Project</th><th>Severity</th><th>Status</th><th>Owner</th><th>Target</th></tr></thead><tbody>${all.map(t=>{const p=byId("projects",t.projectId)||{};return `<tr class="click" data-go="project:helpdesk:${esc(t.projectId)}" data-hdpick="${esc(t.id)}"><td><b>HD-${esc(t.number)}</b> ${esc(t.title)}${t.channel==="sms"?' <span class="pill ex">Text</span>':""}</td><td>${esc(p.name||"")}</td><td>${hdSev(t.severity)}</td><td>${hdStat(t.status)}</td><td>${esc(t.owner||"Unassigned")}</td><td>${hdDue(t)}</td></tr>`}).join("")||'<tr><td colspan="6"><div class="empty">Nothing open. Every ticket is answered.</div></td></tr>'}</tbody></table></div></div></section></div>`;
 },
-allwork(){
-  const ps=active();const ids=new Set(ps.map(p=>p.id));
-  const t=S.cols.tasks.filter(x=>ids.has(x.projectId)&&x.status!=="done");
-  const od=t.filter(over).sort((a,b)=>a.due.localeCompare(b.due));
-  const wk=t.filter(x=>!over(x)&&x.due&&days(x.due)<=7).sort((a,b)=>a.due.localeCompare(b.due));
-  const owners={};od.forEach(x=>{const o=x.owner||"Unassigned";owners[o]=(owners[o]||0)+1});
-  return head("Overdue work","Across every active project")+`<div class="grid"><section class="card c8"><div class="card-h"><span class="label">Overdue<span class="n">${od.length}</span></span></div><div class="rows">${od.map(x=>taskRow(x,true)).join("")||'<div class="empty">Nothing overdue.</div>'}</div>
-  <div class="card-h" style="margin-top:18px"><span class="label">Due in the next 7 days<span class="n">${wk.length}</span></span></div><div class="rows">${wk.map(x=>taskRow(x,true)).join("")||'<div class="empty">Nothing due this week.</div>'}</div></section>
-  <section class="card c4"><div class="card-h"><span class="label">Overdue by owner</span></div><div class="tbl-wrap"><table><tbody>${Object.entries(owners).sort((a,b)=>b[1]-a[1]).map(([o,n])=>`<tr><td>${esc(o)}</td><td class="num"><span class="pill bad">${n}</span></td></tr>`).join("")||'<tr><td class="empty">Nobody.</td></tr>'}</tbody></table></div></section></div>`;
-}
+allwork(){S.view="daily";return PORT.daily()},
 };
 
 /* project views */
