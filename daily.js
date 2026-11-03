@@ -18,6 +18,44 @@ module.exports = function ({ store, bump, audit }) {
   const fakeReq = { me: { name: "Daily Update sync", email: "" }, get: () => "", ip: "" };
   let running = false, warned = false;
 
+  // ---- customers: one per hospital or organisation; a customer has projects, a project has tasks
+  const slug = n => String(n || "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 40) || newId();
+  function customerNamed(name) {
+    const h = String(name || "").toLowerCase().trim();
+    if (!h || h === "general") return "";
+    const key = ALIASES[h] || h;
+    for (const [id, c] of Object.entries(store.customers)) {
+      const n = String(c.name || "").toLowerCase();
+      if (n === h || n.includes(key) || key.includes(n)) return id;
+    }
+    return "";
+  }
+  function ensureCustomer(name) {
+    const nm = clip(name, 80).trim();
+    if (!nm || nm.toLowerCase() === "general") return "";
+    let id = customerNamed(nm);
+    if (id) return id;
+    id = slug(nm); while (store.customers[id]) id += "-2";
+    store.customers[id] = { name: nm, contact: "", notes: "", createdAt: new Date().toISOString() };
+    bump("customers");
+    return id;
+  }
+  function migrate() {
+    let ch = false;
+    for (const [id, p] of Object.entries(store.projects || {})) {
+      if (p.customerId && store.customers[p.customerId]) continue;
+      const cid = ensureCustomer(p.customer || p.name); if (cid) { p.customerId = cid; ch = true; }
+    }
+    if (ch) bump("projects");
+    let tc = false;
+    for (const t of Object.values(store.tasks || {})) {
+      if (t.customerId) continue;
+      const p = t.projectId && store.projects[t.projectId];
+      const cid = p ? p.customerId : (t.source ? ensureCustomer(t.hospital) : "");
+      if (cid) { t.customerId = cid; tc = true; }
+    }
+    if (tc) bump("tasks");
+  }
   function projectFor(hospital) {
     const h = String(hospital || "").toLowerCase().trim();
     if (!h || h === "general") return "";
@@ -39,14 +77,16 @@ module.exports = function ({ store, bump, audit }) {
   }
   function toTask(row) {
     const waiting = String(row.owner || "").toLowerCase() === "waiting";
-    const pid = projectFor(row.hospital);
+    let pid = projectFor(row.hospital);
+    let cid = pid ? (store.projects[pid].customerId || "") : ensureCustomer(row.hospital);
+    if (!pid && cid) { const mine = Object.entries(store.projects).filter(([, p]) => p.customerId === cid); if (mine.length === 1) pid = mine[0][0]; }
     const proj = pid ? store.projects[pid] : null;
     const text = clip(row.text, 500);
     // "Rauland: Crawford care team data" names who the card is waiting on; keep that as the third party.
     const colon = waiting ? text.indexOf(":") : -1;
     const waitName = colon > 0 && colon < 40 ? text.slice(0, colon) : "";
     return {
-      projectId: pid, title: text,
+      projectId: pid, customerId: cid, title: text,
       owner: waiting ? ownerFor("john") : ownerFor(row.owner),
       party: "hci", phase: proj ? Number(proj.phase) || 0 : 0,
       status: row.done ? "done" : waiting ? "waiting" : "open",
@@ -84,5 +124,5 @@ module.exports = function ({ store, bump, audit }) {
     } catch (e) { console.warn("daily:", e.message); }
     finally { running = false; }
   }
-  return { start() { setTimeout(pull, Number(process.env.DAILY_FIRST_PULL_MS || 15000)); setInterval(pull, EVERY_MS); }, pull };
+  return { start() { try { migrate(); } catch (e) { console.warn('daily migrate:', e.message); } setTimeout(pull, Number(process.env.DAILY_FIRST_PULL_MS || 15000)); setInterval(pull, EVERY_MS); }, pull };
 };

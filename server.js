@@ -10,7 +10,7 @@ const crypto = require("crypto");
 const PORT = process.env.PORT || 3000;
 const DATA_DIR = process.env.HUB_DATA_DIR || path.join(__dirname, "data");
 const UPLOAD_DIR = process.env.HUB_UPLOAD_DIR || path.join(__dirname, "uploads");
-const COLS = ["projects","tasks","decisions","meetings","interfaces","people","devices","releases","deployments","components","catalog","access","network","template","team","shots","comments","audit","designs","tickets","ticketMessages","dailyMeta"];
+const COLS = ["projects","tasks","decisions","meetings","interfaces","people","devices","releases","deployments","components","catalog","access","network","template","team","shots","comments","audit","designs","tickets","ticketMessages","dailyMeta","customers"];
 const MIME = { "image/png": ".png", "image/jpeg": ".jpg", "image/webp": ".webp", "image/gif": ".gif" };
 // Identity. With REQUIRE_AUTH on, every /api call needs a signed in user from App Service Authentication (Entra ID).
 const REQUIRE_AUTH = /^(1|true|yes)$/i.test(process.env.REQUIRE_AUTH || "");
@@ -157,7 +157,7 @@ function canSee(me, col, doc) {
   if (me.role === "hci") return true;
   if (me.role === "none") return false;
   if (col === "catalog") return true;
-  if (col === "audit" || col === "template" || col === "team") return false;
+  if (col === "audit" || col === "template" || col === "team" || col === "customers") return false;
   if (col === "releases") return me.role !== "partner";
   if (!me.projects.includes(col === "projects" ? doc.__id : doc.projectId)) return false;
   if (doc.visibility === "internal") return false;

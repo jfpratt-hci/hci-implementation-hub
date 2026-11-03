@@ -79,7 +79,10 @@
 
   /* ---- data helpers ---- */
   function proj(id) { var l = ctx.projects.all; for (var i = 0; i < l.length; i++) if (l[i].id === id) return l[i]; return null; }
-  function tagOf(t) { var p = t.projectId && proj(t.projectId); return p ? (p.customer || p.name) : (t.hospital || "General"); }
+  function custById(id) { var l = ctx.customers || []; for (var i = 0; i < l.length; i++) if (l[i].id === id) return l[i]; return null; }
+  function custOf(t) { var p = t.projectId && proj(t.projectId); return t.customerId || (p && p.customerId) || ""; }
+  function tagOf(t) { var c = custById(custOf(t)); if (c) return c.name; var p = t.projectId && proj(t.projectId); return p ? (p.customer || p.name) : (t.hospital || "General"); }
+  function projsOf(cid) { return ctx.projects.all.filter(function (p) { return p.customerId === cid; }); }
   function ageIso(t) { return t.sourceDate || t.createdAt || ""; }
   function isDone(t) { return t.status === "done"; }
   function isWait(t) { return t.status === "waiting"; }
@@ -99,7 +102,10 @@
       return !!t.source || !t.projectId || !!(t.owner && team[t.owner]);
     });
   }
-  function peopleFor(pid) { return ctx.people.filter(function (p) { return p.projectId === pid && p.party !== "hci"; }); }
+  function peopleFor(pid, cid) {
+    var ids = pid ? [pid] : (cid ? projsOf(cid).map(function (p) { return p.id; }) : []);
+    return ctx.people.filter(function (p) { return ids.indexOf(p.projectId) >= 0 && p.party !== "hci"; });
+  }
   function waitLabel(t) {
     var p = t.waitingOnId && ctx.people.filter(function (x) { return x.id === t.waitingOnId; })[0];
     if (p) return { name: p.name, org: [p.org, PARTY[p.party] || ""].filter(Boolean).join(" · ") };
@@ -117,40 +123,47 @@
   function openEdit(t) {
     var root = document.getElementById("modalRoot"); if (!root) return;
     var isNew = !t;
-    var cur = t || { title: "", owner: ctx.me || (ctx.team[0] || {}).name || "", projectId: "", hospital: "General", status: "open", due: "" };
+    var cur = t || { title: "", owner: ctx.me || (ctx.team[0] || {}).name || "", projectId: "", customerId: custById(state.filter) ? state.filter : "", hospital: "General", status: "open", due: "" };
+    cur = Object.assign({}, cur, { customerId: custOf(cur) });
     function opts(list, sel, blank) { return (blank ? '<option value="">' + blank + "</option>" : "") + list.map(function (o) { return '<option value="' + ctx.esc(o[0]) + '"' + (String(o[0]) === String(sel) ? " selected" : "") + ">" + ctx.esc(o[1]) + "</option>"; }).join(""); }
     var ownerList = owners().map(function (n) { return [n, n]; });
-    var projList = ctx.projects.all.map(function (p) { return [p.id, p.name]; });
-    function waitList(pid) { return peopleFor(pid).map(function (p) { return [p.id, p.name + " · " + [p.org, PARTY[p.party]].filter(Boolean).join(", ")]; }); }
+    var custList = (ctx.customers || []).slice().sort(function (a, b) { return String(a.name).localeCompare(String(b.name)); }).map(function (c) { return [c.id, c.name]; });
+    function projList(cid) { return projsOf(cid).map(function (p) { return [p.id, p.name]; }); }
+    function waitList(pid, cid) { return peopleFor(pid, cid).map(function (p) { return [p.id, p.name + " · " + [p.org, PARTY[p.party]].filter(Boolean).join(", ")]; }); }
     root.innerHTML = '<div class="scrim" data-close="1"><form class="modal" id="mform" novalidate><h2>' + (isNew ? "New task" : "Edit task") + '</h2><div class="fgrid">' +
       '<div class="field full"><label for="e_title">Task</label><input id="e_title" name="title" value="' + ctx.esc(cur.title) + '"></div>' +
       '<div class="field"><label for="e_owner">HCI person</label><select id="e_owner" name="owner">' + opts(ownerList, cur.owner, "Unassigned") + "</select></div>" +
-      '<div class="field"><label for="e_proj">Project</label><select id="e_proj" name="projectId">' + opts(projList, cur.projectId, "No project (HCI general)") + "</select></div>" +
+      '<div class="field"><label for="e_cust">Customer</label><select id="e_cust" name="customerId">' + opts(custList, cur.customerId, "No customer (HCI general)") + "</select></div>" +
+      '<div class="field"><label for="e_proj">Project</label><select id="e_proj" name="projectId"></select></div>' +
       '<div class="field"><label for="e_status">Status</label><select id="e_status" name="status">' + opts([["open", "Open"], ["waiting", "Stuck, waiting on someone else"], ["done", "Done"]], cur.status) + "</select></div>" +
       '<div class="field"><label for="e_due">Due</label><input id="e_due" type="date" name="due" value="' + ctx.esc(cur.due || "") + '"></div>' +
       '<div class="field full" id="e_waitbox"><label for="e_wait">Waiting on (dealer, vendor or customer on the project)</label><select id="e_wait" name="waitingOnId"></select>' +
       '<input id="e_waitname" name="waitingOnName" placeholder="Or type who, if they are not on the project" value="' + ctx.esc(cur.waitingOnId ? "" : cur.waitingOnName || "") + '" style="margin-top:6px"></div>' +
-      '<div class="field full" id="e_hospbox"><label for="e_hosp">Hospital tag (when there is no project yet)</label><input id="e_hosp" name="hospital" value="' + ctx.esc(cur.hospital || "") + '"></div>' +
       '</div><div class="mfoot"><div class="r"><button type="button" class="btn sec" data-close="1">Cancel</button><button type="submit" class="btn">Save</button></div></div></form></div>';
     var f = document.getElementById("mform");
     function sync() {
-      var pid = f.projectId.value, st = f.status.value;
+      var cid = f.customerId.value, st = f.status.value;
+      var pl = projList(cid), pkeep = f.projectId.value || cur.projectId || "";
+      f.projectId.innerHTML = opts(pl, pkeep, cid ? "No project yet" : "Pick a customer first");
+      f.projectId.value = pl.some(function (x) { return x[0] === pkeep; }) ? pkeep : "";
+      var pid = f.projectId.value;
       document.getElementById("e_waitbox").hidden = st !== "waiting";
-      document.getElementById("e_hospbox").hidden = !!pid;
       var keep = f.waitingOnId.value || cur.waitingOnId || "";
-      f.waitingOnId.innerHTML = opts(waitList(pid), keep, pid ? "Not picked, use the name below" : "Pick a project to choose a person");
-      f.waitingOnId.value = keep && waitList(pid).some(function (x) { return x[0] === keep; }) ? keep : "";
+      var wl = waitList(pid, cid);
+      f.waitingOnId.innerHTML = opts(wl, keep, cid ? "Not picked, use the name below" : "Pick a customer to choose a person");
+      f.waitingOnId.value = keep && wl.some(function (x) { return x[0] === keep; }) ? keep : "";
     }
+    f.customerId.onchange = function () { f.projectId.value = ""; f.waitingOnId.value = ""; sync(); };
     f.projectId.onchange = function () { f.waitingOnId.value = ""; sync(); }; f.status.onchange = sync; sync();
     f.title.focus();
     f.onsubmit = function (ev) {
       ev.preventDefault();
       var title = f.title.value.trim(); if (!title) return;
-      var pid = f.projectId.value, st = f.status.value, wid = st === "waiting" ? f.waitingOnId.value : "";
+      var cid = f.customerId.value, pid = f.projectId.value, st = f.status.value, wid = st === "waiting" ? f.waitingOnId.value : "";
       var person = wid && ctx.people.filter(function (x) { return x.id === wid; })[0];
       var fields = {
-        title: title, owner: f.owner.value, projectId: pid, status: st, due: f.due.value,
-        hospital: pid ? (proj(pid) ? (proj(pid).customer || proj(pid).name) : f.hospital.value) : (f.hospital.value.trim() || "General"),
+        title: title, owner: f.owner.value, projectId: pid, customerId: cid, status: st, due: f.due.value,
+        hospital: custById(cid) ? custById(cid).name : "General",
         waitingOnId: wid, waitingOnName: st === "waiting" ? (person ? person.name : f.waitingOnName.value.trim()) : "",
         waitingSince: st === "waiting" ? (cur.status === "waiting" && cur.waitingSince ? cur.waitingSince : new Date().toISOString()) : "",
         doneAt: st === "done" ? (cur.doneAt || new Date().toISOString()) : ""
@@ -170,10 +183,11 @@
     var meta = el("div", { class: "dmeta" });
     var a = ageIso(t);
     if (a) { var n = daysSince(a); meta.appendChild(el("span", { class: "dtag" + (!isDone(t) && n >= 3 ? " old" : ""), text: fmtDay(a) + (n > 0 ? " · " + n + "d" : " · new"), title: t.source || "" })); }
+    meta.appendChild(el("span", { class: "dtag", text: tagOf(t) }));
     if (t.projectId && proj(t.projectId)) {
-      var pl = el("button", { type: "button", class: "dtag dlink", title: "Open the project: " + proj(t.projectId).name, text: tagOf(t) });
+      var pl = el("button", { type: "button", class: "dtag dlink", title: "Open the project plan", text: proj(t.projectId).name });
       pl.addEventListener("click", function () { ctx.openProject(t.projectId); }); meta.appendChild(pl);
-    } else meta.appendChild(el("span", { class: "dtag", text: tagOf(t) }));
+    } else if (custOf(t)) meta.appendChild(el("span", { class: "dtag", text: "No project yet" }));
     if (isWait(t)) { var w = waitLabel(t); meta.appendChild(el("span", { class: "dtag wait", text: "Waiting on " + (w.name || "someone") + (t.waitingSince ? " · " + daysSince(t.waitingSince) + "d" : ""), title: w.org })); }
     if (t.due) meta.appendChild(el("span", { class: "dtag" + (isOver(t) ? " old" : ""), text: (isOver(t) ? "Overdue · " : "Due ") + fmtDay(t.due) }));
     var as = el("select", { class: "dassign", "aria-label": "HCI person" });
@@ -211,25 +225,26 @@
     var all = workTasks();
     var open = all.filter(function (t) { return !isDone(t); }).length, done = all.length - open;
     var chipsCount = {}, total = 0;
-    all.forEach(function (t) { if (isDone(t)) return; var g = tagOf(t); chipsCount[g] = (chipsCount[g] || 0) + 1; total++; });
+    all.forEach(function (t) { if (isDone(t)) return; var g = custOf(t) || "__none"; chipsCount[g] = (chipsCount[g] || 0) + 1; total++; });
     var sd = el("input", { type: "checkbox" }); sd.checked = state.showDone;
     sd.addEventListener("change", function () { state.showDone = sd.checked; try { localStorage.setItem("hub.daily.showDone", state.showDone ? "1" : "0"); } catch (e) {} redraw(); });
     var addBtn = el("button", { type: "button", class: "btn sm", text: "New task" }); addBtn.addEventListener("click", function () { openEdit(null); });
     root.appendChild(el("div", { class: "dtop" }, [el("span", { class: "dsync", text: syncText() }), el("div", { class: "dstats" }, [
       el("span", null, [el("b", { text: String(open) }), document.createTextNode(" open · "), el("b", { text: String(all.filter(isWait).length) }), document.createTextNode(" stuck on others · "), el("b", { text: String(all.filter(isOver).length) }), document.createTextNode(" overdue · "), el("b", { text: String(done) }), document.createTextNode(" done")]),
       el("label", { style: "display:inline-flex;gap:6px;align-items:center;cursor:pointer" }, [sd, document.createTextNode("Show done")]), addBtn])]));
-    var chips = el("div", { class: "dchips", role: "group", "aria-label": "Filter by project or hospital" });
+    var chips = el("div", { class: "dchips", role: "group", "aria-label": "Filter by customer" });
     var mk = function (label, val, n) {
       var b = el("button", { type: "button", class: "fchip" + (state.filter === val ? " on" : ""), "aria-pressed": state.filter === val ? "true" : "false", text: label + " " + n });
       b.addEventListener("click", function () { state.filter = val; redraw(); }); chips.appendChild(b);
     };
     mk("All", "all", total);
-    Object.keys(chipsCount).sort().forEach(function (g) { mk(g, g, chipsCount[g]); });
-    if (state.filter !== "all" && !chipsCount[state.filter]) mk(state.filter, state.filter, 0);
+    var nameOf = function (k) { return k === "__none" ? "General" : (custById(k) ? custById(k).name : k); };
+    Object.keys(chipsCount).sort(function (a, b) { return nameOf(a).localeCompare(nameOf(b)); }).forEach(function (g) { mk(nameOf(g), g, chipsCount[g]); });
+    if (state.filter !== "all" && !chipsCount[state.filter]) mk(nameOf(state.filter), state.filter, 0);
     root.appendChild(chips);
     if (noteMsg) root.appendChild(el("div", { class: "dnote", text: noteMsg }));
     var board = el("div", { class: "dboard" });
-    var pool = all.filter(function (t) { return state.filter === "all" || tagOf(t) === state.filter; });
+    var pool = all.filter(function (t) { return state.filter === "all" || (custOf(t) || "__none") === state.filter; });
     if (!state.showDone) pool = pool.filter(function (t) { return !isDone(t); });
     function sortFn(x, y) { return String(ageIso(x)).localeCompare(String(ageIso(y))) || String(x.createdAt || "").localeCompare(String(y.createdAt || "")) || String(x.id).localeCompare(String(y.id)); }
     function lane(name, items, stuck, ownerName) {
@@ -245,8 +260,8 @@
         inp.addEventListener("keydown", function (e) {
           if (e.key === "Enter" && inp.value.trim()) {
             var v = inp.value.trim(); state.drafts["add_" + name] = "";
-            var pj = ctx.projects.all.filter(function (p) { return (p.customer || p.name) === state.filter; })[0];
-            ctx.add({ title: v, owner: ownerName || "", party: "hci", visibility: "internal", status: "open", due: "", note: "", projectId: pj ? pj.id : "", hospital: state.filter !== "all" ? state.filter : "General", phase: pj ? Number(pj.phase) || 0 : 0, source: "Added in the Hub", sourceDate: ctx.today(), createdAt: new Date().toISOString() }).then(function () { ctx.refresh(); }).catch(fail);
+            var cu = custById(state.filter), ps = cu ? projsOf(cu.id) : [], pj = ps.length === 1 ? ps[0] : null;
+            ctx.add({ title: v, owner: ownerName || "", party: "hci", visibility: "internal", status: "open", due: "", note: "", projectId: pj ? pj.id : "", customerId: cu ? cu.id : "", hospital: cu ? cu.name : "General", phase: pj ? Number(pj.phase) || 0 : 0, source: "Added in the Hub", sourceDate: ctx.today(), createdAt: new Date().toISOString() }).then(function () { ctx.refresh(); }).catch(fail);
           }
         });
         le.appendChild(el("div", { class: "dadd" }, [inp]));
@@ -327,6 +342,7 @@
 
   window.HUB_DAILY = {
     // which: "dash" for the front dashboard, "board" for the board
+    setFilter: function (k) { state.filter = k || "all"; },
     mount: function (target, which, c) { css(); mount = target; view = which; ctx = c; redraw(); }
   };
 })();
