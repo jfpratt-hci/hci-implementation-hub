@@ -367,7 +367,7 @@ const FORMS={
  network:[["name","Network","text",1],["vlan","VLAN","text"],["subnet","Subnet","text"],["gateway","Gateway","text"],["dns","DNS","text"],["dhcp","Addressing","select",0,0,{static:"Static",dhcp:"DHCP",reserved:"DHCP reservations"}],["ports","Firewall and ports","text",0,1],["notes","Notes","area",0,1]],
  template:[["title","Task","text",1,1],["phase","Phase","select",0,0,PHASES],["party","Party","select",0,0,PARTIES],["order","Order","number"]],
  team:[["name","Name","text",1],["role","Role","text"],["email","Email","text",0,1]],
- customers:[["name","Customer name","text",1,1],["githubUrl","GitHub repository link","text",0,1],["contact","Main contact","text"],["notes","Notes","area",0,1]],
+ customers:[["name","Customer name","text",1,1],["contact","Main contact","text"],["notes","Notes","area",0,1]],
  designs:[["app","App","select",1,0,Object.fromEntries(APPS.map(a=>[a,a]))],["name","Title","text",1],["version","Version","text"],["status","Status","select",0,0,{draft:"Draft",review:"Ready for review",approved:"Approved by customer"}],["notes","What changed","area",0,1],["visibility","Who can see it","select",0,0,{external:"Everyone on the project",internal:"HCI only"}]]
 };
 const TITLES={tasks:"task",decisions:"decision",meetings:"meeting",interfaces:"integration",people:"person",devices:"device",releases:"release",projects:"project",components:"component",catalog:"catalog item",access:"remote access",network:"network",template:"template task",team:"team member",designs:"design",tickets:"ticket",ticketMessages:"ticket message",customers:"customer"};
@@ -527,7 +527,7 @@ portfolio(){
     return `<section class="card" style="display:flex;flex-direction:column;gap:10px;align-content:start"><div style="display:flex;gap:10px;align-items:baseline"><h2 style="margin:0;font-size:18px;flex:1;min-width:0">${esc(c.name)}</h2>${staff&&c.id?`<button type="button" ${lk} data-edit="customers" data-id="${esc(c.id)}">Edit</button>`:""}</div>
       <div class="who">${g.ps.length} project${g.ps.length===1?"":"s"} · ${mine.length} open task${mine.length===1?"":"s"}${stuck?` · ${stuck} stuck`:""}${od?` · <span style="color:var(--warn-deep)">${od} overdue</span>`:""}${np?` · ${np} not on a project yet`:""}</div>
       ${g.ps.map(row).join("")||'<div class="who">No projects yet.</div>'}
-      <div style="display:flex;gap:16px;margin-top:2px">${c.id?`<button type="button" ${lk} data-act="custboard" data-cust="${esc(c.id)}">Tasks (${mine.length})</button>`:""}${staff&&c.id?`<button type="button" ${lk} data-act="newproj" data-cust="${esc(c.id)}">+ Add project</button>`:""}${c.githubUrl&&/^https?:\/\//i.test(c.githubUrl)?`<a ${lk} href="${esc(c.githubUrl)}" target="_blank" rel="noopener" style="text-decoration:none">GitHub</a>`:staff&&c.id?`<button type="button" ${lk} data-edit="customers" data-id="${esc(c.id)}">+ GitHub link</button>`:""}</div></section>`};
+      <div style="display:flex;gap:16px;margin-top:2px">${c.id?`<button type="button" ${lk} data-act="custboard" data-cust="${esc(c.id)}">Tasks (${mine.length})</button>`:""}${staff&&c.id?`<button type="button" ${lk} data-act="newproj" data-cust="${esc(c.id)}">+ Add project</button>`:""}</div></section>`};
   return `<div style="flex:1;min-height:0;width:100%;overflow:auto;padding:2px 2px 20px"><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(400px,1fr));gap:14px;align-items:start">${groups.map(card).join("")}</div></div>`;
 },
 alldecisions(){
@@ -595,7 +595,7 @@ overview(p){
   const gl=days(p.goLive);
   const dl=(k,v)=>v?`<dt>${k}</dt><dd>${esc(v)}</dd>`:"";
   const ed=(col,id,label)=>hci?`<button class="btn sec sm" data-edit="${col}" data-id="${esc(id)}">${label||"Edit"}</button>`:"";
-  const ghUrl=su(p.githubUrl)||su(cu&&cu.githubUrl);
+  const ghUrl=su(p.githubUrl);
   const lbtn=(label,u)=>su(u)?`<a class="btn sm" href="${esc(u)}" target="_blank" rel="noopener">${label}</a>`:(hci?`<button class="btn sec sm" data-edit="projects" data-id="${esc(p.id)}" title="Add the link in Edit project">+ ${label}</button>`:"");
   const linkRow=lbtn("GitHub",ghUrl)+lbtn("SharePoint",p.sharepointUrl)+(hci?lbtn("HubSpot",p.hubspot)+lbtn("Board Remote",p.remoteUrl):"");
   const doneL=vis("tasks").filter(t=>t.status==="done").sort((a,b)=>(b.doneAt||b.updatedAt||"").localeCompare(a.doneAt||a.updatedAt||""));
