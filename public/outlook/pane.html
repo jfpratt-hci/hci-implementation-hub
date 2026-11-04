@@ -5,7 +5,7 @@
 <style>
 :root{--g:#19B34A;--gd:#0E7A32;--bg:#F4F2EE;--card:#fff;--ink:#1c2a22;--mut:#6b7a70;--line:#e3dfd8;--warn:#c4341c}
 *{box-sizing:border-box}body{margin:0;font:14px/1.4 "Segoe UI",system-ui,sans-serif;background:var(--bg);color:var(--ink)}
-header{display:flex;align-items:center;gap:8px;padding:10px 12px;background:var(--card);border-bottom:1px solid var(--line)}
+header{display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--card);border-bottom:1px solid var(--line)}
 header img{width:26px;height:26px;border-radius:6px}header b{font-size:15px}header .me{margin-left:auto;color:var(--mut);font-size:12px}
 main{padding:10px 12px;display:grid;gap:10px}
 .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
@@ -21,7 +21,7 @@ input,select,textarea{width:100%;font:inherit;padding:6px 8px;border:1px solid v
 textarea{min-height:64px;resize:vertical}.chk{display:flex;gap:6px;align-items:center;margin-top:8px;color:var(--ink);font-size:13px}.chk input{width:auto}
 .msg{margin-top:8px;font-size:13px}.msg.err{color:var(--warn)}.msg.ok{color:var(--gd)}a{color:var(--gd)}
 </style></head><body>
-<header><img src="/outlook/icon-64.png" alt=""><b>HCI ONE</b><span class="me" id="me"></span></header>
+<header><span class="me" id="me" style="margin-left:0"></span></header>
 <main id="app"><div class="card">Signing in…</div></main>
 <script>
 (function(){

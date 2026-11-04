@@ -13,7 +13,7 @@ const U = p => `https://${host}${p}`;
 const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <OfficeApp xmlns="http://schemas.microsoft.com/office/appforoffice/1.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bt="http://schemas.microsoft.com/office/officeappbasictypes/1.0" xmlns:mailappor="http://schemas.microsoft.com/office/mailappversionoverrides/1.0" xsi:type="MailApp">
   <Id>${id}</Id>
-  <Version>1.0.0.0</Version>
+  <Version>1.0.1.0</Version>
   <ProviderName>HCI ONE</ProviderName>
   <DefaultLocale>en-US</DefaultLocale>
   <DisplayName DefaultValue="HCI ONE"/>
@@ -35,7 +35,7 @@ const xml = `<?xml version="1.0" encoding="UTF-8"?>
         <ExtensionPoint xsi:type="MessageReadCommandSurface"><OfficeTab id="TabDefault"><Group id="hciGroup"><Label resid="Group"/>
           <Control xsi:type="Button" id="hciBtn"><Label resid="Btn"/><Supertip><Title resid="Btn"/><Description resid="Tip"/></Supertip>
             <Icon><bt:Image size="16" resid="i16"/><bt:Image size="32" resid="i32"/><bt:Image size="80" resid="i80"/></Icon>
-            <Action xsi:type="ShowTaskpane"><SourceLocation resid="Pane"/></Action></Control>
+            <Action xsi:type="ShowTaskpane"><SourceLocation resid="Pane"/><SupportsPinning>true</SupportsPinning></Action></Control>
         </Group></OfficeTab></ExtensionPoint>
       </DesktopFormFactor></Host></Hosts>
       <Resources>
