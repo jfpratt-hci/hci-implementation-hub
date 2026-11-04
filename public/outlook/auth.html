@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Signing in</title>
+<script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@azure/msal-browser@2.38.3/lib/msal-browser.min.js"></script>
+<style>body{font:15px "Segoe UI",system-ui,sans-serif;background:#F4F2EE;color:#1c2a22;display:grid;place-items:center;height:100vh;margin:0}</style></head>
+<body><div id="m">Signing in to HCI ONE…</div>
+<script>
+(function(){
+var CLIENT="2624ce55-7cec-45d4-8f26-1b65600a8ede",TENANT="e55dab1c-8b8f-4c0b-bb05-f0fb52f04e62";
+var SCOPE="api://"+location.host+"/"+CLIENT+"/access_as_user";
+function say(t){document.getElementById("m").textContent=t}
+Office.onReady(function(){
+  var app=new msal.PublicClientApplication({auth:{clientId:CLIENT,authority:"https://login.microsoftonline.com/"+TENANT,redirectUri:location.origin+"/outlook/auth.html"},cache:{cacheLocation:"sessionStorage"}});
+  app.handleRedirectPromise().then(function(r){
+    if(r&&r.accessToken)return r;
+    var acc=app.getAllAccounts()[0];
+    if(acc)return app.acquireTokenSilent({scopes:[SCOPE],account:acc}).catch(function(){return app.acquireTokenRedirect({scopes:[SCOPE]})});
+    return app.loginRedirect({scopes:[SCOPE]});
+  }).then(function(r){
+    if(r&&r.accessToken){Office.context.ui.messageParent(JSON.stringify({token:r.accessToken,exp:r.expiresOn?r.expiresOn.getTime():Date.now()+3000000}))}
+  }).catch(function(e){say("Sign in failed: "+(e.errorCode||e.message));try{Office.context.ui.messageParent(JSON.stringify({error:(e.errorCode||"")+" "+(e.errorMessage||e.message||"").slice(0,300)}))}catch(x){}});
+});
+})();
+</script></body></html>

@@ -44,7 +44,7 @@ const xml = `<?xml version="1.0" encoding="UTF-8"?>
         <bt:ShortStrings><bt:String id="Group" DefaultValue="HCI ONE"/><bt:String id="Btn" DefaultValue="HCI ONE"/></bt:ShortStrings>
         <bt:LongStrings><bt:String id="Tip" DefaultValue="Add this email to HCI ONE as a task or Help Desk ticket"/></bt:LongStrings>
       </Resources>
-      <WebApplicationInfo><Id>${entra}</Id><Resource>api://${host}/${entra}</Resource><Scopes><Scope>openid</Scope><Scope>profile</Scope></Scopes></WebApplicationInfo>
+      ${process.env.SSO ? `<WebApplicationInfo><Id>${entra}</Id><Resource>api://${host}/${entra}</Resource><Scopes><Scope>openid</Scope><Scope>profile</Scope></Scopes></WebApplicationInfo>` : ""}
     </VersionOverrides>
   </VersionOverrides>
 </OfficeApp>

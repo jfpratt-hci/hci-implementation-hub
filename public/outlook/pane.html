@@ -29,7 +29,7 @@ var S={cols:null,item:null,mode:"task",busy:false,token:""};
 var $=function(s){return document.querySelector(s)};
 function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
 function api(path,opt){opt=opt||{};opt.headers=Object.assign({Authorization:"Bearer "+S.token},opt.headers||{});
-  return fetch(path,opt).then(function(r){return r.json().catch(function(){return{}}).then(function(j){if(!r.ok)throw new Error(j.error||("Error "+r.status));return j})})}
+  return fetch(path,opt).then(function(r){return r.json().catch(function(){return{}}).then(function(j){if(r.status===401){S.token="";try{sessionStorage.removeItem("hciTok")}catch(e){}}if(!r.ok)throw new Error(j.error||("Error "+r.status));return j})})}
 function say(t,cls){var m=$("#msg");if(m){m.className="msg "+(cls||"");m.textContent=t||""}}
 function today(){return new Date().toISOString().slice(0,10)}
 
@@ -115,9 +115,25 @@ function addTicket(proj){
     .then(function(r){say("Opened HD-"+r.number+".","ok");S.f=null;return refresh(true)}).catch(function(e){go.disabled=false;say(e.message,"err")});
 }
 function refresh(keepMsg){return api("/api/all").then(function(j){var o={};Object.keys(j.cols||{}).forEach(function(k){var v=j.cols[k];o[k]=Array.isArray(v)?v:Object.keys(v||{}).map(function(id){return Object.assign({id:id},v[id])})});S.cols=o;if(!keepMsg)render()})}
-function token(){return new Promise(function(res,rej){Office.auth.getAccessToken({allowSignInPrompt:true,allowConsentPrompt:true,forMSGraphAccess:false}).then(res,function(e){rej(new Error("Sign in failed, code "+(e.code||"?")+": "+(e.message||"")+". Send this to Claude."))})})}
+function stored(){try{var o=JSON.parse(sessionStorage.getItem("hciTok")||"null");return o&&o.exp>Date.now()+120000?o.token:""}catch(e){return ""}}
+function signIn(){return new Promise(function(res,rej){
+  Office.context.ui.displayDialogAsync(location.origin+"/outlook/auth.html",{height:60,width:30,displayInIframe:false},function(r){
+    if(r.status!=="succeeded"){rej(new Error("Could not open the sign in window ("+(r.error&&r.error.code)+")"));return}
+    var d=r.value;d.addEventHandler(Office.EventType.DialogMessageReceived,function(a){
+      var m={};try{m=JSON.parse(a.message)}catch(e){}d.close();
+      if(m.token){try{sessionStorage.setItem("hciTok",JSON.stringify({token:m.token,exp:m.exp}))}catch(e){}res(m.token)}else rej(new Error("Sign in failed: "+(m.error||"unknown")))});
+    d.addEventHandler(Office.EventType.DialogEventReceived,function(a){rej(new Error("Sign in window closed ("+a.error+")"))});
+  })})}
+function token(){var t=stored();if(t)return Promise.resolve(t);
+  return Office.auth.getAccessToken({allowSignInPrompt:false,allowConsentPrompt:false}).catch(function(){return signIn()})}
+function needSignIn(){
+  var t=stored();if(t){S.token=t;return null}
+  return new Promise(function(res,rej){
+    $("#app").innerHTML='<div class="card"><div class="h">Sign in</div><div class="sub" style="margin-bottom:8px">Sign in with your HCI Microsoft account to use HCI ONE here.</div><button class="go" id="si">Sign in</button><div id="msg" class="msg"></div></div>';
+    $("#si").onclick=function(){signIn().then(function(t){S.token=t;res()},function(e){say(e.message,"err")})};
+  })}
 function load(){
-  return readItem().then(function(){return S.token?null:token().then(function(t){S.token=t})}).then(function(){return api("/api/me")}).then(function(me){
+  return readItem().then(function(){return S.token?null:needSignIn()}).then(function(){return api("/api/me")}).then(function(me){
     $("#me").textContent=me.name||me.email;if(me.role!=="hci"){$("#app").innerHTML='<div class="card">HCI ONE for Outlook is for HCI staff.</div>';return}
     S.f=null;S.pick=undefined;return refresh()}).catch(function(e){$("#app").innerHTML='<div class="card msg err">'+esc(e.message)+'</div>'});
 }
