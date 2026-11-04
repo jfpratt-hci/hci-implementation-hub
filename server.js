@@ -97,7 +97,7 @@ const app = express();
 app.disable("x-powered-by");
 app.use((req, res, next) => {
   // Teams loads tabs in an iframe; allow framing by Teams and by nothing else.
-  res.setHeader("Content-Security-Policy", "frame-ancestors 'self' https://teams.microsoft.com https://*.teams.microsoft.com https://*.office.com https://*.microsoft365.com https://*.cloud.microsoft https://*.skype.com https://*.sharepoint.com");
+  res.setHeader("Content-Security-Policy", "frame-ancestors 'self' https://teams.microsoft.com https://*.teams.microsoft.com https://*.office.com https://*.microsoft365.com https://*.cloud.microsoft https://*.skype.com https://*.sharepoint.com https://*.office365.com https://*.outlook.com https://*.live.com https://*.office.net");
   res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
   next();
 });

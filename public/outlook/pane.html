@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>HCI ONE for Outlook</title>
+<script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
+<style>
+:root{--g:#19B34A;--gd:#0E7A32;--bg:#F4F2EE;--card:#fff;--ink:#1c2a22;--mut:#6b7a70;--line:#e3dfd8;--warn:#c4341c}
+*{box-sizing:border-box}body{margin:0;font:14px/1.4 "Segoe UI",system-ui,sans-serif;background:var(--bg);color:var(--ink)}
+header{display:flex;align-items:center;gap:8px;padding:10px 12px;background:var(--card);border-bottom:1px solid var(--line)}
+header img{width:26px;height:26px;border-radius:6px}header b{font-size:15px}header .me{margin-left:auto;color:var(--mut);font-size:12px}
+main{padding:10px 12px;display:grid;gap:10px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.h{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--gd);font-weight:700;margin-bottom:6px}
+.mail{font-weight:600}.sub{color:var(--mut);font-size:12px}
+.row{display:flex;gap:8px;align-items:baseline;padding:3px 0}.row .g{flex:1;min-width:0}
+.pill{font-size:11px;padding:1px 7px;border-radius:99px;background:#e8f6ec;color:var(--gd)}.pill.w{background:#fdeceb;color:var(--warn)}
+.tabs{display:flex;gap:6px;margin-bottom:8px}.tabs button{flex:1}
+button{font:inherit;border:1px solid var(--line);background:#fff;border-radius:8px;padding:7px 10px;cursor:pointer}
+button.on,button.go{background:var(--g);border-color:var(--g);color:#fff;font-weight:600}button:disabled{opacity:.5;cursor:default}
+label{display:block;font-size:12px;color:var(--mut);margin:8px 0 2px}
+input,select,textarea{width:100%;font:inherit;padding:6px 8px;border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--ink)}
+textarea{min-height:64px;resize:vertical}.chk{display:flex;gap:6px;align-items:center;margin-top:8px;color:var(--ink);font-size:13px}.chk input{width:auto}
+.msg{margin-top:8px;font-size:13px}.msg.err{color:var(--warn)}.msg.ok{color:var(--gd)}a{color:var(--gd)}
+</style></head><body>
+<header><img src="/outlook/icon-64.png" alt=""><b>HCI ONE</b><span class="me" id="me"></span></header>
+<main id="app"><div class="card">Signing in…</div></main>
+<script>
+(function(){
+var S={cols:null,item:null,mode:"task",busy:false,token:""};
+var $=function(s){return document.querySelector(s)};
+function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
+function api(path,opt){opt=opt||{};opt.headers=Object.assign({Authorization:"Bearer "+S.token},opt.headers||{});
+  return fetch(path,opt).then(function(r){return r.json().catch(function(){return{}}).then(function(j){if(!r.ok)throw new Error(j.error||("Error "+r.status));return j})})}
+function say(t,cls){var m=$("#msg");if(m){m.className="msg "+(cls||"");m.textContent=t||""}}
+function today(){return new Date().toISOString().slice(0,10)}
+
+function readItem(){
+  var it=Office.context.mailbox.item;if(!it){S.item=null;return Promise.resolve()}
+  var from=it.from||it.sender||{};
+  var base={subject:it.subject||"(no subject)",email:String(from.emailAddress||"").toLowerCase(),name:from.displayName||"",at:(it.dateTimeCreated||new Date()).toISOString?it.dateTimeCreated.toISOString():String(it.dateTimeCreated||""),
+    to:(it.to||[]).map(function(x){return x.displayName+" <"+x.emailAddress+">"}).join(", "),id:it.itemId};
+  return new Promise(function(res){it.body.getAsync(Office.CoercionType.Text,function(r){base.body=r.status==="succeeded"?String(r.value||""):"";S.item=base;res()})});
+}
+function match(){
+  var c=S.cols,it=S.item,out={customer:null,project:null,projects:[]};if(!c||!it)return out;
+  var em=it.email,dom=em.split("@")[1]||"";
+  var pe=(c.people||[]).filter(function(p){return String(p.email||"").toLowerCase()===em});
+  if(!pe.length&&dom&&!/(gmail|outlook|hotmail|yahoo|icloud|aol)\./.test(dom))pe=(c.people||[]).filter(function(p){return String(p.email||"").toLowerCase().split("@")[1]===dom});
+  var pids={};pe.forEach(function(p){pids[p.projectId]=1});
+  out.projects=(c.projects||[]).filter(function(p){return pids[p.id]});
+  out.project=out.projects[0]||null;
+  var cid=out.project&&out.project.customerId;out.customer=cid?(c.customers||[]).filter(function(x){return x.id===cid})[0]:null;
+  return out;
+}
+function render(){
+  var c=S.cols,it=S.item,app=$("#app");
+  if(!it){app.innerHTML='<div class="card">Open an email to use HCI ONE.</div>';return}
+  var m=match(),projs=(c.projects||[]).filter(function(p){return p.status!=="done"&&p.status!=="archived"}).sort(function(a,b){return String(a.customer||a.name).localeCompare(String(b.customer||b.name))});
+  var pid=(S.pick!==undefined&&S.pick!==null)?S.pick:(m.project?m.project.id:"");
+  var proj=projs.filter(function(p){return p.id===pid})[0]||null;
+  var cid=proj?proj.customerId:"";
+  var tasks=(c.tasks||[]).filter(function(t){return t.status!=="done"&&((cid&&t.customerId===cid)||(proj&&t.projectId===proj.id))}).slice(0,6);
+  var tix=(c.tickets||[]).filter(function(t){return t.status!=="closed"&&proj&&t.projectId===proj.id}).slice(0,5);
+  var team=(c.team||[]).map(function(x){return x.name}).filter(Boolean);
+  var cname=proj?(proj.customer||proj.name):"";
+  var h='<div class="card"><div class="mail">'+esc(it.subject)+'</div><div class="sub">'+esc(it.name||it.email)+(it.name?" · "+esc(it.email):"")+'</div></div>';
+  h+='<div class="card"><div class="h">Customer</div><select id="proj"><option value="">No project (Board only)</option>'+projs.map(function(p){return'<option value="'+esc(p.id)+'"'+(p.id===pid?" selected":"")+'>'+esc((p.customer||"")+" · "+p.name)+'</option>'}).join("")+'</select>'
+    +'<div class="sub" style="margin-top:4px">'+(m.project&&m.project.id===pid?"Matched from the sender's email.":(m.project?"Sender matches "+esc(m.project.customer||m.project.name)+".":"No match for this sender, pick one."))+'</div>';
+  if(proj){h+='<div class="h" style="margin-top:10px">Open tasks'+(cname?" · "+esc(cname):"")+'</div>'+(tasks.map(function(t){return'<div class="row"><span class="g">'+esc(t.title)+'</span>'+(t.due&&t.due<today()?'<span class="pill w">Overdue</span>':'<span class="sub">'+esc(t.owner||"")+'</span>')+'</div>'}).join("")||'<div class="sub">Nothing open.</div>');
+    h+='<div class="h" style="margin-top:10px">Open tickets</div>'+(tix.map(function(t){return'<div class="row"><span class="g">HD-'+esc(t.number)+' '+esc(t.title)+'</span><span class="pill'+(t.severity==="critical"?" w":"")+'">'+esc(t.severity||"normal")+'</span></div>'}).join("")||'<div class="sub">None.</div>')}
+  h+='</div>';
+  var title=S.f&&S.f.title!=null?S.f.title:it.subject.replace(/^(re|fw|fwd):\s*/i,"");
+  var note=S.f&&S.f.tnote!=null?S.f.tnote:"From "+(it.name||it.email)+" ("+it.email+"), "+String(it.at).slice(0,10);
+  h+='<div class="card"><div class="tabs"><button id="tt" class="'+(S.mode==="task"?"on":"")+'">Add task</button><button id="tk" class="'+(S.mode==="ticket"?"on":"")+'">Help Desk ticket</button></div>';
+  if(S.mode==="task"){
+    h+='<label>Task</label><input id="f_title" value="'+esc(title)+'">'
+      +'<label>Owner</label><select id="f_owner"><option value="">Unassigned</option>'+team.map(function(n){return'<option'+(S.f&&S.f.owner===n?" selected":"")+'>'+esc(n)+'</option>'}).join("")+'</select>'
+      +'<label>Due</label><input id="f_due" type="date" value="'+esc(S.f&&S.f.due||"")+'">'
+      +'<label>Note</label><textarea id="f_note">'+esc(note)+'</textarea>'
+      +'<div class="chk"><input id="f_att" type="checkbox"'+(S.f&&S.f.att===false?"":" checked")+'><label for="f_att" style="margin:0;color:inherit;font-size:13px">Attach this email to the task</label></div>'
+      +'<div style="margin-top:10px"><button class="go" id="go">Add task</button></div>';
+  }else{
+    var ok=proj&&proj.supportPlan==="enterprise"&&(proj.helpdesk===true||proj.helpdesk==="true");
+    h+=(!proj?'<div class="sub">Pick a customer project above.</div>':!ok?'<div class="sub">This project does not have the Help Desk add on.</div>':'')
+      +'<label>Title</label><input id="f_title" value="'+esc(title)+'">'
+      +'<label>Severity</label><select id="f_sev"><option value="normal">Normal (24 hours)</option><option value="high">High (4 hours)</option><option value="critical">Critical (1 hour, pages on call)</option></select>'
+      +'<label>Room or device</label><input id="f_room" value="">'
+      +'<label>Details</label><textarea id="f_note">'+esc((S.f&&S.f.dnote!=null)?S.f.dnote:it.body.slice(0,1200))+'</textarea>'
+      +'<div class="sub" style="margin-top:4px">Anything that looks like an MRN or a date of birth is stripped. Keep patient details out of tickets.</div>'
+      +'<div style="margin-top:10px"><button class="go" id="go"'+(ok?"":" disabled")+'>Open ticket</button></div>';
+  }
+  h+='<div id="msg" class="msg"></div></div>';
+  app.innerHTML=h;
+  $("#proj").onchange=function(){keep();S.pick=this.value;render()};
+  $("#tt").onclick=function(){keep();S.mode="task";render()};$("#tk").onclick=function(){keep();S.mode="ticket";render()};
+  $("#go").onclick=function(){S.mode==="task"?addTask(proj):addTicket(proj)};
+}
+function keep(){S.f=S.f||{};var g=function(i){var e=$(i);return e?e.value:undefined};
+  if(g("#f_title")!==undefined)S.f.title=g("#f_title");if(g("#f_note")!==undefined)S.f[S.mode==="task"?"tnote":"dnote"]=g("#f_note");if(g("#f_owner")!==undefined)S.f.owner=g("#f_owner");if(g("#f_due")!==undefined)S.f.due=g("#f_due");var a=$("#f_att");if(a)S.f.att=a.checked}
+function emlText(){var it=S.item;return["From: "+(it.name?it.name+" <"+it.email+">":it.email),"To: "+it.to,"Date: "+it.at,"Subject: "+it.subject,"Content-Type: text/plain; charset=utf-8","",it.body].join("\r\n")}
+function addTask(proj){
+  keep();var f=S.f,title=String(f.title||"").trim();if(!title){say("Add a task title","err");return}
+  var go=$("#go");go.disabled=true;say("Adding…");
+  var up=f.att===false?Promise.resolve(null):api("/api/taskfile",{method:"POST",headers:{"Content-Type":"message/rfc822","X-Filename":encodeURIComponent((S.item.subject||"email").replace(/[\\\/:*?"<>|]+/g,"_").slice(0,80)+".eml")},body:new Blob([emlText()],{type:"message/rfc822"})});
+  up.then(function(file){
+    var n=new Date().toISOString();
+    var t={projectId:proj?proj.id:"",customerId:proj?(proj.customerId||""):"",title:title,owner:f.owner||"",party:"hci",phase:proj?Number(proj.phase)||0:0,status:"open",visibility:"internal",due:f.due||"",note:f.tnote||"",
+      hospital:proj?(proj.customer||proj.name):"General",waitingOnId:"",waitingOnName:"",waitingSince:"",source:"Outlook",sourceDate:today(),createdAt:n,doneAt:"",updatedAt:n,files:file?[file]:[]};
+    return api("/api/tasks",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(t)});
+  }).then(function(){say("Task added"+(f.att===false?"":" with the email attached")+".","ok");S.f=null;go.textContent="Added";return refresh(true)}).catch(function(e){go.disabled=false;say(e.message,"err")});
+}
+function addTicket(proj){
+  keep();var title=String(S.f.title||"").trim();if(!title){say("Add a title","err");return}
+  var go=$("#go");go.disabled=true;say("Opening…");
+  api("/api/helpdesk/"+encodeURIComponent(proj.id)+"/tickets",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({title:title,severity:$("#f_sev").value,roomOrDevice:$("#f_room").value,body:(S.f.dnote!=null?S.f.dnote:S.item.body.slice(0,1200))+"\n\nFrom "+(S.item.name||S.item.email)+" ("+S.item.email+") by email."})})
+    .then(function(r){say("Opened HD-"+r.number+".","ok");S.f=null;return refresh(true)}).catch(function(e){go.disabled=false;say(e.message,"err")});
+}
+function refresh(keepMsg){return api("/api/all").then(function(j){var o={};Object.keys(j.cols||{}).forEach(function(k){var v=j.cols[k];o[k]=Array.isArray(v)?v:Object.keys(v||{}).map(function(id){return Object.assign({id:id},v[id])})});S.cols=o;if(!keepMsg)render()})}
+function token(){return new Promise(function(res,rej){Office.auth.getAccessToken({allowSignInPrompt:true,allowConsentPrompt:true,forMSGraphAccess:false}).then(res,function(e){rej(new Error("Sign in failed ("+(e.code||e.message)+"). Ask John to check the Outlook add in setup."))})})}
+function load(){
+  return readItem().then(function(){return S.token?null:token().then(function(t){S.token=t})}).then(function(){return api("/api/me")}).then(function(me){
+    $("#me").textContent=me.name||me.email;if(me.role!=="hci"){$("#app").innerHTML='<div class="card">HCI ONE for Outlook is for HCI staff.</div>';return}
+    S.f=null;S.pick=undefined;return refresh()}).catch(function(e){$("#app").innerHTML='<div class="card msg err">'+esc(e.message)+'</div>'});
+}
+Office.onReady(function(info){
+  if(info.host!==Office.HostType.Outlook){$("#app").innerHTML='<div class="card">Open this from Outlook.</div>';return}
+  load();
+  try{Office.context.mailbox.addHandlerAsync(Office.EventType.ItemChanged,function(){load()})}catch(e){}
+});
+})();
+</script></body></html>
