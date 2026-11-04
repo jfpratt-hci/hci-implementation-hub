@@ -47,6 +47,12 @@ module.exports = function ({ store, bump, audit }) {
       const cid = ensureCustomer(p.customer || p.name); if (cid) { p.customerId = cid; ch = true; }
     }
     if (ch) bump("projects");
+    let sc = false;
+    for (const p of Object.values(store.projects || {})) {
+      const c = p.customerId && store.customers[p.customerId];
+      if (c && !c.sharepointUrl && p.sharepointUrl) { c.sharepointUrl = p.sharepointUrl; sc = true; }
+    }
+    if (sc) bump("customers");
     let tc = false;
     for (const t of Object.values(store.tasks || {})) {
       if (t.customerId) continue;
