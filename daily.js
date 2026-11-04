@@ -51,6 +51,9 @@ module.exports = function ({ store, bump, audit }) {
     for (const p of Object.values(store.projects || {})) {
       const c = p.customerId && store.customers[p.customerId];
       if (c && !c.sharepointUrl && p.sharepointUrl) { c.sharepointUrl = p.sharepointUrl; sc = true; }
+      if (c) for (const k of ["site", "scope", "lead", "dealer", "statusNote", "nextMeeting", "meetingAttendees", "supportPlan", "helpdesk", "fileCode", "githubUrl", "hubspot", "remoteUrl"]) {
+        if ((c[k] === undefined || c[k] === "" || c[k] === null) && p[k] !== undefined && p[k] !== "" && p[k] !== null) { c[k] = p[k]; sc = true; }
+      }
     }
     if (sc) bump("customers");
     let tc = false;
