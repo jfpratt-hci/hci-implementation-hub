@@ -36,6 +36,13 @@
       "#dailyRoot .dtxt{flex:1;min-width:0;overflow-wrap:anywhere;font-weight:600}",
       "#dailyRoot .dmeta{display:flex;flex-wrap:wrap;gap:5px 10px;align-items:center;padding-left:26px;font-size:11.5px;color:var(--muted);font-weight:600}",
       "#dailyRoot .dtag{padding:1px 8px;border-radius:var(--r-pill);background:var(--pill)}",
+      "#dailyRoot .dwhere{display:flex;flex-direction:column;align-items:flex-start;gap:1px;padding-left:26px;font-size:12.5px;color:var(--ink);font-weight:800;min-width:0}",
+      "#dailyRoot .dwhere .dsep{color:var(--muted);font-weight:400}",
+      "#dailyRoot .dwhere .dlink{font-weight:600;background:none;padding:0;text-align:left;color:var(--hero-deep)}",
+      "#dailyRoot .dwhere .dsep.np{font-weight:500;color:var(--muted)}",
+      "#dailyRoot .ddates{display:flex;flex-wrap:wrap;gap:4px;padding-left:26px}",
+      "#dailyRoot .ddate{padding:1px 7px;border-radius:var(--r-pill);background:var(--pill);font-size:11px;font-weight:700;color:var(--ink);white-space:nowrap}",
+      "#dailyRoot .ddate.over{background:var(--chip-caution);color:var(--chip-caution-ink)}",
       "#dailyRoot .dtag.old{background:var(--chip-caution);color:var(--chip-caution-ink)}",
       "#dailyRoot .dtag.wait{background:var(--chip-caution);color:var(--chip-caution-ink)}",
       "#dailyRoot .dlane.stuck .dtag.wait{background:var(--pill);color:var(--ink)}",
@@ -79,7 +86,7 @@
     (kids || []).forEach(function (c) { if (c) n.appendChild(c); });
     return n;
   }
-  function fmtDay(iso) { var d = new Date(iso); return isNaN(d) ? "" : d.toLocaleDateString("en-US", { month: "short", day: "numeric" }); }
+  function fmtDay(iso) { var m = /^(\d{4})-(\d\d)-(\d\d)$/.exec(String(iso || "")); var d = m ? new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3])) : new Date(iso); return isNaN(d) ? "" : d.toLocaleDateString("en-US", { month: "short", day: "numeric" }); }
   function fmtStamp(iso) { var d = new Date(iso); return isNaN(d) ? "" : fmtDay(iso) + " " + d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }); }
   function daysSince(iso) { var d = new Date(iso); if (isNaN(d)) return 0; var t = new Date(); t.setHours(0, 0, 0, 0); d.setHours(0, 0, 0, 0); return Math.max(0, Math.round((t - d) / 86400000)); }
   var PARTY = { hci: "HCI", customer: "Customer", dealer: "Dealer", partner: "Partner" };
@@ -138,6 +145,7 @@
       '<div class="field"><label for="e_party">Who does it</label><select id="e_party" name="party">' + opts([["hci", "HCI"], ["customer", "Customer"], ["dealer", "Dealer"], ["partner", "Partner"]], cur.party || "hci") + "</select></div>" +
       '<div class="field"><label for="e_vis">Who can see it</label><select id="e_vis" name="visibility">' + opts([["internal", "HCI only"], ["external", "Everyone on the project"]], cur.visibility || "internal") + "</select></div>" +
       '<div class="field"><label for="e_status">Status</label><select id="e_status" name="status">' + opts([["open", "Open"], ["waiting", "Stuck, waiting on someone else"], ["done", "Done"]], cur.status) + "</select></div>" +
+      '<div class="field"><label for="e_start">Start</label><input id="e_start" type="date" name="startDate" value="' + ctx.esc(cur.startDate || "") + '"></div>' +
       '<div class="field"><label for="e_due">Due</label><input id="e_due" type="date" name="due" value="' + ctx.esc(cur.due || "") + '"></div>' +
       '<div class="field full" id="e_waitbox"><label for="e_wait">Waiting on (dealer, vendor or customer on the project)</label><select id="e_wait" name="waitingOnId"></select>' +
       '<input id="e_waitname" name="waitingOnName" placeholder="Or type who, if they are not on the project" value="' + ctx.esc(cur.waitingOnId ? "" : cur.waitingOnName || "") + '" style="margin-top:6px"></div>' +
@@ -166,7 +174,7 @@
       var cid = f.customerId.value, pid = f.projectId.value, st = f.status.value, wid = st === "waiting" ? f.waitingOnId.value : "";
       var person = wid && ctx.people.filter(function (x) { return x.id === wid; })[0];
       var fields = {
-        title: title, owner: f.owner.value, party: f.party.value, visibility: f.visibility.value, projectId: pid, customerId: cid, status: st, due: f.due.value,
+        title: title, owner: f.owner.value, party: f.party.value, visibility: f.visibility.value, projectId: pid, customerId: cid, status: st, due: f.due.value, startDate: f.startDate.value,
         hospital: custById(cid) ? custById(cid).name : "General",
         waitingOnId: wid, waitingOnName: st === "waiting" ? (person ? person.name : f.waitingOnName.value.trim()) : "",
         waitingSince: st === "waiting" ? (cur.status === "waiting" && cur.waitingSince ? cur.waitingSince : new Date().toISOString()) : "",
@@ -185,18 +193,21 @@
   function taskEl(t) {
     var cb = el("input", { type: "checkbox", "aria-label": "Mark done" }); cb.checked = isDone(t);
     cb.addEventListener("change", function () { save(t, cb.checked ? { status: "done", doneAt: new Date().toISOString() } : { status: "open", doneAt: "", waitingOnId: "", waitingOnName: "", waitingSince: "" }); });
+    var where = el("div", { class: "dwhere" });
+    where.appendChild(el("span", { text: tagOf(t) }));
+    if (t.projectId && proj(t.projectId)) {
+      var pl = el("button", { type: "button", class: "dtag dlink", title: "Open the project plan", text: proj(t.projectId).name });
+      pl.addEventListener("click", function () { ctx.openProject(t.projectId); }); where.appendChild(pl);
+    } else if (custOf(t)) where.appendChild(el("span", { class: "dsep np", text: "No project yet" }));
+    var dates = el("div", { class: "ddates" });
+    if (t.startDate) dates.appendChild(el("span", { class: "ddate", text: "Start " + fmtDay(t.startDate) }));
+    if (t.due) dates.appendChild(el("span", { class: "ddate" + (isOver(t) ? " over" : ""), text: (isOver(t) ? "Overdue \u00b7 " : "Due ") + fmtDay(t.due) }));
     var meta = el("div", { class: "dmeta" });
     var a = ageIso(t);
     if (a) { var n = daysSince(a); meta.appendChild(el("span", { class: "dtag" + (!isDone(t) && n >= 3 ? " old" : ""), text: fmtDay(a) + (n > 0 ? " · " + n + "d" : " · new"), title: t.source || "" })); }
-    meta.appendChild(el("span", { class: "dtag", text: tagOf(t) }));
-    if (t.projectId && proj(t.projectId)) {
-      var pl = el("button", { type: "button", class: "dtag dlink", title: "Open the project plan", text: proj(t.projectId).name });
-      pl.addEventListener("click", function () { ctx.openProject(t.projectId); }); meta.appendChild(pl);
-    } else if (custOf(t)) meta.appendChild(el("span", { class: "dtag", text: "No project yet" }));
     if ((t.party || "hci") !== "hci") meta.appendChild(el("span", { class: "dtag", text: PARTY[t.party] || t.party }));
     if (t.files && t.files.length) meta.appendChild(el("span", { class: "dtag", text: "\uD83D\uDCCE " + t.files.length, title: t.files.map(function (x) { return x.name; }).join(", ") }));
     if (isWait(t)) { var w = waitLabel(t); meta.appendChild(el("span", { class: "dtag wait", text: "Waiting on " + (w.name || "someone") + (t.waitingSince ? " · " + daysSince(t.waitingSince) + "d" : ""), title: w.org })); }
-    if (t.due) meta.appendChild(el("span", { class: "dtag" + (isOver(t) ? " old" : ""), text: (isOver(t) ? "Overdue · " : "Due ") + fmtDay(t.due) }));
     var as = el("select", { class: "dassign", "aria-label": "HCI person" });
     as.appendChild(el("option", { value: "", text: "Unassigned" }));
     var nm = owners(); if (t.owner && nm.indexOf(t.owner) < 0) nm.push(t.owner);
@@ -214,7 +225,7 @@
       else { state.armed = t.id; clearTimeout(armTimer); armTimer = setTimeout(function () { state.armed = null; redraw(); }, 3500); redraw(); }
     });
     meta.appendChild(del);
-    var kids = [el("div", { class: "drow" }, [cb, (function () { var x = el("div", { class: "dtxt", text: t.title || "", title: "Click to edit", style: "cursor:pointer" }); x.addEventListener("click", function () { openEdit(t); }); return x; })()]), meta];
+    var kids = [el("div", { class: "drow" }, [cb, (function () { var x = el("div", { class: "dtxt", text: t.title || "", title: "Click to edit", style: "cursor:pointer" }); x.addEventListener("click", function () { openEdit(t); }); return x; })()]), where].concat(dates.childNodes.length ? [dates] : [], [meta]);
     if (state.open[t.id]) {
       var box = el("div", { class: "dcom" });
       cs.forEach(function (c) { box.appendChild(el("div", { class: "dc" }, [el("div", { text: c.text || "" }), el("small", { text: (c.by || "Someone") + " · " + fmtStamp(c.at) })])); });

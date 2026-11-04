@@ -249,6 +249,9 @@ table.docs tr.on td{background:var(--chip-pos)}
 .bar{flex:none;background:var(--card);border-bottom:1px solid var(--card-brd);position:relative;z-index:2}
 .bar-top{display:flex;align-items:center;gap:14px;padding:10px 24px;min-height:58px}
 .bar-title{display:flex;flex-direction:column;gap:1px;min-width:0}
+.eyelink{background:none;border:0;padding:0;margin:0;font:inherit;letter-spacing:inherit;text-transform:inherit;color:inherit;cursor:pointer;text-decoration:underline;text-underline-offset:2px}.eyelink:hover{opacity:.75}
+.projrow{border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:8px;cursor:pointer;display:flex;flex-direction:column;gap:6px;background:var(--card)}.projrow:hover{border-color:var(--hero-deep)}
+.projrow .pl{display:flex;flex-wrap:wrap;gap:6px}
 .bar-title .eyebrow{font-size:10px;font-weight:800;letter-spacing:.12em;color:var(--hero-deep);text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .bar-title h1{font-size:18px;font-weight:800;margin:0;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .bar-meta{display:flex;align-items:center;gap:10px;min-width:0;flex:none}
@@ -353,7 +356,7 @@ const PORTTABS=[["daily","Board"],["portfolio","Customers"],["helpdesk","Help De
 const AVIEWS=[["catalog","Component catalog"],["template","Project template"],["team","HCI team"],["releases","Releases"],["projects","All projects"]];
 const opt=o=>Object.entries(o);
 const FORMS={
- tasks:[["title","Task","text",1,1],["owner","Owner","text",0,0,null,"owners"],["party","Party","select",0,0,PARTIES],["due","Due","date"],["phase","Phase","select",0,0,PHASES],["visibility","Who can see it","select",0,0,{external:"Everyone on the project",internal:"HCI only"}],["status","Status","select",0,0,{open:"Open",waiting:"Stuck, waiting on someone else",done:"Done"}],["waitingOnId","Waiting on (person on this project)","select",0,0,()=>Object.assign({"":"Not picked"},Object.fromEntries(S.cols.people.filter(x=>x.projectId===S.pid&&x.party!=="hci").map(x=>[x.id,x.name+(x.org?" · "+x.org:"")])))],["waitingOnName","Or type who we are waiting on","text"],["projectId","Project","select",0,0,()=>Object.fromEntries(S.cols.projects.filter(x=>x.status!=="done").map(x=>[x.id,x.name]))],["note","Notes","area",0,1]],
+ tasks:[["title","Task","text",1,1],["owner","Owner","text",0,0,null,"owners"],["party","Party","select",0,0,PARTIES],["startDate","Start","date"],["due","Due","date"],["phase","Phase","select",0,0,PHASES],["visibility","Who can see it","select",0,0,{external:"Everyone on the project",internal:"HCI only"}],["status","Status","select",0,0,{open:"Open",waiting:"Stuck, waiting on someone else",done:"Done"}],["waitingOnId","Waiting on (person on this project)","select",0,0,()=>Object.assign({"":"Not picked"},Object.fromEntries(S.cols.people.filter(x=>x.projectId===S.pid&&x.party!=="hci").map(x=>[x.id,x.name+(x.org?" · "+x.org:"")])))],["waitingOnName","Or type who we are waiting on","text"],["projectId","Project","select",0,0,()=>Object.fromEntries(S.cols.projects.filter(x=>x.status!=="done"&&(S.scope!=="customer"||x.customerId===S.cid)).map(x=>[x.id,x.name]))],["note","Notes","area",0,1]],
  decisions:[["question","Question","text",1,1],["answer","Decision","area",0,1],["pending","Status","select",0,0,{"true":"Waiting for an answer","false":"Decided"}],["askedOf","Asked of","text",0,0,null,"owners"],["neededBy","Needed by","date"],["decidedBy","Decided by","text",0,0,null,"owners"],["date","Date decided","date"],["defaultIfSilent","Default if no answer","text",0,1],["source","Source","text",0,1],["visibility","Who can see it","select",0,0,{external:"Everyone on the project",internal:"HCI only"}]],
  meetings:[["title","Meeting","text",1,1],["date","Date","date"],["attendees","Attendees","text"],["notes","Summary and action items","area",0,1],["undecided","Not decided","text",0,1],["visibility","Who can see it","select",0,0,{external:"Everyone on the project",internal:"HCI only"}]],
  interfaces:[["system","System","text",1],["type","Type","text"],["vendor","Vendor contact","text"],["status","Status","select",0,0,ISTATUS],["note","Detail","area",0,1]],
@@ -375,7 +378,7 @@ const GLOBAL=new Set(["releases","catalog","template","team","projects","custome
 
 const S={db:null,dl:null,assets:null,cols:{},pid:null,scope:"portfolio",view:"daily",role:"hci",filter:"open",ffilter:"all",me:"",ready:false,sub:{},channel:false};
 COLS.forEach(c=>S.cols[c]=[]);
-try{const v=window.HUB_PRESELECT||JSON.parse(localStorage.getItem("hub.nav")||"{}");if(v.pid){S.pid=v.pid}if(v.scope){S.scope=v.scope;S.view=v.view}if(window.HUB_PRESELECT&&window.HUB_PRESELECT.pid)S.channel=true}catch(e){}
+try{const v=window.HUB_PRESELECT||JSON.parse(localStorage.getItem("hub.nav")||"{}");if(v.pid){S.pid=v.pid}if(v.cid){S.cid=v.cid}if(v.scope){S.scope=v.scope;S.view=v.view}if(window.HUB_PRESELECT&&window.HUB_PRESELECT.pid)S.channel=true}catch(e){}
 if(S.view==="dash")S.view="daily";
 try{S.me=localStorage.getItem("hub.me")||""}catch(e){}
 /* the file naming guide starts open; once someone closes it, it stays closed for them */
@@ -402,8 +405,12 @@ async function exportAudit(){
   const lines=["when,who,action,record type,record,changes,note"].concat(rows.map(r=>[r.at,r.by||"",r.action,TITLES[r.col]||r.col,r.title||"",(r.changes||[]).map(c=>`${fieldLabel(r.col,c.field)}: ${typeof c.from==="object"?JSON.stringify(c.from):c.from} to ${typeof c.to==="object"?JSON.stringify(c.to):c.to}`).join("; "),r.note||""].map(v=>q(String(v??""))).join(",")));
   try{await S.dl.save({filename:(P().name||"project").replace(/[^\w ]+/g,"").trim()+" history.csv",data:lines.join("\n")})}catch(e){if(e&&e.code!=="declined")toast("Export not available here")}
 }
-function saveNav(){try{localStorage.setItem("hub.nav",JSON.stringify({pid:S.pid,scope:S.scope,view:S.view}))}catch(e){}}
-function go(scope,view,pid){if(S.locked&&S.role!=="hci"&&scope!=="project")return;if(scope==="project"&&LEGACY[view]){const [v,sub]=LEGACY[view];if(sub)S.sub[v]=sub;view=v}S.scope=scope;S.view=view;if(pid)S.pid=pid;if(scope!=="project"&&!S.locked)S.role="hci";saveNav();render();const m=$("#main");if(m)m.scrollTop=0}
+function saveNav(){try{localStorage.setItem("hub.nav",JSON.stringify({pid:S.pid,cid:S.cid,scope:S.scope,view:S.view}))}catch(e){}}
+const staffCust=p=>!!p&&S.role==="hci"&&!S.channel&&!!byId("customers",p.customerId);
+const custProjects=cid=>S.cols.projects.filter(x=>x.customerId===cid&&x.status!=="archived");
+function go(scope,view,pid){if(S.locked&&S.role!=="hci"&&scope!=="project"&&scope!=="customer")return;
+  if(scope==="customer"){const c=byId("customers",pid);if(!c)return;S.scope="customer";S.view="overview";S.cid=c.id;const cp=custProjects(c.id);const cur=P();if(!(cur&&cur.customerId===c.id))S.pid=(cp[0]||{}).id||null;saveNav();render();const m0=$("#main");if(m0)m0.scrollTop=0;return}
+  if(scope==="project"){const p0=byId("projects",pid||S.pid);const vw=LEGACY[view]?LEGACY[view][0]:view;if(vw==="overview"&&staffCust(p0)){return go("customer","overview",p0.customerId)}}if(scope==="project"&&LEGACY[view]){const [v,sub]=LEGACY[view];if(sub)S.sub[v]=sub;view=v}S.scope=scope;S.view=view;if(pid)S.pid=pid;if(scope!=="project"&&!S.locked)S.role="hci";saveNav();render();const m=$("#main");if(m)m.scrollTop=0}
 
 /* role preview */
 function canSee(x,c){const r=S.role;if(r==="hci")return true;if(x.visibility==="internal")return false;if(r==="partner"&&c==="tasks")return x.party==="partner";return true}
@@ -448,10 +455,13 @@ function renderSide(){
     const roleBar=S.locked?"":`<div class="viewas" role="group" aria-label="Preview as">${[["hci","HCI"],["customer","Customer"],["dealer","Dealer"],["partner","Partner"]].map(([k,l])=>`<button class="seg ${S.role===k?"on":""}" data-role="${k}">${l}</button>`).join("")}</div>`;
     const counts={plan:[vis("tasks").filter(t=>t.status!=="done").length,st.over?"bad":""],decisions:[vis("decisions").filter(d=>d.pending).length,"warn"],integrations:[S.role==="dealer"?0:vis("interfaces").filter(i=>i.status==="blocked").length,"bad"],helpdesk:[ofP("tickets",p.id).filter(t=>t.status==="new"||(S.role==="hci"?t.status==="hci":t.status==="customer")).length,"warn"]};
     const inNav=staff&&!S.channel;
-    h=`<div class="bar-top${inNav?" hastabs":""}">${LOGO}${inNav?gnav(""):back}${inNav?'<span class="vsep"></span>':""}<div class="bar-title"><span class="eyebrow">${esc(p.customer||"")}${p.site?" · "+esc(p.site):""}</span><h1>${esc(p.name)}</h1></div>
+    h=`<div class="bar-top${inNav?" hastabs":""}">${LOGO}${inNav?gnav(""):back}${inNav?'<span class="vsep"></span>':""}<div class="bar-title"><span class="eyebrow">${staffCust(p)?`<button type="button" class="eyelink" data-go="customer:overview:${esc(p.customerId)}" title="Customer overview">${esc(p.customer||"")}</button>`:esc(p.customer||"")}${p.site?" · "+esc(p.site):""}</span><h1>${esc(p.name)}</h1></div>
      <div class="bar-meta">${stPill(p.status)}${mini(ph)}<span class="who">${esc(PHASES[ph])}</span><span class="who">Go live <b>${p.goLive?fd(p.goLive)+(gl!=null?` (${gl<0?Math.abs(gl)+" days past":gl+" days"})`:""):"not set"}</b></span></div>
      <div class="bar-right">${S.role==="hci"&&p.remoteUrl?`<a class="btn sec sm" href="${esc(p.remoteUrl)}" target="_blank" rel="noopener" title="Open this site's Board Remote in a new tab">Board Remote</a>`:""}${S.role==="hci"?`<button class="btn sec sm" data-edit="projects" data-id="${esc(p.id)}">Edit</button>`:""}${gear}${meBlock()}</div></div>
-     <div class="subrow"><nav class="tabs" aria-label="Project">${PVIEWS.filter(v=>allowed().includes(v[0])).map(([k,l])=>{const c=counts[k]||[0,""];return tab(S.view===k,`data-go="project:${k}:${esc(p.id)}"`,l,c[0],c[1])}).join("")}</nav><div class="subright">${roleBar}</div></div>`;
+     <div class="subrow"><nav class="tabs" aria-label="Project">${PVIEWS.filter(v=>allowed().includes(v[0])&&!(v[0]==="overview"&&staffCust(p))).map(([k,l])=>{const c=counts[k]||[0,""];return tab(S.view===k,`data-go="project:${k}:${esc(p.id)}"`,l,c[0],c[1])}).join("")}</nav><div class="subright">${roleBar}</div></div>`;
+  }else if(S.scope==="customer"&&byId("customers",S.cid)){
+    const c=byId("customers",S.cid);
+    h=`<div class="bar-top hastabs">${LOGO}${gnav("portfolio")}<span class="vsep"></span><div class="bar-title"><span class="eyebrow">Customer</span><h1>${esc(c.name)}</h1></div><div class="bar-right"><button class="btn sec sm" data-edit="customers" data-id="${esc(c.id)}">Edit customer</button><button class="btn sm" data-act="newproj" data-cust="${esc(c.id)}">Add project</button>${gear}${meBlock()}</div></div>`;
   }else if(S.scope==="admin"){
     h=`<div class="bar-top">${LOGO}<button class="iconbtn" data-go="portfolio:portfolio" aria-label="All projects" title="All projects">${BACK}</button><div class="bar-title"><span class="eyebrow">HCI ONE · Implementation Hub</span><h1>Admin</h1></div><span class="pill int">HCI only</span><div class="bar-right">${meBlock()}</div></div>
      <nav class="tabs" aria-label="Admin">${AVIEWS.map(([k,l])=>tab(S.view===k,`data-go="admin:${k}"`,l)).join("")}</nav>`;
@@ -467,13 +477,16 @@ function render(){
   if(S.locked&&S.role!=="hci"){S.scope="project";if(!P())S.pid=(S.cols.projects[0]||{}).id||null;if(!P()){renderSide();$("#main").innerHTML='<div class="loading">You are not on a project team yet. Ask HCI to add you to the project.</div>';return}}
   if(S.scope==="project"&&!P()){S.scope="portfolio";S.view="daily"}
   if(S.scope==="project"&&LEGACY[S.view]){const [v,sub]=LEGACY[S.view];if(sub)S.sub[v]=sub;S.view=v}
-  if(S.scope==="project"&&!allowed().includes(S.view))S.view="overview";
+  if(S.scope==="project"&&S.view==="overview"&&staffCust(P())){S.cid=P().customerId;S.scope="customer"}
+  if(S.scope==="customer"&&!byId("customers",S.cid)){S.scope="portfolio";S.view="portfolio"}
+  if(S.scope==="project"&&!allowed().includes(S.view))S.view=staffCust(P())?"plan":"overview";
   renderSide();
   const main=$("#main");
   const FILL={overview:1,plan:1,decisions:1,portfolio:1,designs:1,helpdesk:1,daily:1,dash:1};
   main.classList.toggle("fill",!!FILL[S.view]&&S.scope!=="admin");
   if(S.scope==="portfolio"){main.innerHTML=PORT[S.view]?PORT[S.view]():PORT.portfolio();if(S.view==="daily"&&window.HUB_DAILY)window.HUB_DAILY.mount(document.getElementById("dailyMount"),"board",dailyCtx());return}
   if(S.scope==="admin"){main.innerHTML=ADMIN[S.view]?ADMIN[S.view]():ADMIN.catalog();return}
+  if(S.scope==="customer"){main.innerHTML=VIEW.custOverview(byId("customers",S.cid));return}
   const p=P();
   const banner=S.role!=="hci"&&!S.locked?`<div class="banner">Previewing the ${PARTIES[S.role].toLowerCase()} portal. ${S.role==="partner"?"Partners see only their own tasks, integrations and the project team.":S.role==="dealer"?"Dealers see project work without IP addresses, MACs, remote access or HCI only notes.":"Customers see everything marked for the whole project; HCI only items are hidden."}</div>`:"";
   const back2=(S.view==="access"||S.view==="audit")?`<div class="filters"><button class="btn sec sm" data-go="project:overview:${esc(p.id)}">Back to overview</button></div>`:"";
@@ -524,16 +537,16 @@ portfolio(){
   if(loose.length)groups.push({c:{id:"",name:"No customer yet"},ps:loose});
   const tk=S.cols.tasks.filter(t=>t.status!=="done");
   const row=p=>{const s=stats(p.id);const gl=days(p.goLive);const ph=Number(p.phase)||0;const n=tk.filter(t=>t.projectId===p.id).length;
-    return `<button type="button" class="pcard" data-go="project:overview:${esc(p.id)}" style="min-height:0;padding:12px 14px;gap:6px;box-shadow:none;border:1px solid var(--line)"><div style="display:flex;gap:10px;align-items:center;width:100%"><div class="nm" style="flex:1;min-width:0;font-size:14.5px">${esc(p.name)}</div>${stPill(p.status)}</div>
+    return `<button type="button" class="pcard" data-go="project:plan:${esc(p.id)}" style="min-height:0;padding:12px 14px;gap:6px;box-shadow:none;border:1px solid var(--line)"><div style="display:flex;gap:10px;align-items:center;width:100%"><div class="nm" style="flex:1;min-width:0;font-size:14.5px">${esc(p.name)}</div>${stPill(p.status)}</div>
      ${mini(ph)}<div class="foot" style="margin-top:0"><span>Phase ${ph+1} · ${esc(PHASES[ph])}</span><span>${n} open task${n===1?"":"s"}</span><span>${p.goLive?"Go live "+fd(p.goLive):"No go live date"}${gl!=null&&gl<0?` · ${Math.abs(gl)} days past`:""}</span>${s.over?`<span style="color:var(--warn-deep)">${s.over} overdue</span>`:""}</div></button>`};
   const card=g=>{const c=g.c;const pids=new Set(g.ps.map(p=>p.id));
     const mine=tk.filter(t=>c.id?(t.customerId===c.id||pids.has(t.projectId)):pids.has(t.projectId));
     const stuck=mine.filter(t=>t.status==="waiting").length,od=mine.filter(over).length,np=mine.filter(t=>!t.projectId).length;
     const lk='style="background:none;border:0;padding:0;font-weight:800;font-size:12.5px;color:var(--hero-deep);cursor:pointer"';
-    return `<section class="card" style="display:flex;flex-direction:column;gap:10px;align-content:start"><div style="display:flex;gap:10px;align-items:baseline"><h2 style="margin:0;font-size:18px;flex:1;min-width:0">${esc(c.name)}</h2>${staff&&c.id?`<button type="button" ${lk} data-edit="customers" data-id="${esc(c.id)}">Edit</button>`:""}</div>
+    return `<section class="card" style="display:flex;flex-direction:column;gap:10px;align-content:start"><div style="display:flex;gap:10px;align-items:baseline"><h2 style="margin:0;font-size:18px;flex:1;min-width:0">${c.id?`<button type="button" class="eyelink" style="font-size:inherit;font-weight:inherit;letter-spacing:0;text-transform:none;text-decoration:none" data-go="customer:overview:${esc(c.id)}" title="Open the customer overview">${esc(c.name)}</button>`:esc(c.name)}</h2>${staff&&c.id?`<button type="button" ${lk} data-edit="customers" data-id="${esc(c.id)}">Edit</button>`:""}</div>
       <div class="who">${g.ps.length} project${g.ps.length===1?"":"s"} · ${mine.length} open task${mine.length===1?"":"s"}${stuck?` · ${stuck} stuck`:""}${od?` · <span style="color:var(--warn-deep)">${od} overdue</span>`:""}${np?` · ${np} not on a project yet`:""}</div>
       ${g.ps.map(row).join("")||'<div class="who">No projects yet.</div>'}
-      <div style="display:flex;gap:16px;margin-top:2px">${c.id?`<button type="button" ${lk} data-act="custboard" data-cust="${esc(c.id)}">Tasks (${mine.length})</button>`:""}${su(c.sharepointUrl)?`<a ${lk} href="${esc(c.sharepointUrl)}" target="_blank" rel="noopener">SharePoint</a>`:""}${staff&&c.id?`<button type="button" ${lk} data-act="newproj" data-cust="${esc(c.id)}">+ Add project</button>`:""}</div></section>`};
+      <div style="display:flex;gap:16px;margin-top:2px">${c.id?`<button type="button" ${lk} data-go="customer:overview:${esc(c.id)}">Overview</button><button type="button" ${lk} data-act="custboard" data-cust="${esc(c.id)}">Tasks (${mine.length})</button>`:""}${su(c.sharepointUrl)?`<a ${lk} href="${esc(c.sharepointUrl)}" target="_blank" rel="noopener">SharePoint</a>`:""}${staff&&c.id?`<button type="button" ${lk} data-act="newproj" data-cust="${esc(c.id)}">+ Add project</button>`:""}</div></section>`};
   return `<div style="flex:1;min-height:0;width:100%;overflow:auto;padding:2px 2px 20px"><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(400px,1fr));gap:14px;align-items:start">${groups.map(card).join("")}</div></div>`;
 },
 alldecisions(){
@@ -576,7 +589,7 @@ overview(p){
   const mineOnly=!hci&&role!=="partner"?open.filter(t=>t.party===role):role==="partner"?open:open;
   const od=mineOnly.filter(over).length,stuck=mineOnly.filter(t=>t.status==="waiting").length;
   const sorted=l=>l.slice().sort((a,b)=>(over(b)-over(a))||(a.due||"9").localeCompare(b.due||"9"));
-  const li=t=>`<div class="li"><button class="chk" data-toggle="${esc(t.id)}" aria-label="Mark done"></button><span class="grow t" data-edit="tasks" data-id="${esc(t.id)}" style="cursor:pointer">${esc(t.title)}</span>${(t.files||[]).length?`<span class="who" title="${esc(t.files.map(f=>f.name).join(", "))}">\uD83D\uDCCE ${t.files.length}</span>`:""}${waitPill(t)}${t.due?`<span class="due ${over(t)?"over":""}">${over(t)?"Overdue · ":""}${fd(t.due)}</span>`:""}</div>`;
+  const li=t=>`<div class="li"><button class="chk" data-toggle="${esc(t.id)}" aria-label="Mark done"></button><span class="grow t" data-edit="tasks" data-id="${esc(t.id)}" style="cursor:pointer">${esc(t.title)}</span>${(t.files||[]).length?`<span class="who" title="${esc(t.files.map(f=>f.name).join(", "))}">\uD83D\uDCCE ${t.files.length}</span>`:""}${waitPill(t)}${t.startDate?`<span class="who">Start ${fd(t.startDate)}</span>`:""}${t.due?`<span class="due ${over(t)?"over":""}">${over(t)?"Overdue · ":""}${fd(t.due)}</span>`:""}</div>`;
   let work="";
   if(hci){
     const owners=[...new Set(mineOnly.filter(t=>t.party==="hci").map(t=>t.owner||"Unassigned"))].sort();
@@ -612,6 +625,51 @@ overview(p){
       <div class="scroll" style="min-height:0"><div style="display:flex;gap:22px;margin-bottom:10px"><div><div class="who">Beds</div><div style="font-size:22px;font-weight:800">${esc(p.beds||"–")}</div></div><div><div class="who">Rooms</div><div style="font-size:22px;font-weight:800">${esc(p.rooms||"–")}</div></div><div><div class="who">Units</div><div style="font-size:22px;font-weight:800">${esc(p.units||"–")}</div></div></div>
       <div class="tbl-wrap"><table><thead><tr><th>Purchased</th><th class="num">Qty</th><th>Status</th></tr></thead><tbody>${hw||'<tr><td colspan="3" class="empty">Nothing added yet.</td></tr>'}</tbody></table></div></div></section>`:"";
   return `<div class="ov3" ${showHw?"":'style="grid-template-columns:minmax(0,1fr) minmax(0,1fr)"'}><div class="ovcol">${col1}</div><div class="ovcol">${col2}</div>${col3?`<div class="ovcol">${col3}</div>`:""}</div>`;
+},
+custOverview(c){
+  const su=u=>/^https?:\/\//i.test(u||"")?u:"";
+  const ps=custProjects(c.id).sort((a,b)=>(a.goLive||"9").localeCompare(b.goLive||"9"));
+  const pname=id=>(byId("projects",id)||{}).name||"";
+  const all=cat=>ps.flatMap(p=>vis(cat,p.id));
+  const loose=S.cols.tasks.filter(t=>t.customerId===c.id&&!t.projectId);
+  const open=all("tasks").concat(loose).filter(t=>t.status!=="done");
+  const doneL=all("tasks").concat(loose).filter(t=>t.status==="done").sort((a,b)=>(b.doneAt||b.updatedAt||"").localeCompare(a.doneAt||a.updatedAt||""));
+  const od=open.filter(over).length,stuck=open.filter(t=>t.status==="waiting").length;
+  const sorted=l=>l.slice().sort((a,b)=>(over(b)-over(a))||(a.due||"9").localeCompare(b.due||"9"));
+  const li=t=>`<div class="li"><button class="chk" data-toggle="${esc(t.id)}" aria-label="Mark done"></button><span class="grow t" data-edit="tasks" data-id="${esc(t.id)}" style="cursor:pointer">${esc(t.title)}${ps.length>1||!t.projectId?` <span class="who">· ${esc(pname(t.projectId)||"No project")}</span>`:""}</span>${(t.files||[]).length?`<span class="who" title="${esc(t.files.map(f=>f.name).join(", "))}">\uD83D\uDCCE ${t.files.length}</span>`:""}${waitPill(t)}${t.startDate?`<span class="who">Start ${fd(t.startDate)}</span>`:""}${t.due?`<span class="due ${over(t)?"over":""}">${over(t)?"Overdue · ":""}${fd(t.due)}</span>`:""}</div>`;
+  const owners=[...new Set(open.filter(t=>t.party==="hci").map(t=>t.owner||"Unassigned"))].sort();
+  let work=owners.map(o=>{const l=sorted(open.filter(t=>t.party==="hci"&&(t.owner||"Unassigned")===o));return `<div class="label" style="margin-top:10px">${esc(o)} · ${l.length}</div>${l.slice(0,8).map(li).join("")}${l.length>8?`<div class="who">+ ${l.length-8} more on the Board</div>`:""}`}).join("");
+  const oth=sorted(open.filter(t=>t.party!=="hci"));
+  if(oth.length)work+=`<div class="label" style="margin-top:10px">Customer, dealer and partner · ${oth.length}</div>${oth.slice(0,8).map(li).join("")}${oth.length>8?`<div class="who">+ ${oth.length-8} more on the Board</div>`:""}`;
+  const doneLi=t=>`<div class="li"><button class="chk on" data-toggle="${esc(t.id)}" aria-label="Reopen">${check}</button><span class="grow t done-t" data-edit="tasks" data-id="${esc(t.id)}" style="cursor:pointer">${esc(t.title)}</span><span class="who">${t.doneAt?fd(String(t.doneAt).slice(0,10)):""}</span></div>`;
+  const col1=`<section class="card" style="min-height:0;flex:1;display:flex;flex-direction:column"><div class="card-h"><span class="label ovt">Work<span class="n">${open.length}</span></span><span class="who">${od?`<span style="color:var(--warn-deep)">${od} overdue</span>`:""}${od&&stuck?" · ":""}${stuck?`${stuck} stuck on others`:""}</span><span style="display:flex;gap:6px"><button class="btn sm" data-new="tasks">Add task</button><button class="btn sec sm" data-act="custboard" data-cust="${esc(c.id)}">Board</button></span></div><div class="scroll" style="min-height:0;flex:2 1 0">${work||'<div class="empty">Nothing open.</div>'}</div><div class="scroll" style="min-height:0;flex:1 1 0;border-top:1px solid var(--card-brd);margin-top:8px;padding-top:8px"><div class="label ovt" style="margin-bottom:6px">Completed<span class="n">${doneL.length}</span></div>${doneL.slice(0,20).map(doneLi).join("")||'<div class="empty">Nothing completed yet.</div>'}${doneL.length>20?`<div class="who">+ ${doneL.length-20} more</div>`:""}</div></section>`;
+  const lb=(label,u,edit)=>su(u)?`<a class="btn sm" href="${esc(u)}" target="_blank" rel="noopener">${label}</a>`:edit||"";
+  const linkRow=lb("SharePoint",c.sharepointUrl,`<button class="btn sec sm" data-edit="customers" data-id="${esc(c.id)}" title="One SharePoint link per customer">+ SharePoint</button>`);
+  const projRows=ps.map(p=>{const n=open.filter(t=>t.projectId===p.id).length,o=open.filter(t=>t.projectId===p.id&&over(t)).length,ph=Number(p.phase)||0,gl=days(p.goLive);
+    return `<div class="projrow" data-go="project:plan:${esc(p.id)}"><div style="display:flex;gap:8px;align-items:center"><b style="flex:1;min-width:0">${esc(p.name)}</b>${stPill(p.status)}</div>${mini(ph)}
+      <div class="who">Phase ${ph+1} · ${esc(PHASES[ph])} · ${p.goLive?"Go live "+fd(p.goLive)+(gl!=null&&gl<0?` (${Math.abs(gl)} days past)`:""):"No go live date"} · ${n} open${o?` · <span style="color:var(--warn-deep)">${o} overdue</span>`:""}</div>
+      <div class="pl"><button class="btn sm" data-go="project:plan:${esc(p.id)}">Plan</button><button class="btn sec sm" data-go="project:files:${esc(p.id)}">Files</button><button class="btn sec sm" data-edit="projects" data-id="${esc(p.id)}">Edit</button>${su(p.githubUrl)?`<a class="btn sec sm" href="${esc(p.githubUrl)}" target="_blank" rel="noopener">GitHub</a>`:""}${su(p.hubspot)?`<a class="btn sec sm" href="${esc(p.hubspot)}" target="_blank" rel="noopener">HubSpot</a>`:""}${su(p.remoteUrl)?`<a class="btn sec sm" href="${esc(p.remoteUrl)}" target="_blank" rel="noopener">Board Remote</a>`:""}</div></div>`}).join("");
+  const seen=new Set();const ppl=all("people").filter(x=>{const k=(x.email||x.name||"").toLowerCase();if(seen.has(k))return false;seen.add(k);return true}).sort((a,b)=>Object.keys(PARTIES).indexOf(a.party)-Object.keys(PARTIES).indexOf(b.party));
+  const ints=all("interfaces").filter(i=>i.status!=="out"),ilive=ints.filter(i=>i.status==="live").length,iblk=ints.filter(i=>i.status==="blocked").length;
+  const intRows=ints.map(i=>{const k={live:"good",in_progress:"hci",testing:"hci",blocked:"bad",confirm:"warn",not_started:"",deferred:""}[i.status]||"";return `<div class="li" data-edit="interfaces" data-id="${esc(i.id)}" style="cursor:pointer"><span class="grow">${esc(i.system)}${ps.length>1?` <span class="who">· ${esc(pname(i.projectId))}</span>`:""}</span><span class="pill ${k}">${ISTATUS[i.status]||esc(i.status||"")}</span></div>`}).join("");
+  const dl=(k,v)=>v?`<dt>${k}</dt><dd>${esc(v)}</dd>`:"";
+  const col2=`<section class="card" style="min-height:0;flex:1;display:flex;flex-direction:column"><div class="card-h"><span class="label ovt">Where it stands</span><button class="btn sec sm" data-edit="customers" data-id="${esc(c.id)}">Edit</button></div>
+    <div class="scroll" style="min-height:0">
+    ${linkRow?`<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px">${linkRow}</div>`:""}
+    ${c.notes?`<div class="note" style="margin-bottom:8px;font-size:13.5px;line-height:1.45">${esc(c.notes)}</div>`:""}
+    <dl class="kv">${dl("Contact",c.contact)}</dl>
+    <div class="card-h" style="margin-top:6px"><span class="label ovt">Projects<span class="n">${ps.length}</span></span><button class="btn sm" data-act="newproj" data-cust="${esc(c.id)}">Add project</button></div>${projRows||'<div class="empty">No projects yet.</div>'}
+    <div class="card-h" style="margin-top:14px"><span class="label ovt">Team<span class="n">${ppl.length}</span></span>${ps.length?'<button class="btn sm" data-new="people">Add</button>':""}</div>${ppl.map(x=>`<div class="li" data-edit="people" data-id="${esc(x.id)}" style="cursor:pointer"><div class="grow" style="min-width:0"><b>${esc(x.name)}</b> <span class="who">${esc([x.role,x.party==="hci"?"":x.org].filter(Boolean).join(" · "))}</span></div>${x.party==="hci"?"":`<span class="pill ${esc(x.party)}">${PARTIES[x.party]||""}</span>`}</div>`).join("")||'<div class="empty">No one added yet.</div>'}
+    <div class="card-h" style="margin-top:14px"><span class="label ovt">Integrations<span class="n">${ilive} of ${ints.length} live</span></span>${ps.length?'<button class="btn sm" data-new="interfaces">Add</button>':""}</div>${iblk?`<div class="who" style="color:var(--warn-deep);margin-bottom:4px">${iblk} blocked</div>`:""}${intRows||'<div class="empty">None yet.</div>'}
+    </div></section>`;
+  const comp=all("components");
+  const hw=CCAT.filter(x=>x!=="Integration").map(cat=>{const it=comp.filter(x=>(catOf(x).category||x.category)===cat&&x.status!=="removed").sort((a,b)=>(catOf(a).name||"").localeCompare(catOf(b).name||""));if(!it.length)return "";
+    return `<tr class="grp"><td colspan="3">${esc(cat)}</td></tr>`+it.map(x=>{const k=catOf(x);return `<tr class="click" data-edit="components" data-id="${esc(x.id)}"><td><b>${esc(k.name||x.name||"Removed item")}</b>${ps.length>1?` <span class="who">· ${esc(pname(x.projectId))}</span>`:""}${x.detail?`<div class="who">${esc(x.detail)}</div>`:""}</td><td class="num">${cat==="Software"?"":x.qty!==""&&x.qty!=null?`<b>${esc(x.qty)}</b>`:'<span class="pill warn">Qty needed</span>'}</td><td>${cPill(x.status)}</td></tr>`}).join("")}).join("");
+  const sum=k=>{const v=ps.reduce((a,p)=>a+(Number(p[k])||0),0);return v?v.toLocaleString("en-US"):"–"};
+  const col3=`<section class="card" style="min-height:0;flex:1;display:flex;flex-direction:column"><div class="card-h"><span class="label ovt">Size and hardware</span><span style="display:flex;gap:6px">${ps.length?'<button class="btn sm" data-new="components">Add item</button>':""}<button class="btn sec sm" data-go="admin:catalog">Catalog</button></span></div>
+      <div class="scroll" style="min-height:0"><div style="display:flex;gap:22px;margin-bottom:10px"><div><div class="who">Beds</div><div style="font-size:22px;font-weight:800">${sum("beds")}</div></div><div><div class="who">Rooms</div><div style="font-size:22px;font-weight:800">${sum("rooms")}</div></div><div><div class="who">Units</div><div style="font-size:22px;font-weight:800">${sum("units")}</div></div></div>
+      <div class="tbl-wrap"><table><thead><tr><th>Purchased</th><th class="num">Qty</th><th>Status</th></tr></thead><tbody>${hw||'<tr><td colspan="3" class="empty">Nothing added yet.</td></tr>'}</tbody></table></div></div></section>`;
+  return `<div class="ov3"><div class="ovcol">${col1}</div><div class="ovcol">${col2}</div><div class="ovcol">${col3}</div></div>`;
 },
 feed(p){
   const items=feedItems(p.id);const f=S.ffilter||"all";
@@ -677,7 +735,7 @@ plan(){
   const parties=["hci","customer","dealer","partner"].filter(k=>k!=="dealer"||t.some(x=>x.party==="dealer")||p.dealer).filter(k=>S.role==="partner"?k==="partner":true);
   const card=x=>{const d=x.status==="done";const n=x.due?days(x.due):null;
     return `<div class="tcard"><button class="chk ${d?"on":""}" data-toggle="${esc(x.id)}" aria-label="${d?"Reopen":"Mark done"}">${d?check:""}</button><div><div class="t ${d?"done-t":""}" data-edit="tasks" data-id="${esc(x.id)}">${esc(x.title)}${(x.files||[]).length?`<span class="who" title="${esc(x.files.map(f=>f.name).join(", "))}"> \uD83D\uDCCE ${x.files.length}</span>`:""}</div>
-     <div class="meta"><span class="pill">${esc(PHASES[Number(x.phase)||0])}</span>${x.owner?`<span class="who">${esc(x.owner)}</span>`:""}${waitPill(x)}${x.visibility==="internal"?'<span class="pill int">HCI only</span>':""}${cntPill("tasks",x.id)}${x.due?`<span class="due ${over(x)?"over":""}">${over(x)?Math.abs(n)+(n===-1?" day late":" days late"):n===0?"Due today":fd(x.due)}</span>`:""}</div></div></div>`};
+     <div class="meta"><span class="pill">${esc(PHASES[Number(x.phase)||0])}</span>${x.owner?`<span class="who">${esc(x.owner)}</span>`:""}${waitPill(x)}${x.visibility==="internal"?'<span class="pill int">HCI only</span>':""}${cntPill("tasks",x.id)}${x.startDate?`<span class="who">Start ${fd(x.startDate)}</span>`:""}${x.due?`<span class="due ${over(x)?"over":""}">${over(x)?Math.abs(n)+(n===-1?" day late":" days late"):n===0?"Due today":"Due "+fd(x.due)}</span>`:""}</div></div></div>`};
   const cols=parties.map(k=>{const items=t.filter(x=>x.party===k).sort((a,b)=>(over(b)-over(a))||(a.due||"9").localeCompare(b.due||"9"));
     return `<section class="card ocol"><div class="card-h"><span class="label">${esc(k==="customer"?(p.customer||"Customer"):PARTIES[k])}<span class="n">${items.length}</span></span></div><div class="scroll">${items.map(card).join("")||'<div class="empty">Nothing here.</div>'}</div></section>`}).join("");
   const m=vis("meetings").sort((a,b)=>(b.date||"").localeCompare(a.date||""));
@@ -916,6 +974,7 @@ function openForm(col,id,defaults){
   if(col==="catalog")vals.active=String(cur.active!==false);
   const hideNet=col==="devices"&&!netOK();
   const fields=FORMS[col].filter(f=>!(hideNet&&["mac","ip","vlan","hostname"].includes(f[0]))).filter(f=>!(col==="tasks"&&S.role!=="hci"&&["waitingOnId","waitingOnName","projectId"].includes(f[0])));
+  if(S.scope==="customer"&&!id&&!GLOBAL.has(col)&&col!=="tasks"&&!fields.some(f=>f[0]==="projectId")){fields.unshift(["projectId","Project","select",1,1,()=>Object.fromEntries(custProjects(S.cid).filter(x=>x.status!=="done").map(x=>[x.id,x.name]))]);vals.projectId=vals.projectId||S.pid||""}
   const fh=fields.map(([k,l,t,req,full,opts,list])=>{
     const v=vals[k]??"";const idA=`f_${col}_${k}`;let inp;
     if(t==="select"){const o0=typeof opts==="function"?opts():opts;const o=Array.isArray(o0)?o0.map((n,i)=>[String(i),n]):opt(o0);inp=`<select id="${idA}" name="${k}" ${ro?"disabled":""}>${o.map(([ov,ol])=>`<option value="${esc(ov)}" ${String(v)===ov?"selected":""}>${esc(ol)}</option>`).join("")}</select>`}
