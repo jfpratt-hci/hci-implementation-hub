@@ -141,8 +141,10 @@
       '<div class="field"><label for="e_due">Due</label><input id="e_due" type="date" name="due" value="' + ctx.esc(cur.due || "") + '"></div>' +
       '<div class="field full" id="e_waitbox"><label for="e_wait">Waiting on (dealer, vendor or customer on the project)</label><select id="e_wait" name="waitingOnId"></select>' +
       '<input id="e_waitname" name="waitingOnName" placeholder="Or type who, if they are not on the project" value="' + ctx.esc(cur.waitingOnId ? "" : cur.waitingOnName || "") + '" style="margin-top:6px"></div>' +
-      '</div><div class="mfoot"><div class="r"><button type="button" class="btn sec" data-close="1">Cancel</button><button type="submit" class="btn">Save</button></div></div></form></div>';
+      '</div><h3 style="margin:14px 0 6px;font-size:13px;letter-spacing:.06em;text-transform:uppercase">Files</h3><div id="e_files"></div><div class="mfoot"><div class="r"><button type="button" class="btn sec" data-close="1">Cancel</button><button type="submit" class="btn">Save</button></div></div></form></div>';
     var f = document.getElementById("mform");
+    var files = (cur.files || []).slice();
+    if (window.HUB_TASKFILES) window.HUB_TASKFILES.mount(document.getElementById("e_files"), files, { canAdd: ctx.role !== "none", canRemove: ctx.isHci !== false });
     function sync() {
       var cid = f.customerId.value, st = f.status.value;
       var pl = projList(cid), pkeep = f.projectId.value || cur.projectId || "";
@@ -168,7 +170,8 @@
         hospital: custById(cid) ? custById(cid).name : "General",
         waitingOnId: wid, waitingOnName: st === "waiting" ? (person ? person.name : f.waitingOnName.value.trim()) : "",
         waitingSince: st === "waiting" ? (cur.status === "waiting" && cur.waitingSince ? cur.waitingSince : new Date().toISOString()) : "",
-        doneAt: st === "done" ? (cur.doneAt || new Date().toISOString()) : ""
+        doneAt: st === "done" ? (cur.doneAt || new Date().toISOString()) : "",
+        files: files
       };
       var p = proj(pid); fields.phase = p ? Number(p.phase) || 0 : (cur.phase || 0);
       root.innerHTML = "";
@@ -191,6 +194,7 @@
       pl.addEventListener("click", function () { ctx.openProject(t.projectId); }); meta.appendChild(pl);
     } else if (custOf(t)) meta.appendChild(el("span", { class: "dtag", text: "No project yet" }));
     if ((t.party || "hci") !== "hci") meta.appendChild(el("span", { class: "dtag", text: PARTY[t.party] || t.party }));
+    if (t.files && t.files.length) meta.appendChild(el("span", { class: "dtag", text: "\uD83D\uDCCE " + t.files.length, title: t.files.map(function (x) { return x.name; }).join(", ") }));
     if (isWait(t)) { var w = waitLabel(t); meta.appendChild(el("span", { class: "dtag wait", text: "Waiting on " + (w.name || "someone") + (t.waitingSince ? " · " + daysSince(t.waitingSince) + "d" : ""), title: w.org })); }
     if (t.due) meta.appendChild(el("span", { class: "dtag" + (isOver(t) ? " old" : ""), text: (isOver(t) ? "Overdue · " : "Due ") + fmtDay(t.due) }));
     var as = el("select", { class: "dassign", "aria-label": "HCI person" });

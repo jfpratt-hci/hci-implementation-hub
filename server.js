@@ -237,6 +237,34 @@ app.get("/_design/:id", (req, res) => {
 const filesApi = require("./files")({ store, bump });
 app.use("/api/files", filesApi);
 app.use("/api/helpdesk", helpdesk.router);
+// Files attached to tasks. Any type, stored under uploads/taskfiles, served as a download only.
+const TASKFILE_DIR = path.join(UPLOAD_DIR, "taskfiles");
+fs.mkdirSync(TASKFILE_DIR, { recursive: true });
+const safeName = n => String(n || "file").replace(/[\\/:*?"<>|\u0000-\u001f]+/g, "_").trim().slice(0, 120) || "file";
+app.post("/api/taskfile", express.raw({ type: () => true, limit: "25mb" }), (req, res) => {
+  if (req.me.role === "none") return res.status(403).json({ error: "You cannot upload here" });
+  if (!Buffer.isBuffer(req.body) || !req.body.length) return res.status(400).json({ error: "send the file as the request body" });
+  let name = "file"; try { name = decodeURIComponent(req.headers["x-filename"] || "file"); } catch (e) {}
+  name = safeName(name);
+  const id = crypto.randomBytes(16).toString("hex");
+  fs.writeFileSync(path.join(TASKFILE_DIR, id), req.body);
+  res.json({ id, name, size: req.body.length, type: (req.headers["content-type"] || "").split(";")[0].trim(), by: req.me.name || "", at: new Date().toISOString() });
+});
+app.get("/api/taskfile/:id/:name", (req, res) => {
+  const id = String(req.params.id).replace(/[^a-f0-9]/g, "");
+  const f = path.join(TASKFILE_DIR, id);
+  if (!id || !fs.existsSync(f)) return res.status(404).end();
+  res.setHeader("X-Content-Type-Options", "nosniff");
+  res.setHeader("Content-Security-Policy", "sandbox");
+  res.setHeader("Cache-Control", "private, max-age=3600");
+  res.download(f, safeName(req.params.name));
+});
+app.delete("/api/taskfile/:id", (req, res) => {
+  if (req.me.role !== "hci") return res.status(403).json({ error: "Only HCI can remove files" });
+  const id = String(req.params.id).replace(/[^a-f0-9]/g, "");
+  try { fs.unlinkSync(path.join(TASKFILE_DIR, id)); } catch (e) {}
+  res.json({ ok: true });
+});
 app.use("/api/:col", (req, res, next) => {
   if (req.method === "GET" || req.params.col === "all" || req.params.col === "me" || req.params.col === "upload") return next();
   if (!okCol(req.params.col)) return res.status(404).json({ error: "unknown collection" });

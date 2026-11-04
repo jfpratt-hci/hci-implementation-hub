@@ -262,7 +262,7 @@ table.docs tr.on td{background:var(--chip-pos)}
 .iconbtn svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .me{display:flex;flex-direction:column;align-items:flex-end;line-height:1.2;font-size:12px;font-weight:800;max-width:180px}
 .me a,.me .who{font-size:11px}.me input{border:1px solid var(--card-brd);background:var(--card2);border-radius:var(--r-pill);padding:6px 12px;font-weight:700;width:150px}
-.bar-top.hastabs{padding-block:0}.subrow{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-right:24px}.subrow .tabs{min-width:0}.subright{flex:none}.gnav{flex:none;overflow:visible}.bar-meta{min-width:0;flex-wrap:wrap}.bar-top.hastabs .bar-title{flex:1 1 auto;min-width:120px}.gnav .tab{padding:0 10px}.bar-top{gap:10px}.logo{border:0;background:transparent;padding:0;display:grid;place-items:center;flex:none;cursor:pointer;margin-right:10px}.logo img{display:block;border-radius:10px}.vsep{width:1px;align-self:stretch;margin:12px 4px;background:var(--card-brd)}.tabs.inbar{margin-left:0;padding:0;min-width:0}.tabs.inbar .tab{height:58px}.tabs{display:flex;align-items:stretch;gap:2px;padding:0 16px;overflow-x:auto;scrollbar-width:none}
+.bar-top.hastabs{padding-block:0}.subrow{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-right:24px}.subrow .tabs{min-width:0}.subright{flex:none}.gnav{flex:none;overflow:visible}.bar-meta{min-width:0;flex-wrap:wrap}.bar-top.hastabs .bar-title{flex:1 1 auto;min-width:120px}.gnav .tab{padding:0 10px}.bar-top{gap:10px}.tfrow{display:flex;gap:10px;align-items:baseline;padding:4px 0;border-bottom:1px solid var(--card-brd)}.tfrow a{font-weight:700;color:var(--hero-deep);word-break:break-all;flex:1}.tfx{border:0;background:none;color:var(--bad);font:inherit;font-size:12px;cursor:pointer}.logo{border:0;background:transparent;padding:0;display:grid;place-items:center;flex:none;cursor:pointer;margin-right:10px}.logo img{display:block;border-radius:10px}.vsep{width:1px;align-self:stretch;margin:12px 4px;background:var(--card-brd)}.tabs.inbar{margin-left:0;padding:0;min-width:0}.tabs.inbar .tab{height:58px}.tabs{display:flex;align-items:stretch;gap:2px;padding:0 16px;overflow-x:auto;scrollbar-width:none}
 .tabs::-webkit-scrollbar{display:none}
 .tab{border:0;background:transparent;height:44px;padding:0 14px;font-weight:700;font-size:13px;color:var(--muted);border-bottom:3px solid transparent;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
 .tab:hover{color:var(--ink)}
@@ -576,7 +576,7 @@ overview(p){
   const mineOnly=!hci&&role!=="partner"?open.filter(t=>t.party===role):role==="partner"?open:open;
   const od=mineOnly.filter(over).length,stuck=mineOnly.filter(t=>t.status==="waiting").length;
   const sorted=l=>l.slice().sort((a,b)=>(over(b)-over(a))||(a.due||"9").localeCompare(b.due||"9"));
-  const li=t=>`<div class="li"><button class="chk" data-toggle="${esc(t.id)}" aria-label="Mark done"></button><span class="grow t" data-edit="tasks" data-id="${esc(t.id)}" style="cursor:pointer">${esc(t.title)}</span>${waitPill(t)}${t.due?`<span class="due ${over(t)?"over":""}">${over(t)?"Overdue · ":""}${fd(t.due)}</span>`:""}</div>`;
+  const li=t=>`<div class="li"><button class="chk" data-toggle="${esc(t.id)}" aria-label="Mark done"></button><span class="grow t" data-edit="tasks" data-id="${esc(t.id)}" style="cursor:pointer">${esc(t.title)}</span>${(t.files||[]).length?`<span class="who" title="${esc(t.files.map(f=>f.name).join(", "))}">\uD83D\uDCCE ${t.files.length}</span>`:""}${waitPill(t)}${t.due?`<span class="due ${over(t)?"over":""}">${over(t)?"Overdue · ":""}${fd(t.due)}</span>`:""}</div>`;
   let work="";
   if(hci){
     const owners=[...new Set(mineOnly.filter(t=>t.party==="hci").map(t=>t.owner||"Unassigned"))].sort();
@@ -676,7 +676,7 @@ plan(){
   const ph=Number(p.phase)||0;
   const parties=["hci","customer","dealer","partner"].filter(k=>k!=="dealer"||t.some(x=>x.party==="dealer")||p.dealer).filter(k=>S.role==="partner"?k==="partner":true);
   const card=x=>{const d=x.status==="done";const n=x.due?days(x.due):null;
-    return `<div class="tcard"><button class="chk ${d?"on":""}" data-toggle="${esc(x.id)}" aria-label="${d?"Reopen":"Mark done"}">${d?check:""}</button><div><div class="t ${d?"done-t":""}" data-edit="tasks" data-id="${esc(x.id)}">${esc(x.title)}</div>
+    return `<div class="tcard"><button class="chk ${d?"on":""}" data-toggle="${esc(x.id)}" aria-label="${d?"Reopen":"Mark done"}">${d?check:""}</button><div><div class="t ${d?"done-t":""}" data-edit="tasks" data-id="${esc(x.id)}">${esc(x.title)}${(x.files||[]).length?`<span class="who" title="${esc(x.files.map(f=>f.name).join(", "))}"> \uD83D\uDCCE ${x.files.length}</span>`:""}</div>
      <div class="meta"><span class="pill">${esc(PHASES[Number(x.phase)||0])}</span>${x.owner?`<span class="who">${esc(x.owner)}</span>`:""}${waitPill(x)}${x.visibility==="internal"?'<span class="pill int">HCI only</span>':""}${cntPill("tasks",x.id)}${x.due?`<span class="due ${over(x)?"over":""}">${over(x)?Math.abs(n)+(n===-1?" day late":" days late"):n===0?"Due today":fd(x.due)}</span>`:""}</div></div></div>`};
   const cols=parties.map(k=>{const items=t.filter(x=>x.party===k).sort((a,b)=>(over(b)-over(a))||(a.due||"9").localeCompare(b.due||"9"));
     return `<section class="card ocol"><div class="card-h"><span class="label">${esc(k==="customer"?(p.customer||"Customer"):PARTIES[k])}<span class="n">${items.length}</span></span></div><div class="scroll">${items.map(card).join("")||'<div class="empty">Nothing here.</div>'}</div></section>`}).join("");
@@ -872,7 +872,7 @@ const waitPill=t=>t.status==="waiting"?`<span class="pill warn">Waiting on ${esc
 function taskRow(t,withP){
   const d=t.status==="done";
   return `<div class="row"><button class="chk ${d?"on":""}" data-toggle="${esc(t.id)}" aria-label="${d?"Reopen":"Mark done"}">${d?check:""}</button>
-  <div><div class="t ${d?"done-t":""}" data-edit="tasks" data-id="${esc(t.id)}">${esc(t.title)}</div><div class="meta">${withP?projTag(t.projectId):""}<span class="who">${esc(t.owner||"Unassigned")}</span><span class="pill ${esc(t.party)}">${PARTIES[t.party]||""}</span>${waitPill(t)}${t.visibility==="internal"?'<span class="pill int">HCI only</span>':""}${cntPill("tasks",t.id)}${t.note?`<span class="who">· ${esc(t.note)}</span>`:""}</div></div>
+  <div><div class="t ${d?"done-t":""}" data-edit="tasks" data-id="${esc(t.id)}">${esc(t.title)}${(t.files||[]).length?`<span class="who" title="${esc((t.files||[]).map(f=>f.name).join(", "))}">\uD83D\uDCCE ${t.files.length}</span>`:""}</div><div class="meta">${withP?projTag(t.projectId):""}<span class="who">${esc(t.owner||"Unassigned")}</span><span class="pill ${esc(t.party)}">${PARTIES[t.party]||""}</span>${waitPill(t)}${t.visibility==="internal"?'<span class="pill int">HCI only</span>':""}${cntPill("tasks",t.id)}${t.note?`<span class="who">· ${esc(t.note)}</span>`:""}</div></div>
   <div class="right">${t.due?`<span class="due ${over(t)?"over":""}">${over(t)?"Overdue · ":""}${fd(t.due)}</span>`:""}</div></div>`;
 }
 function pendCard(d,withP){
@@ -927,10 +927,13 @@ function openForm(col,id,defaults){
   if(col==="devices"&&id){const sh=S.cols.shots.filter(s=>s.deviceId===id).sort((a,b)=>(b.takenAt||"").localeCompare(a.takenAt||""));
     extra=`<h3>Screenshots <span class="n">${sh.length}</span></h3>${sh.length?`<div class="shots">${sh.map(shotTile).join("")}</div>`:'<div class="who">No screenshots yet.</div>'}${S.assets&&S.role==="hci"?`<div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;align-items:center"><input id="shotCap" placeholder="Caption, such as After 2.4 update" style="flex:1;min-width:180px;border:1px solid var(--line);background:var(--soft);border-radius:8px;padding:8px 10px"><label class="btn sec" for="shotIn" style="cursor:pointer">Upload screenshot</label><input type="file" id="shotIn" accept="image/*" hidden data-dev="${esc(id)}"></div>`:S.role==="hci"?'<div class="hint">Uploading needs edit access to the Hub.</div>':""}`}
   if(col==="decisions"&&id&&cur.history&&cur.history.length){extra=`<h3>History</h3><div class="thread">${cur.history.slice().reverse().map(h=>`<div class="who">${fdt(h.at)} · ${esc(h.what)}${h.by?" · "+esc(h.by):""}</div>`).join("")}</div>`}
+  if(col==="tasks"&&!ro)extra+=`<h3>Files</h3><div id="tfilesHost"></div>`;
   if(id&&(!GLOBAL.has(col)||col==="projects")&&(S.role!=="partner"||col==="tasks"||col==="interfaces")){extra+=`<h3>Conversation <span class="n">${threadOf(col,id).length}</span></h3><div id="threadHost">${threadHTML(col,id)}</div>`}
   $("#modalRoot").innerHTML=`<div class="scrim" data-close="1"><form class="modal ${col==="devices"?"wide":""}" id="mform" novalidate><h2>${ro?"":id?"Edit ":"New "}${TITLES[col]}</h2><div class="fgrid">${fh}</div>${extra}
    <div class="mfoot">${id&&!ro&&S.role==="hci"?'<button type="button" class="btn sec" id="delBtn">Delete</button>':""}<div class="r"><button type="button" class="btn sec" data-close="1">${ro?"Close":"Cancel"}</button>${ro?"":'<button type="submit" class="btn">Save</button>'}</div></div></form></div>`;
   const form=$("#mform");
+  const tfiles=(cur.files||[]).slice();
+  if(col==="tasks"&&window.HUB_TASKFILES){const th=$("#tfilesHost");if(th)window.HUB_TASKFILES.mount(th,tfiles,{canAdd:S.role!=="none",canRemove:S.role==="hci"})}
   if(col==="components"){const sel=form.querySelector('[name="catalogId"]'),bs=form.querySelector('[name="basis"]'),q=form.querySelector('[name="qty"]');
     const fill=(fromCat)=>{const c=byId("catalog",sel.value);if(fromCat&&c&&c.basis)bs.value=c.basis;const p=P()||{};const m={bed:p.beds,room:p.rooms,unit:p.units}[bs.value];if(m&&(!q.value||q.dataset.auto==="1")){q.value=m;q.dataset.auto="1"}};
     sel.onchange=()=>fill(true);bs.onchange=()=>fill(false);q.oninput=()=>q.dataset.auto="0";if(!id)fill(true)}
@@ -951,6 +954,7 @@ function openForm(col,id,defaults){
     if(col==="projects"&&out.customerId){const cu=byId("customers",out.customerId);if(cu)out.customer=cu.name}
     if(col==="tasks"){const w=out.status==="waiting";if(w){const pr=out.waitingOnId&&byId("people",out.waitingOnId);if(pr)out.waitingOnName=pr.name;out.waitingSince=cur.status==="waiting"&&cur.waitingSince?cur.waitingSince:now()}else{out.waitingOnId="";out.waitingOnName="";out.waitingSince=""}
       out.doneAt=out.status==="done"?(cur.doneAt||now()):"";const pj=byId("projects",out.projectId);if(pj){out.hospital=pj.customer||pj.name;out.customerId=pj.customerId||out.customerId||""}}
+    if(col==="tasks")out.files=tfiles;
     out.updatedAt=now();
     try{
       if(id)await setDoc(col,id,out);

@@ -166,3 +166,39 @@
     }).catch(function () { /* not inside Teams */ });
   }
 })();
+
+/* Task attachments: window.HUB_TASKFILES */
+(function () {
+  function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
+  function size(n) { n = Number(n) || 0; return n > 1048576 ? (n / 1048576).toFixed(1) + " MB" : Math.max(1, Math.round(n / 1024)) + " KB"; }
+  function href(f) { return "/api/taskfile/" + encodeURIComponent(f.id) + "/" + encodeURIComponent(f.name || "file"); }
+  function upload(file) {
+    if (file.size > 25 * 1024 * 1024) return Promise.reject(new Error("That file is over 25 MB"));
+    return fetch("/api/taskfile", { method: "POST", headers: { "Content-Type": file.type || "application/octet-stream", "X-Filename": encodeURIComponent(file.name) }, body: file })
+      .then(function (r) { if (!r.ok) throw new Error("Upload refused"); return r.json(); });
+  }
+  // Renders into `host`; `files` is the live array, mutated in place. canRemove lets HCI take files off.
+  function mount(host, files, opts) {
+    opts = opts || {};
+    function draw(msg) {
+      host.innerHTML = '<div class="tfiles">' + (files.length ? files.map(function (f, i) {
+        return '<div class="tfrow"><a href="' + href(f) + '" target="_blank" rel="noopener">' + esc(f.name) + '</a><span class="who">' + size(f.size) + '</span>' +
+          (opts.canRemove ? '<button type="button" class="tfx" data-i="' + i + '" aria-label="Remove ' + esc(f.name) + '">Remove</button>' : "") + "</div>";
+      }).join("") : '<div class="who">No files yet.</div>') + "</div>" +
+        (opts.canAdd ? '<div style="margin-top:8px;display:flex;gap:8px;align-items:center;flex-wrap:wrap"><label class="btn sec sm" style="cursor:pointer">Add file<input type="file" multiple hidden></label><span class="who" data-msg>' + esc(msg || "") + "</span></div>" : "");
+      var inp = host.querySelector('input[type=file]');
+      if (inp) inp.onchange = function () {
+        var list = Array.prototype.slice.call(inp.files || []); if (!list.length) return;
+        draw("Uploading " + list.length + (list.length === 1 ? " file…" : " files…"));
+        Promise.all(list.map(function (f) { return upload(f).then(function (m) { files.push(m); }, function (e) { return e; }); })).then(function (r) {
+          var bad = r.filter(function (x) { return x instanceof Error; })[0]; draw(bad ? bad.message : ""); if (opts.onChange) opts.onChange(files);
+        });
+      };
+      Array.prototype.forEach.call(host.querySelectorAll(".tfx"), function (b) {
+        b.onclick = function () { var f = files.splice(Number(b.dataset.i), 1)[0]; if (f) fetch("/api/taskfile/" + encodeURIComponent(f.id), { method: "DELETE" }); draw(); if (opts.onChange) opts.onChange(files); };
+      });
+    }
+    draw();
+  }
+  window.HUB_TASKFILES = { upload: upload, mount: mount, href: href, size: size };
+})();
