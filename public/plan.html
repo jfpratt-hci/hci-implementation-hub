@@ -166,6 +166,9 @@ button.av{cursor:pointer}button.av:hover{outline:2px solid var(--focus)}
 .toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--ink);color:var(--card);padding:9px 16px;border-radius:999px;font-weight:700;opacity:0;transition:opacity .2s;pointer-events:none;z-index:9}
 .toast.on{opacity:1}
 .wlane{grid-template-columns:46px minmax(0,1fr)}.wlane .wl{display:flex;flex-wrap:wrap;gap:4px;padding:4px;min-height:34px;border-left:1px solid var(--line);align-content:flex-start}.wlane .wl .chp{flex:0 1 240px}.wlane .wl.drop{background:var(--chip-pos)}.wlane .wl .ph{align-self:center}.tk .nw{margin-left:auto;padding:2px 8px;font-size:11px}
+.tk.ticket,.chp.ticket,.ev.task.ticket{border-left:4px dashed var(--cc,var(--green))}
+.tk.ticket.crit,.chp.ticket.crit,.ev.task.ticket.crit{box-shadow:0 0 0 1.5px var(--warn)}
+.tinfo{display:grid;gap:3px;font-size:13px}
 .banner{background:var(--amber-soft);color:var(--amber-ink);border-radius:12px;padding:8px 14px;font-weight:700;font-size:12.5px;display:flex;align-items:center;gap:10px}
 .banner[hidden]{display:none}
 .ev.fixed.tent{opacity:.7}
@@ -263,8 +266,18 @@ function build(cols){
   projects=Object.entries(cols.projects||{}).map(([id,p])=>Object.assign({id},p));
   const cutoff=ymd(addDays(TODAY,-30));
   const custName=t=>{const p=t.projectId&&projects.find(x=>x.id===t.projectId);const c=customers.find(x=>x.id===(t.customerId||(p&&p.customerId)));return c?c.name:(p?(p.customer||p.name):(t.hospital&&t.hospital!=="General"?t.hospital:"General"))};
-  const prev=new Map(tasks.map(t=>[t.id,t]));
   tasks=[];
+  Object.entries(cols.tickets||{}).forEach(([id,d])=>{
+    const closed=d.status==="closed";
+    if(!closed&&d.status!=="new"&&d.status!=="hci")return;   // waiting on the customer stays in the Help Desk
+    const pr=projects.find(x=>x.id===d.projectId),cu=pr&&customers.find(x=>x.id===pr.customerId),own=team.find(m=>m.name===d.owner);
+    let sched=d.plan&&d.plan.day?{day:d.plan.day,start:d.plan.start==null?null:d.plan.start}:null;
+    if(closed&&!sched){const day=localDay(d.closedAt||d.updatedAt);if(day&&day>=cutoff)sched={day,start:null,derived:true}}
+    if(closed&&!sched)return;
+    tasks.push({id:"T:"+id,rid:id,kind:"ticket",sev:d.severity||"normal",tstatus:d.status,room:d.roomOrDevice||"",by:d.openedBy||"",channel:d.channel||"",number:d.number,raw:d.title||"",
+      title:"HD-"+(d.number||"")+" "+(d.title||"Ticket"),cust:cu?cu.name:(pr?(pr.customer||pr.name):"General"),who:own?own.id:"",due:d.dueAt?localDay(d.dueAt):null,
+      dur:Number(d.planDur)||30,done:closed,sched,week:(!sched&&d.plan&&d.plan.week)||null,note:"",customerId:"",projectId:d.projectId||"",created:d.createdAt||"",source:""});
+  });
   Object.entries(cols.tasks||{}).forEach(([id,d])=>{
     if((d.party||"hci")!=="hci")return;
     const done=d.status==="done";
@@ -284,12 +297,27 @@ async function load(first){
 const doc=(t)=>({title:t.title,note:t.note||"",due:t.due||"",customerId:t.customerId||"",projectId:t.projectId||"",hospital:t.cust&&t.cust!=="General"?t.cust:"General",owner:t.who?P(t.who).name:"",plan:t.sched?{day:t.sched.day,start:t.sched.start}:t.week?{week:t.week}:null,planDur:t.dur,status:t.done?"done":"open",updatedAt:new Date().toISOString()});
 let saving=0;
 async function persist(t,only){
+  if(t.kind==="ticket")return persistTicket(t,only);
   saving++;
   try{const d=doc(t);const body=only?Object.fromEntries(only.map(k=>[k,d[k]])):d;if(!only||only.includes("status")||only.includes("plan"))body.updatedAt=d.updatedAt;await api("PATCH","/api/tasks/"+encodeURIComponent(t.id),body)}
   catch(e){toast("That change was not saved ("+e.message+")")}
   finally{saving--}
 }
 
+async function persistTicket(t,only){
+  saving++;
+  try{
+    const all=!only,b={};
+    if(all||only.includes("owner"))b.owner=t.who?P(t.who).name:"";
+    if(all||only.includes("plan")){b.plan=t.sched?{day:t.sched.day,start:t.sched.start}:t.week?{week:t.week}:null}
+    if(all||only.includes("planDur"))b.planDur=t.dur;
+    if(all||only.includes("status"))b.status=t.done?"closed":"hci";
+    if(all&&t.raw)b.title=t.raw;
+    await api("POST","/api/helpdesk/tickets/"+encodeURIComponent(t.rid)+"/update",b);
+  }catch(e){toast("That change was not saved ("+e.message+")")}
+  finally{saving--}
+}
+const tcls=t=>t.kind==="ticket"?"ticket"+(t.sev==="critical"?" crit":""):"";
 /* ---------- calendar (Outlook) ---------- */
 function ingest(people){
   Object.entries(people||{}).forEach(([pid,r])=>{
@@ -370,15 +398,16 @@ const meetMin=k=>scopeIds().reduce((a,w)=>a+((evByDay[k]||{})[w]||[]).reduce((x,
 function renderBacklog(){
   let list=tasks.filter(t=>!t.sched&&!t.week&&!t.done&&vis(t));
   const all=list.length;
+  if(S.filter==="tix") list=list.filter(t=>t.kind==="ticket");
   if(S.filter==="due") list=list.filter(t=>t.due&&t.due<=ymd(addDays(S.week,4)));
   if(S.filter==="none") list=list.filter(t=>!t.due);
   list.sort((a,b)=>(a.due||"9999").localeCompare(b.due||"9999"));
   $("#bn").textContent=all;
-  $("#chips").innerHTML=[["all","All"],["due","Due this week"],["none","No due date"]].map(([k,l])=>`<button class="chip ${S.filter===k?"on":""}" data-f="${k}">${l}</button>`).join("");
+  $("#chips").innerHTML=[["all","All"],["tix","Tickets"],["due","Due this week"],["none","No due date"]].map(([k,l])=>`<button class="chip ${S.filter===k?"on":""}" data-f="${k}">${l}</button>`).join("");
   const opts=id=>[UNASSIGNED].concat(PEOPLE).map(p=>`<option value="${esc(p.id)}" ${p.id===id?"selected":""}>${esc(p.name)}</option>`).join("");
   $("#list").innerHTML=list.length?list.map(t=>{
     const [c,cs]=colorOf(t.cust),di=dueInfo(t);
-    return `<div class="tk" draggable="true" data-id="${esc(t.id)}" style="--cc:var(${c});--cs:var(${cs})">
+    return `<div class="tk ${tcls(t)}" draggable="true" data-id="${esc(t.id)}" style="--cc:var(${c});--cs:var(${cs})">
       <div class="t">${esc(t.title)}</div>
       <div class="m"><span class="cust">${esc(t.cust)}</span><span class="due ${di.over?"over":""}">${di.txt}</span></div>
       <div class="m2"><span class="av" style="--pc:${P(t.who).color}">${esc(P(t.who).ini)}</span>
@@ -425,7 +454,7 @@ function renderCal(){
     const k=ymd(d),items=tasks.filter(t=>t.sched&&t.sched.day===k&&t.sched.start==null&&vis(t));
     ln+=`<div class="ln ${isPast(k)?"past":""}" data-lane="${k}">${items.length?items.map(t=>{
       const [c,cs]=colorOf(t.cust);
-      return `<div class="chp ${t.done?"done":""} ${missed(t)?"missed":""}" draggable="true" data-id="${esc(t.id)}" style="--cc:var(${c});--cs:var(${cs})" title="${esc(t.title)}, ${esc(t.cust)}, ${fmtD(t.dur)}">
+      return `<div class="chp ${t.done?"done":""} ${missed(t)?"missed":""} ${tcls(t)}" draggable="true" data-id="${esc(t.id)}" style="--cc:var(${c});--cs:var(${cs})" title="${esc(t.title)}, ${esc(t.cust)}, ${fmtD(t.dur)}">
         <button class="ck" data-ck="${esc(t.id)}" aria-label="Mark done">${t.done?"&#10003;":""}</button><span class="tt">${esc(t.title)}</span><span class="du">${fmtD(t.dur)}</span>${av(t.who)}
         <button class="x" data-un="${esc(t.id)}" title="Move back to the list" aria-label="Unschedule">&times;</button></div>`}).join(""):`<div class="ph">${isPast(k)?"Nothing here":"Drop here for this day, any time"}</div>`}</div>`;
   });
@@ -433,7 +462,7 @@ function renderCal(){
   const wk=ymd(mondayOf(days[0])),wt=tasks.filter(t=>t.week===wk&&!t.sched&&vis(t));
   const wlEl=$("#wlane");
   wlEl.innerHTML=`<div class="lh">${wk===ymd(mondayOf(TODAY))?"This<br>week":wk===nextWk()?"Next<br>week":"This<br>week"}</div><div class="wl" data-wk="${wk}">${wt.length?wt.map(t=>{const [c,cs]=colorOf(t.cust);
-    return `<div class="chp ${t.done?"done":""} ${missed(t)?"missed":""}" draggable="true" data-id="${esc(t.id)}" style="--cc:var(${c});--cs:var(${cs})" title="${esc(t.title)}, ${esc(t.cust)}, ${fmtD(t.dur)}"><button class="ck" data-ck="${esc(t.id)}" aria-label="Mark done">${t.done?"&#10003;":""}</button><span class="tt">${esc(t.title)}</span><span class="du">${fmtD(t.dur)}</span>${av(t.who)}<button class="x" data-un="${esc(t.id)}" title="Move back to the list" aria-label="Unschedule">&times;</button></div>`}).join(""):`<div class="ph">Drop here for sometime this week, no day yet</div>`}</div>`;
+    return `<div class="chp ${t.done?"done":""} ${missed(t)?"missed":""} ${tcls(t)}" draggable="true" data-id="${esc(t.id)}" style="--cc:var(${c});--cs:var(${cs})" title="${esc(t.title)}, ${esc(t.cust)}, ${fmtD(t.dur)}"><button class="ck" data-ck="${esc(t.id)}" aria-label="Mark done">${t.done?"&#10003;":""}</button><span class="tt">${esc(t.title)}</span><span class="du">${fmtD(t.dur)}</span>${av(t.who)}<button class="x" data-un="${esc(t.id)}" title="Move back to the list" aria-label="Unschedule">&times;</button></div>`}).join(""):`<div class="ph">Drop here for sometime this week, no day yet</div>`}</div>`;
 
   let body=`<div class="hours">${Array.from({length:(END-START)/60},(_,i)=>`<div>${fmtT(START+i*60).replace(":00","")}</div>`).join("")}</div>`;
   days.forEach(d=>{
@@ -448,7 +477,7 @@ function renderCal(){
     const timed=tasks.filter(t=>t.sched&&t.sched.day===k&&t.sched.start!=null&&vis(t)),lay=layout(timed,t=>t.sched.start,t=>t.dur);
     timed.forEach(t=>{
       const [c,cs]=colorOf(t.cust),h=t.dur/60*HH-2,L=lay.get(t);
-      body+=`<div class="ev task ${t.done?"done":""} ${missed(t)?"missed":""} ${h<40?"short":""} ${L.n>1?"narrow":""}" draggable="true" data-id="${esc(t.id)}" title="${esc(t.title)}, ${esc(t.cust)}, for ${esc(P(t.who).name)}, ${fmtD(t.dur)}"
+      body+=`<div class="ev task ${tcls(t)} ${t.done?"done":""} ${missed(t)?"missed":""} ${h<40?"short":""} ${L.n>1?"narrow":""}" draggable="true" data-id="${esc(t.id)}" title="${esc(t.title)}, ${esc(t.cust)}, for ${esc(P(t.who).name)}, ${fmtD(t.dur)}"
         style="--cc:var(${c});--cs:var(${cs});top:${(t.sched.start-START)/60*HH}px;height:${h}px;right:auto;left:calc(3px + (100% - 6px) * ${L.lane} / ${L.n});width:calc((100% - 6px) / ${L.n} - 2px)">
         <button class="x" data-un="${esc(t.id)}" title="Move back to the list" aria-label="Unschedule">&times;</button>
         <div class="et"><button class="ck" data-ck="${esc(t.id)}" aria-label="Mark done">${t.done?"&#10003;":""}</button><span>${esc(t.title)}</span>${av(t.who)}</div>
@@ -537,7 +566,7 @@ document.addEventListener("drop",e=>{
 });
 document.addEventListener("click",e=>{
   const g=a=>e.target.closest("["+a+"]");let el;
-  if((el=g("data-ck"))){const t=byId(el.dataset.ck);if(!t)return;t.done=!t.done;if(t.done&&!t.sched)t.sched={day:ymd(TODAY),start:null,derived:true};render();persist(t,["status","plan"]);return}
+  if((el=g("data-ck"))){const t=byId(el.dataset.ck);if(!t)return;if(t.kind==="ticket"){openTask(t.id);return}t.done=!t.done;if(t.done&&!t.sched)t.sched={day:ymd(TODAY),start:null,derived:true};render();persist(t,["status","plan"]);return}
   if((el=g("data-un"))){const t=byId(el.dataset.un);if(!t)return;t.sched=null;t.week=null;render();persist(t,["plan"]);return}
   if((el=g("data-who"))){const t=byId(el.closest("[data-id]").dataset.id);if(!t)return;
     const ids=[""].concat(PEOPLE.map(p=>p.id)),i=ids.indexOf(t.who);t.who=ids[(i+1)%ids.length];
@@ -610,6 +639,19 @@ function openTask(id){
   const t=byId(id);if(!t)return;openId=id;delArm=false;
   const dlg=$("#tdlg"),sc=t.sched,p=projects.find(x=>x.id===t.projectId);
   const people=[UNASSIGNED].concat(PEOPLE);
+  if(t.kind==="ticket"){
+    const people=[UNASSIGNED].concat(PEOPLE);
+    dlg.querySelector(".box").innerHTML=`<h2>Ticket HD-${esc(t.number)}</h2>
+     <div class="tinfo"><b>${esc(t.raw)}</b><br><span class="sub">${esc(t.cust)} &middot; ${esc(t.sev)} &middot; ${esc(t.tstatus==="closed"?"closed":t.tstatus==="new"?"new":"with HCI")}${t.room?" &middot; "+esc(t.room):""}${t.by?" &middot; opened by "+esc(t.by):""}${t.due?" &middot; target "+esc(t.due):""}</span></div>
+     <div class="g2"><label class="fl">For<select id="td_who">${people.map(x=>`<option value="${esc(x.id)}" ${x.id===t.who?"selected":""}>${esc(x.name)}</option>`).join("")}</select></label>
+     <label class="fl">Time needed<select id="td_dur">${[15,30,45,60,90,120,180,240].map(m=>`<option value="${m}" ${m===t.dur?"selected":""}>${fmtD(m)}</option>`).join("")}</select></label></div>
+     <div class="g2"><label class="fl">Day<input id="td_day" type="date" value="${sc?esc(sc.day):""}"></label>
+     <label class="fl">Start<select id="td_start">${timeOpts(sc&&sc.start!=null?sc.start:null)}</select></label></div>
+     <label class="fl chk"><input id="td_done" type="checkbox" ${t.done?"checked":""}> Close this ticket${t.channel==="sms"?" (texts the customer that it is closed)":""}</label>
+     <div class="sub">Replies and details are in the Help Desk tab.</div>
+     <div class="acts">${sc||t.week?'<button class="btn sm" id="tdoff">Take off calendar</button>':""}<span style="flex:1"></span><button class="btn sm" id="tdcancel">Cancel</button><button class="btn sm go" id="tdsave">Save</button></div>`;
+    dlg.hidden=false;return;
+  }
   dlg.querySelector(".box").innerHTML=`<h2>Task details</h2>
    <label class="fl">Task<input id="td_title" value="${esc(t.title)}"></label>
    <div class="g2"><label class="fl">Customer<select id="td_cust"><option value="">No customer</option>${customers.slice().sort((a,b)=>String(a.name).localeCompare(String(b.name))).map(c=>`<option value="${esc(c.id)}" ${c.id===t.customerId||(!t.customerId&&c.name===t.cust)?"selected":""}>${esc(c.name)}</option>`).join("")}</select></label>
@@ -627,6 +669,16 @@ function openTask(id){
 function closeTask(){openId=null;delArm=false;$("#tdlg").hidden=true}
 async function saveTask(){
   const t=byId(openId);if(!t)return closeTask();
+  if(t.kind==="ticket"){
+    const day=$("#td_day").value,st=$("#td_start").value===""?null:+$("#td_start").value,dur=+$("#td_dur").value,who=$("#td_who").value,done=$("#td_done").checked;
+    t.dur=dur;t.who=who;t.done=done;
+    if(day){
+      if(isPast(day)&&!t.done&&!(t.sched&&t.sched.day===day)){toast("That day has passed. Pick today or later.");return}
+      if(st!=null){const ok=fit(day,st,dur,t.id,who);if(ok!==st){toast(ok==null?"No room that day at that time. Choose Any time.":"Busy then. Next free start is "+fmtT(ok)+".");$("#td_start").value=ok==null?"":ok;return}}
+      t.sched={day,start:st};t.week=null;
+    }else if(t.sched){t.sched=null}
+    closeTask();render();await persist(t);return;
+  }
   const title=$("#td_title").value.trim();if(!title){toast("Give the task a name");return}
   const cid=$("#td_cust").value,c=customers.find(x=>x.id===cid);
   const day=$("#td_day").value,st=$("#td_start").value===""?null:+$("#td_start").value,dur=+$("#td_dur").value,who=$("#td_who").value;

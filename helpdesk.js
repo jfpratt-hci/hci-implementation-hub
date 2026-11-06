@@ -140,6 +140,14 @@ module.exports = function ({ store, bump, audit }) {
     if (TARGET_HOURS[b.severity]) { patch.severity = b.severity; if (b.severity !== t.severity) patch.dueAt = dueFrom(b.severity, t.createdAt); }
     if (typeof b.owner === "string") patch.owner = b.owner.slice(0, 80);
     if (typeof b.title === "string" && b.title.trim()) patch.title = scrub(b.title).text.slice(0, 140);
+    // Plan tab: when a ticket is laid out on the calendar. { day, start } or { week } or null.
+    if (b.plan === null) patch.plan = null;
+    else if (b.plan && typeof b.plan === "object") {
+      const ymd = /^\d{4}-\d\d-\d\d$/;
+      if (ymd.test(String(b.plan.day || ""))) patch.plan = { day: b.plan.day, start: Number.isInteger(b.plan.start) ? b.plan.start : null };
+      else if (ymd.test(String(b.plan.week || ""))) patch.plan = { week: b.plan.week };
+    }
+    if (Number.isInteger(b.planDur) && b.planDur >= 15 && b.planDur <= 480) patch.planDur = b.planDur;
     if (patch.status === "closed" && t.status !== "closed") patch.closedAt = nowIso();
     if (patch.status && patch.status !== "closed") patch.closedAt = "";
     const after = updateTicket(req, id, patch);
