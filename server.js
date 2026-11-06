@@ -236,6 +236,7 @@ app.get("/_design/:id", (req, res) => {
 // SharePoint documents for each project (see files.js)
 const filesApi = require("./files")({ store, bump });
 app.use("/api/files", filesApi);
+app.use("/api/calendar", require("./calendar")({ store }));
 app.use("/api/helpdesk", helpdesk.router);
 // Files attached to tasks. Any type, stored under uploads/taskfiles, served as a download only.
 const TASKFILE_DIR = path.join(UPLOAD_DIR, "taskfiles");

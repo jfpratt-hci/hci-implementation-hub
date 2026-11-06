@@ -1,0 +1,623 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Plan</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+:root{
+  --bg:#F4F1EC;--card:#FFFFFF;--soft:#F7F5F0;--line:#E6E1D8;--pill:#F1EEE7;--ink:#141414;--muted:#7A766F;--muted2:#A39E95;
+  --green:#19B34A;--green-deep:#0F7A33;--green-ink:#FFFFFF;--chip-pos:#DCEFE3;--chip-pos-ink:#0D3D26;
+  --warn:#C4211B;--warn-soft:#FFE1DF;--amber-soft:#FFF1B8;--amber-ink:#5C4700;--focus:#F5C400;
+  --c1:#2F6DF6;--c2:#6D4FD8;--c3:#D9822B;--c4:#0F9D8A;--c5:#C2417A;--c6:#6B7280;
+  --c1s:#DFE8FF;--c2s:#E9E3FB;--c3s:#FBE8D2;--c4s:#D6F1EC;--c5s:#FADDEA;--c6s:#E6E8EC;
+  --shadow:0 8px 24px rgba(20,20,20,.06);
+  --font:"Montserrat",system-ui,-apple-system,"Segoe UI",sans-serif;--mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+  --hh:66px;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  color-scheme:dark;--bg:#0F1117;--card:#171A22;--soft:#1D212B;--line:#2A2F3A;--pill:#222632;--ink:#F3F1EC;--muted:#A09B92;--muted2:#6F6B64;
+  --green:#19B34A;--green-deep:#2FD163;--green-ink:#04210D;--chip-pos:#163D2A;--chip-pos-ink:#9EE2B8;
+  --warn:#FF5A52;--warn-soft:#4A1512;--amber-soft:#4A3D07;--amber-ink:#FFE27A;--focus:#FFD21F;
+  --c1:#5B8CFF;--c2:#9C86F0;--c3:#F0A25A;--c4:#43CDB8;--c5:#EC7FAD;--c6:#A3A8B3;
+  --c1s:#1B2A55;--c2s:#2B2350;--c3s:#4A2F12;--c4s:#10403A;--c5s:#4A1E33;--c6s:#2A2E36;--shadow:0 8px 24px rgba(0,0,0,.35)}}
+*{box-sizing:border-box;margin:0}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--font);font-size:13px;line-height:1.4;font-weight:600;-webkit-font-smoothing:antialiased;
+  padding-inline:max(16px,env(safe-area-inset-left,0px)) max(16px,env(safe-area-inset-right,0px));padding-block:14px;overflow:hidden}
+button,select,input{font:inherit;color:inherit}
+button{cursor:pointer}
+.app{height:100%;display:grid;grid-template-rows:auto auto 1fr;gap:12px;min-height:0}
+/* top bar */
+.top{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.logo{width:34px;height:34px;border-radius:10px;background:var(--green);display:grid;place-items:center;color:var(--green-ink);font-weight:800;font-size:17px}
+.top h1{font-size:19px;font-weight:800;letter-spacing:.005em}
+.sub{color:var(--muted);font-size:12px;font-weight:600}
+.sp{flex:1}
+.seg{display:inline-flex;background:var(--pill);border-radius:999px;padding:3px}
+.seg button{border:0;background:transparent;padding:6px 14px;border-radius:999px;font-weight:700;color:var(--muted)}
+.seg button.on{background:var(--card);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.btn{border:1px solid var(--line);background:var(--card);padding:7px 13px;border-radius:999px;font-weight:700}
+.btn:hover{background:var(--soft)}
+.btn.go{background:var(--green);border-color:var(--green);color:var(--green-ink)}
+.btn.go:hover{filter:brightness(1.06)}
+.btn.sm{padding:4px 10px;font-size:12px}
+.nav{display:flex;align-items:center;gap:6px}
+.nav .lbl{min-width:150px;text-align:center;font-weight:800;font-size:14px}
+:focus-visible{outline:3px solid var(--focus);outline-offset:1px}
+/* main grid */
+.main{display:grid;grid-template-columns:292px minmax(0,1fr) 276px;gap:12px;min-height:0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);min-height:0;display:flex;flex-direction:column}
+.card-h{display:flex;align-items:center;gap:8px;padding:12px 14px 8px}
+.label{font-size:12px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:var(--green-deep)}
+.n{background:var(--pill);border-radius:999px;padding:1px 8px;font-size:11px;color:var(--muted);margin-left:4px;letter-spacing:0}
+/* people */
+.whowrap{display:inline-flex;align-items:center;gap:7px;color:var(--muted);font-weight:700;font-size:12px}
+.whowrap select,.add select{border:1px solid var(--line);background:var(--card);border-radius:999px;padding:6px 10px;font-weight:700;color:var(--ink)}
+.add select{padding:6px 6px;max-width:74px}.add #addc{max-width:92px}
+.av{flex:none;width:20px;height:20px;border-radius:50%;display:inline-grid;place-items:center;font-size:9px;font-weight:800;color:#fff;background:var(--pc);letter-spacing:0;border:0;padding:0;line-height:1}
+button.av{cursor:pointer}button.av:hover{outline:2px solid var(--focus)}
+.tk .m2{display:flex;align-items:center;gap:6px;margin-top:6px}
+.tk .m2 select{margin-left:0;border:1px solid var(--line);background:var(--card);border-radius:8px;padding:2px 4px;font-size:11px;font-weight:700}
+.tk .m2 select[data-whosel]{flex:1;min-width:0}
+.lane{display:grid;grid-template-columns:46px repeat(var(--cols),minmax(0,1fr));border-bottom:1px solid var(--line);background:var(--soft)}
+.lane .lh{font-size:9.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:8px 6px 0 0;text-align:right;line-height:1.2}
+.lane .ln{border-left:1px solid var(--line);padding:5px;min-height:44px;max-height:112px;overflow:auto;display:flex;flex-direction:column;gap:4px}
+.lane .ln.drop{background:var(--chip-pos)}
+.lane .ph{color:var(--muted2);font-size:11px;font-weight:600;padding:4px 2px}
+.chp{display:flex;align-items:center;gap:6px;background:var(--cs);border:1px solid color-mix(in srgb,var(--cc) 45%,transparent);border-left:5px solid var(--cc);border-radius:9px;padding:3px 6px;font-size:11.5px;font-weight:700;cursor:grab;position:relative}
+.chp .tt{flex:1;min-width:0;line-height:1.25;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.chp:hover .x{display:block}
+.chp .du{display:none}
+.chp .ck{flex:none;width:15px;height:15px;border-radius:5px;border:2px solid var(--cc);background:var(--card);display:grid;place-items:center;font-size:10px;line-height:1;padding:0;color:var(--card)}
+.chp.done .ck{background:var(--cc)}.chp.done{opacity:.55}.chp.done .tt{text-decoration:line-through}
+.chp .x{display:none;position:absolute;right:30px;top:2px;border:0;background:var(--card);border-radius:6px;color:var(--muted);font-size:13px;line-height:1;padding:0 4px}
+.chp.ghost{opacity:.4}
+.ev .et .av{margin-left:auto;width:18px;height:18px;font-size:8.5px}
+.ev.task.narrow{padding:4px 5px 4px 6px}.ev.task.narrow .ck{display:none}.ev.task.narrow .et span{display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden;white-space:normal;font-size:11px}.ev.task.narrow .et .av{position:absolute;right:3px;bottom:9px;margin:0}
+.ev.task .x{right:26px}
+.who{display:flex;align-items:center;gap:8px;padding:3px 0;font-size:12.5px}
+.who .wn{width:44px;font-weight:700}
+.who .wb{flex:1;height:8px;border-radius:8px;background:var(--pill);overflow:hidden}
+.who .wb i{display:block;height:100%}
+.who .wh{width:44px;text-align:right;font-family:var(--mono);font-size:11px;color:var(--muted)}
+
+.wkpill{margin-left:6px;background:var(--chip-pos);color:var(--chip-pos-ink);border-radius:999px;padding:3px 10px;font-size:11.5px;font-weight:800;white-space:nowrap}
+.dh .cnt{margin-top:3px;font-size:10.5px;color:var(--muted);font-weight:700}
+.dh.past .dd,.dh.past .dw{color:var(--muted2)}
+.dh.past.sel .dd{color:var(--chip-pos-ink)}
+.col.past,.ln.past{background-color:color-mix(in srgb,var(--soft) 80%,transparent)}
+.col.past .ev.task.done,.ln.past .chp.done{opacity:.9}
+.col.past .ev.task.done .et span,.ln.past .chp.done .tt{text-decoration:none}
+.ev.task.done .ck,.chp.done .ck{background:var(--green);border-color:var(--green);color:#fff}
+.ev.task.missed,.chp.missed{border-color:var(--warn);box-shadow:0 0 0 1px var(--warn)}
+.row.done2{align-items:flex-start;gap:8px}.row.done2 .ok{flex:none;width:16px;height:16px;border-radius:5px;background:var(--green);color:#fff;font-size:10px;display:grid;place-items:center;margin-top:2px}
+.warnbox.miss{background:var(--warn-soft);color:var(--warn)}
+/* backlog */
+.add{display:flex;flex-wrap:wrap;gap:6px;padding:0 14px 8px}.add input{flex:1 1 100%!important}.add #addc{flex:1.4 1 0}.add select{flex:1 1 0;min-width:0;max-width:none!important}.add .btn{flex:none}
+.add input{flex:1;min-width:0;border:1px solid var(--line);background:var(--soft);border-radius:999px;padding:7px 12px;font-weight:600}
+.chips{display:flex;gap:6px;padding:0 14px 8px;flex-wrap:wrap}
+.chip{border:1px solid var(--line);background:transparent;border-radius:999px;padding:3px 10px;font-size:11.5px;font-weight:700;color:var(--muted)}
+.chip.on{background:var(--ink);color:var(--card);border-color:var(--ink)}
+.list{overflow:auto;padding:0 10px 10px;display:flex;flex-direction:column;gap:7px;min-height:0;flex:1}
+.tk{background:var(--soft);border:1px solid var(--line);border-left:5px solid var(--cc);border-radius:12px;padding:8px 10px;cursor:grab}
+.tk:active{cursor:grabbing}
+.tk .t{font-weight:700;font-size:12.5px;line-height:1.3}
+.tk .m{display:flex;align-items:center;gap:6px;margin-top:5px;flex-wrap:wrap;font-size:11px;color:var(--muted)}
+.cust{background:var(--cs);color:var(--cc);border-radius:999px;padding:1px 8px;font-weight:800;font-size:10.5px}
+.due{font-weight:700}.due.over{color:var(--warn)}
+.hint{padding:8px 14px 12px;color:var(--muted);font-size:11.5px;border-top:1px solid var(--line)}
+.empty{color:var(--muted);padding:14px;text-align:center;font-size:12px}
+/* calendar */
+.cal{overflow:hidden}
+.calhead{display:grid;grid-template-columns:46px repeat(var(--cols),minmax(0,1fr));border-bottom:1px solid var(--line)}
+.dh{padding:9px 8px 7px;text-align:left;border:0;background:transparent;border-left:1px solid var(--line);position:relative}
+.dh .dw{font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);font-weight:800}
+.dh .dd{font-size:18px;font-weight:800;line-height:1.1}
+.dh .cap{margin-top:5px;height:5px;border-radius:5px;background:var(--pill);overflow:hidden}
+.dh .cap i{display:block;height:100%;background:var(--green)}
+.dh .cap.full i{background:var(--warn)}
+.dh.sel{background:var(--chip-pos)}
+.dh.sel .dd{color:var(--chip-pos-ink)}
+.dh .tag{position:absolute;right:8px;top:9px;font-size:10px;background:var(--green);color:var(--green-ink);border-radius:999px;padding:1px 7px;font-weight:800}
+.calbody{padding-top:9px;display:grid;grid-template-columns:46px repeat(var(--cols),minmax(0,1fr));overflow:auto;flex:1;min-height:0}
+.hours{position:relative}
+.hours div{height:var(--hh);font-size:10.5px;color:var(--muted2);text-align:right;padding-right:7px;transform:translateY(-7px);font-family:var(--mono)}
+.col{position:relative;border-left:1px solid var(--line);
+  background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(color-mix(in srgb,var(--line) 45%,transparent) 1px,transparent 1px);
+  background-size:100% var(--hh),100% calc(var(--hh)/2)}
+.col.drop{background-color:var(--chip-pos)}
+.col.off{background-color:color-mix(in srgb,var(--soft) 70%,transparent)}
+.ev{position:absolute;left:3px;right:3px;border-radius:9px;padding:4px 7px;overflow:hidden;font-size:11.5px;line-height:1.25}
+.ev.fixed{background:repeating-linear-gradient(135deg,var(--pill),var(--pill) 6px,var(--soft) 6px,var(--soft) 12px);border:1px solid var(--line);color:var(--muted);cursor:default}
+.ev.routine{background:var(--chip-pos);border:1px dashed var(--green-deep);color:var(--chip-pos-ink);cursor:default}
+.ev.task{background:var(--cs);border:1px solid color-mix(in srgb,var(--cc) 45%,transparent);border-left:5px solid var(--cc);color:var(--ink);cursor:grab;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+.ev.task.done{opacity:.55}.ev.task.done .et{text-decoration:line-through}
+.ev .et{font-weight:700;display:flex;gap:6px;align-items:flex-start}
+.ev .em{font-size:10.5px;color:var(--muted);font-weight:600;margin-top:1px}
+.ev.short .et span,.ev.fixed .et,.ev.routine .et{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ev.short{padding-top:3px}
+.ev .ck{flex:none;width:15px;height:15px;border-radius:5px;border:2px solid var(--cc);background:var(--card);display:grid;place-items:center;font-size:10px;line-height:1;padding:0;color:var(--card)}
+.ev.done .ck{background:var(--cc)}
+.ev .rs{position:absolute;left:0;right:0;bottom:0;height:7px;cursor:ns-resize}
+.ev .rs::after{content:"";position:absolute;left:50%;bottom:2px;width:22px;height:3px;border-radius:3px;margin-left:-11px;background:var(--cc);opacity:.45}
+.ev .x{position:absolute;right:4px;top:3px;border:0;background:transparent;color:var(--muted);font-size:13px;line-height:1;padding:0 3px;display:none}
+.ev.task:hover .x{display:block}
+.ev.ghost{opacity:.4}
+.now{position:absolute;left:0;right:0;height:2px;background:var(--warn);z-index:3}
+.now::before{content:"";position:absolute;left:-4px;top:-3px;width:8px;height:8px;border-radius:50%;background:var(--warn)}
+/* right panel */
+.side{overflow:auto}
+.big{padding:2px 14px 10px}
+.big .dt{font-size:20px;font-weight:800}
+.meter{height:10px;border-radius:10px;background:var(--pill);overflow:hidden;margin:9px 0 5px;display:flex}
+.meter i{display:block;height:100%}
+.legend{display:flex;gap:12px;color:var(--muted);font-size:11.5px;flex-wrap:wrap}
+.legend b{color:var(--ink)}
+.dot{display:inline-block;width:9px;height:9px;border-radius:3px;margin-right:4px;vertical-align:-1px}
+.sec{padding:10px 14px;border-top:1px solid var(--line)}
+.sec h3{font-size:11.5px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);margin-bottom:7px}
+.row{display:flex;gap:8px;align-items:baseline;padding:4px 0;font-size:12.5px}
+.row .tm{font-family:var(--mono);font-size:11px;color:var(--muted);flex:none;width:58px}
+.row.done .tx{text-decoration:line-through;color:var(--muted)}
+.warnbox{background:var(--amber-soft);color:var(--amber-ink);border-radius:12px;padding:8px 10px;font-size:12px;margin-top:2px}
+.warnbox b{display:block;margin-bottom:2px}
+.toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--ink);color:var(--card);padding:9px 16px;border-radius:999px;font-weight:700;opacity:0;transition:opacity .2s;pointer-events:none;z-index:9}
+.toast.on{opacity:1}
+.wlane{grid-template-columns:46px minmax(0,1fr)}.wlane .wl{display:flex;flex-wrap:wrap;gap:4px;padding:4px;min-height:34px;border-left:1px solid var(--line);align-content:flex-start}.wlane .wl .chp{flex:0 1 240px}.wlane .wl.drop{background:var(--chip-pos)}.wlane .wl .ph{align-self:center}.tk .nw{margin-left:auto;padding:2px 8px;font-size:11px}
+.banner{background:var(--amber-soft);color:var(--amber-ink);border-radius:12px;padding:8px 14px;font-weight:700;font-size:12.5px;display:flex;align-items:center;gap:10px}
+.banner[hidden]{display:none}
+.ev.fixed.tent{opacity:.7}
+.emdlg{position:fixed;inset:0;background:rgba(0,0,0,.4);display:grid;place-items:center;z-index:20}
+.emdlg[hidden]{display:none}
+.emdlg .box{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px;width:min(420px,92vw);display:grid;gap:12px;box-shadow:var(--shadow)}
+.emdlg h2{font-size:15px;font-weight:800}
+.emrow{display:grid;grid-template-columns:110px 1fr;gap:8px;align-items:center;font-weight:700}
+.emrow input{border:1px solid var(--line);background:var(--soft);border-radius:999px;padding:7px 12px;min-width:0}
+.emdlg .rows{display:grid;gap:8px}
+.emdlg .acts{display:flex;justify-content:flex-end;gap:8px}
+@media (max-width:1100px){.main{grid-template-columns:260px minmax(0,1fr)}.side{display:none}}
+@media (max-width:760px){body{overflow:auto}.main{grid-template-columns:1fr}.app{height:auto}.calbody{min-width:700px}.cal{overflow:auto}}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="top">
+    <div class="sub">Lay out the day for the team. Meetings come from Outlook.</div>
+    <div class="sp"></div>
+    <div class="seg" id="vseg"><button data-v="day">Day</button><button data-v="week" class="on">Week</button></div>
+    <div class="nav"><button class="btn sm" id="prev" aria-label="Previous">&lsaquo;</button><span class="lbl" id="range"></span><button class="btn sm" id="next" aria-label="Next">&rsaquo;</button><button class="btn sm" id="today">Today</button><span class="wkpill" id="wk"></span></div>
+    <label class="whowrap">Showing <select id="who" aria-label="Show whose tasks"></select></label>
+    <button class="btn go" id="auto">Auto plan by day</button>
+  </div>
+  <div class="banner" id="banner" hidden></div>
+  <div class="main">
+    <section class="card" aria-label="Tasks to schedule">
+      <div class="card-h"><span class="label">To schedule</span><span class="n" id="bn">0</span></div>
+      <form class="add" id="addf"><input id="addi" placeholder="Add a task" aria-label="Add a task"><select id="addc" aria-label="Customer"></select><select id="addw" aria-label="Who is it for"></select><button class="btn sm go" type="submit">Add</button></form>
+      <div class="chips" id="chips"></div>
+      <div class="list" id="list"></div>
+      <div class="hint">Drag a task onto the calendar. Drag a block to move it, pull its bottom edge to resize it.</div>
+    </section>
+    <section class="card cal" aria-label="Calendar">
+      <div class="calhead" id="calhead"></div>
+      <div class="lane" id="lane"></div>
+      <div class="lane wlane" id="wlane"></div>
+      <div class="calbody" id="calbody"></div>
+    </section>
+    <section class="card side" aria-label="Day summary">
+      <div class="card-h"><span class="label">Day plan</span></div>
+      <div id="side"></div>
+    </section>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+<div class="emdlg" id="emdlg" hidden><div class="box" role="dialog" aria-label="Outlook addresses"><h2>Outlook addresses</h2><div class="sub">Used only to read busy time from each person's calendar.</div><div class="rows"></div><div class="acts"><button class="btn sm" id="emcancel">Cancel</button><button class="btn sm go" id="emsave">Save</button></div></div></div>
+<script>
+(function(){
+"use strict";
+const START=7*60,END=18*60,HH=66,WORK_S=8*60,WORK_E=17*60;
+const PALETTE=["#0F7A33","#2F6DF6","#7A55E0","#C9701A","#0F9D8A","#C2417A","#6B7280"];
+const UNASSIGNED={id:"",name:"Unassigned",short:"Nobody",ini:"?",color:"#8A857C"};
+let PEOPLE=[];
+const P=id=>PEOPLE.find(p=>p.id===id)||UNASSIGNED;
+const ymd=d=>d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+const parse=s=>{const [y,m,d]=s.split("-").map(Number);return new Date(y,m-1,d)};
+const addDays=(d,n)=>{const x=new Date(d);x.setDate(x.getDate()+n);return x};
+const mondayOf=d=>{const x=new Date(d);const k=(x.getDay()+6)%7;x.setDate(x.getDate()-k);x.setHours(0,0,0,0);return x};
+const TODAY=(()=>{const d=new Date();d.setHours(0,0,0,0);return d})();
+const fmtT=m=>{const h=Math.floor(m/60),mm=m%60,ap=h>=12?"pm":"am";const h12=((h+11)%12)+1;return h12+(mm?":"+String(mm).padStart(2,"0"):"")+ap};
+const fmtD=m=>m%60===0?(m/60)+"h":m<60?m+"m":Math.floor(m/60)+"h "+(m%60)+"m";
+const esc=s=>String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const $=s=>document.querySelector(s);
+const av=(id)=>`<button type="button" class="av" data-who="${esc(id)}" style="--pc:${P(id).color}" title="For ${esc(P(id).name)}. Click to hand it to the next person." aria-label="For ${esc(P(id).name)}">${esc(P(id).ini)}</button>`;
+const avs=(id)=>`<span class="av" style="--pc:${P(id).color}" title="${esc(P(id).name)}">${esc(P(id).ini)}</span>`;
+
+/* ---------- data ---------- */
+let tasks=[],customers=[],projects=[],team=[],version=0,loaded=false;
+const events={};           // personId -> [{title,start:min,end:min,day}] keyed per day below
+let evByDay={};            // day -> personId -> [{title,s,e}]
+let calState={configured:null,errors:{}};
+const calLoaded={};        // week key -> true
+const api=async(method,url,body)=>{
+  const r=await fetch(url,{method,headers:body?{"Content-Type":"application/json"}:{},body:body?JSON.stringify(body):undefined,credentials:"same-origin"});
+  if(r.status===401){const j=await r.json().catch(()=>({}));if(j.login)top.location.href=j.login;throw new Error("Sign in")}
+  if(!r.ok){const j=await r.json().catch(()=>({}));throw new Error(j.error||("HTTP "+r.status))}
+  return r.json();
+};
+const localDay=iso=>{const d=new Date(iso);return isNaN(d)?"":ymd(d)};
+function build(cols){
+  team=Object.entries(cols.team||{}).map(([id,m])=>Object.assign({id},m));
+  PEOPLE=team.map((m,i)=>{const w=String(m.name||"?").split(/\s+/);return{id:m.id,name:m.name,email:m.email||"",short:w[0],ini:((w[0]||"?")[0]+((w[1]||"")[0]||"")).toUpperCase(),color:PALETTE[i%PALETTE.length]}});
+  customers=Object.entries(cols.customers||{}).map(([id,c])=>Object.assign({id},c));
+  projects=Object.entries(cols.projects||{}).map(([id,p])=>Object.assign({id},p));
+  const cutoff=ymd(addDays(TODAY,-30));
+  const custName=t=>{const p=t.projectId&&projects.find(x=>x.id===t.projectId);const c=customers.find(x=>x.id===(t.customerId||(p&&p.customerId)));return c?c.name:(p?(p.customer||p.name):(t.hospital&&t.hospital!=="General"?t.hospital:"General"))};
+  const prev=new Map(tasks.map(t=>[t.id,t]));
+  tasks=[];
+  Object.entries(cols.tasks||{}).forEach(([id,d])=>{
+    if((d.party||"hci")!=="hci")return;
+    const done=d.status==="done";
+    if(!done&&d.status!=="open"&&d.status)return;           // stuck tasks stay on the Board
+    const own=team.find(m=>m.name===d.owner);
+    let sched=d.plan&&d.plan.day?{day:d.plan.day,start:d.plan.start==null?null:d.plan.start}:null;
+    if(done&&!sched){const day=localDay(d.updatedAt);if(day&&day>=cutoff)sched={day,start:null,derived:true}}
+    if(done&&!sched)return;
+    tasks.push({id,title:d.title||"Untitled",cust:custName(d),who:own?own.id:"",due:d.due||null,dur:Number(d.planDur)||30,done,sched,week:(!sched&&d.plan&&d.plan.week)||null});
+  });
+}
+async function load(first){
+  const j=await api("GET","/api/all"+(version&&!first?"?since="+version:""));
+  if(j.unchanged)return false;
+  version=j.version;build(j.cols);loaded=true;return true;
+}
+const doc=(t)=>({owner:t.who?P(t.who).name:"",plan:t.sched?{day:t.sched.day,start:t.sched.start}:t.week?{week:t.week}:null,planDur:t.dur,status:t.done?"done":"open",updatedAt:new Date().toISOString()});
+let saving=0;
+async function persist(t,only){
+  saving++;
+  try{const d=doc(t);const body=only?Object.fromEntries(only.map(k=>[k,d[k]])):d;if(!only||only.includes("status")||only.includes("plan"))body.updatedAt=d.updatedAt;await api("PATCH","/api/tasks/"+encodeURIComponent(t.id),body)}
+  catch(e){toast("That change was not saved ("+e.message+")")}
+  finally{saving--}
+}
+
+/* ---------- calendar (Outlook) ---------- */
+function ingest(people){
+  Object.entries(people||{}).forEach(([pid,r])=>{
+    calState.errors[pid]=r.error||"";
+    (r.events||[]).forEach(ev=>{
+      const sd=ev.start.slice(0,10),ed=ev.end.slice(0,10);
+      const sm=(+ev.start.slice(11,13))*60+(+ev.start.slice(14,16)),em=(+ev.end.slice(11,13))*60+(+ev.end.slice(14,16));
+      for(let d=parse(sd);ymd(d)<=ed;d=addDays(d,1)){
+        const k=ymd(d),s=k===sd?sm:0,e=k===ed?em:1440;if(e<=s)continue;
+        ((evByDay[k]=evByDay[k]||{})[pid]=(evByDay[k][pid]||[])).push({title:ev.title,s,e,tentative:ev.tentative});
+      }
+    });
+  });
+}
+async function loadCal(force){
+  const days=visibleDays(),a=ymd(days[0]),b=ymd(days[days.length-1]),key=a+"|"+b;
+  if(calLoaded[key]&&!force)return;
+  calLoaded[key]=true;
+  try{
+    const j=await api("GET","/api/calendar?start="+a+"&end="+b);
+    calState.configured=j.configured;
+    for(let d=parse(a);ymd(d)<=b;d=addDays(d,1))delete evByDay[ymd(d)];
+    ingest(j.people);
+  }catch(e){calState.configured=calState.configured===null?false:calState.configured}
+  render();
+}
+const scopeIds=()=>S.who==="all"?PEOPLE.map(p=>p.id):[S.who];
+function dayEvents(key,ids){ // merged by title and time so a shared meeting shows once
+  const m=new Map();
+  (ids||scopeIds()).forEach(pid=>((evByDay[key]||{})[pid]||[]).forEach(e=>{
+    const k=e.title+"|"+e.s+"|"+e.e;if(!m.has(k))m.set(k,{title:e.title,start:e.s,dur:e.e-e.s,who:[],tentative:e.tentative});m.get(k).who.push(pid)}));
+  return [...m.values()].sort((a,b)=>a.start-b.start);
+}
+function busyFor(key,ignoreId,who){
+  const list=((evByDay[key]||{})[who]||[]).map(e=>[e.s,e.e]);
+  tasks.forEach(t=>{if(t.sched&&t.sched.day===key&&t.sched.start!=null&&t.id!==ignoreId&&t.who===who)list.push([t.sched.start,t.sched.start+t.dur])});
+  return list;
+}
+const free=(list,s,e)=>!list.some(([a,b])=>s<b&&e>a);
+function fit(key,want,dur,ignoreId,who){
+  const list=busyFor(key,ignoreId,who);
+  want=Math.max(START,Math.min(END-dur,Math.round(want/15)*15));
+  for(let s=want;s+dur<=END;s+=15) if(free(list,s,s+dur)) return s;
+  return null;
+}
+
+/* ---------- state ---------- */
+const S={view:"week",week:mondayOf(TODAY),sel:ymd(TODAY),filter:"all",who:"all"};
+if(TODAY.getDay()===0||TODAY.getDay()===6){S.week=mondayOf(addDays(TODAY,2));S.sel=ymd(S.week)}
+try{const w=localStorage.getItem("plan.who");if(w)S.who=w}catch(e){}
+const isPast=k=>k<ymd(TODAY);
+const wkKey=d=>ymd(mondayOf(d));
+const nextWk=()=>ymd(addDays(mondayOf(TODAY),7));
+const weekMissed=t=>!!(t.week&&!t.done&&t.week<ymd(mondayOf(TODAY)));
+const missed=t=>!!(t.sched&&!t.done&&t.sched.day<ymd(TODAY))||weekMissed(t);
+const vis=t=>S.who==="all"||t.who===S.who;
+const mult=()=>S.who==="all"?Math.max(1,PEOPLE.length):1;
+function toast(m){const t=$("#toast");t.textContent=m;t.classList.add("on");clearTimeout(toast.h);toast.h=setTimeout(()=>t.classList.remove("on"),2600)}
+const CPAL=[["--c1","--c1s"],["--c2","--c2s"],["--c3","--c3s"],["--c4","--c4s"],["--c5","--c5s"],["--c6","--c6s"]];
+const colorOf=c=>{let h=0;for(const ch of String(c||""))h=(h*31+ch.charCodeAt(0))>>>0;return CPAL[h%CPAL.length]};
+const dueInfo=t=>{
+  if(!t.due) return {txt:"No due date",over:false};
+  const d=parse(t.due),diff=Math.round((d-TODAY)/864e5);
+  const lbl=d.toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric"});
+  return {txt:(diff<0?"Overdue ":"Due ")+lbl,over:diff<=0};
+};
+function visibleDays(){return S.view==="day"?[parse(S.sel)]:[0,1,2,3,4].map(i=>addDays(S.week,i))}
+function baseAvail(k,who){
+  let a=WORK_E-WORK_S;
+  ((evByDay[k]||{})[who]||[]).forEach(e=>{const s=Math.max(e.s,WORK_S),en=Math.min(e.e,WORK_E);if(en>s)a-=en-s});
+  return Math.max(0,a);
+}
+const availMin=k=>scopeIds().reduce((a,w)=>a+baseAvail(k,w),0);
+const usedMin=k=>tasks.filter(t=>t.sched&&t.sched.day===k&&vis(t)).reduce((a,t)=>a+t.dur,0);
+const loadOf=(k,who)=>tasks.filter(t=>t.sched&&t.sched.day===k&&t.who===who).reduce((a,t)=>a+t.dur,0);
+const meetMin=k=>scopeIds().reduce((a,w)=>a+((evByDay[k]||{})[w]||[]).reduce((x,e)=>x+Math.max(0,Math.min(e.e,WORK_E)-Math.max(e.s,WORK_S)),0),0);
+
+function renderBacklog(){
+  let list=tasks.filter(t=>!t.sched&&!t.week&&!t.done&&vis(t));
+  const all=list.length;
+  if(S.filter==="due") list=list.filter(t=>t.due&&t.due<=ymd(addDays(S.week,4)));
+  if(S.filter==="none") list=list.filter(t=>!t.due);
+  list.sort((a,b)=>(a.due||"9999").localeCompare(b.due||"9999"));
+  $("#bn").textContent=all;
+  $("#chips").innerHTML=[["all","All"],["due","Due this week"],["none","No due date"]].map(([k,l])=>`<button class="chip ${S.filter===k?"on":""}" data-f="${k}">${l}</button>`).join("");
+  const opts=id=>[UNASSIGNED].concat(PEOPLE).map(p=>`<option value="${esc(p.id)}" ${p.id===id?"selected":""}>${esc(p.name)}</option>`).join("");
+  $("#list").innerHTML=list.length?list.map(t=>{
+    const [c,cs]=colorOf(t.cust),di=dueInfo(t);
+    return `<div class="tk" draggable="true" data-id="${esc(t.id)}" style="--cc:var(${c});--cs:var(${cs})">
+      <div class="t">${esc(t.title)}</div>
+      <div class="m"><span class="cust">${esc(t.cust)}</span><span class="due ${di.over?"over":""}">${di.txt}</span></div>
+      <div class="m2"><span class="av" style="--pc:${P(t.who).color}">${esc(P(t.who).ini)}</span>
+        <select data-whosel="${esc(t.id)}" aria-label="Who is it for">${opts(t.who)}</select>
+        <select data-dur="${esc(t.id)}" aria-label="Time needed">${[15,30,45,60,90,120,180].map(m=>`<option value="${m}" ${m===t.dur?"selected":""}>${fmtD(m)}</option>`).join("")}</select><button class="btn sm nw" data-nextwk="${esc(t.id)}" title="Do it sometime next week">Next week</button></div></div>`}).join(""):`<div class="empty">${loaded?"Nothing waiting. Add a task above.":"Loading tasks"}</div>`;
+}
+
+function layout(list,startOf,durOf){
+  const arr=list.slice().sort((a,b)=>startOf(a)-startOf(b)||String(a.id||a.title).localeCompare(String(b.id||b.title))),res=new Map();
+  let cluster=[],end=0,laneEnds=[];
+  const flush=()=>{const n=Math.max(...cluster.map(c=>c.lane+1));cluster.forEach(c=>res.set(c.t,{lane:c.lane,n}));cluster=[];laneEnds=[];end=0};
+  arr.forEach(t=>{
+    const s=startOf(t),e=s+durOf(t);
+    if(cluster.length&&s>=end) flush();
+    let l=laneEnds.findIndex(x=>x<=s);if(l<0){l=laneEnds.length;laneEnds.push(0)}
+    laneEnds[l]=e;cluster.push({t,lane:l});end=Math.max(end,e);
+  });
+  if(cluster.length) flush();
+  return res;
+}
+
+function renderCal(){
+  const days=visibleDays(),n=days.length;
+  document.documentElement.style.setProperty("--hh",HH+"px");
+  const wkS=days[0],wkE=days[n-1];
+  $("#range").textContent=S.view==="day"
+    ?days[0].toLocaleDateString("en-US",{weekday:"long",month:"short",day:"numeric"})
+    :wkS.toLocaleDateString("en-US",{month:"short",day:"numeric"})+" to "+wkE.toLocaleDateString("en-US",{month:"short",day:"numeric"});
+  let head=`<div></div>`;
+  days.forEach(d=>{
+    const k=ymd(d),used=usedMin(k),avail=availMin(k),pct=Math.min(100,avail?used/avail*100:0);
+    const dl=tasks.filter(t=>t.sched&&t.sched.day===k&&vis(t)),tot=dl.length,dn=dl.filter(t=>t.done).length;
+    head+=`<button class="dh ${k===S.sel?"sel":""} ${isPast(k)?"past":""}" data-sel="${k}"><div class="dw">${d.toLocaleDateString("en-US",{weekday:"short"})}</div><div class="dd">${d.getDate()}</div>
+      ${k===ymd(TODAY)?'<span class="tag">Today</span>':""}
+      ${tot?`<div class="cnt">${dn} of ${tot} done</div>`:`<div class="cnt">&nbsp;</div>`}
+      <div class="cap ${used>avail?"full":""}" title="${fmtD(used)} planned of ${fmtD(avail)} open"><i style="width:${pct}%"></i></div></button>`;
+  });
+  const wl=tasks.filter(t=>t.sched&&days.some(d=>ymd(d)===t.sched.day)&&vis(t));
+  $("#wk").textContent=wl.filter(t=>t.done).length+" of "+wl.length+" done";
+  $("#calhead").style.setProperty("--cols",n);$("#calhead").innerHTML=head;
+
+  let ln=`<div class="lh">Any<br>time</div>`;
+  days.forEach(d=>{
+    const k=ymd(d),items=tasks.filter(t=>t.sched&&t.sched.day===k&&t.sched.start==null&&vis(t));
+    ln+=`<div class="ln ${isPast(k)?"past":""}" data-lane="${k}">${items.length?items.map(t=>{
+      const [c,cs]=colorOf(t.cust);
+      return `<div class="chp ${t.done?"done":""} ${missed(t)?"missed":""}" draggable="true" data-id="${esc(t.id)}" style="--cc:var(${c});--cs:var(${cs})" title="${esc(t.title)}, ${esc(t.cust)}, ${fmtD(t.dur)}">
+        <button class="ck" data-ck="${esc(t.id)}" aria-label="Mark done">${t.done?"&#10003;":""}</button><span class="tt">${esc(t.title)}</span><span class="du">${fmtD(t.dur)}</span>${av(t.who)}
+        <button class="x" data-un="${esc(t.id)}" title="Move back to the list" aria-label="Unschedule">&times;</button></div>`}).join(""):`<div class="ph">${isPast(k)?"Nothing here":"Drop here for this day, any time"}</div>`}</div>`;
+  });
+  const lane=$("#lane");lane.style.setProperty("--cols",n);lane.innerHTML=ln;
+  const wk=ymd(mondayOf(days[0])),wt=tasks.filter(t=>t.week===wk&&!t.sched&&vis(t));
+  const wlEl=$("#wlane");
+  wlEl.innerHTML=`<div class="lh">${wk===ymd(mondayOf(TODAY))?"This<br>week":wk===nextWk()?"Next<br>week":"This<br>week"}</div><div class="wl" data-wk="${wk}">${wt.length?wt.map(t=>{const [c,cs]=colorOf(t.cust);
+    return `<div class="chp ${t.done?"done":""} ${missed(t)?"missed":""}" draggable="true" data-id="${esc(t.id)}" style="--cc:var(${c});--cs:var(${cs})" title="${esc(t.title)}, ${esc(t.cust)}, ${fmtD(t.dur)}"><button class="ck" data-ck="${esc(t.id)}" aria-label="Mark done">${t.done?"&#10003;":""}</button><span class="tt">${esc(t.title)}</span><span class="du">${fmtD(t.dur)}</span>${av(t.who)}<button class="x" data-un="${esc(t.id)}" title="Move back to the list" aria-label="Unschedule">&times;</button></div>`}).join(""):`<div class="ph">Drop here for sometime this week, no day yet</div>`}</div>`;
+
+  let body=`<div class="hours">${Array.from({length:(END-START)/60},(_,i)=>`<div>${fmtT(START+i*60).replace(":00","")}</div>`).join("")}</div>`;
+  days.forEach(d=>{
+    const k=ymd(d),wk=d.getDay()===0||d.getDay()===6;
+    body+=`<div class="col ${wk?"off":""} ${isPast(k)?"past":""}" data-day="${k}" style="height:${(END-START)/60*HH}px">`;
+    const evs=dayEvents(k).filter(e=>e.start+e.dur>START&&e.start<END),elay=layout(evs,e=>e.start,e=>e.dur);
+    evs.forEach(e=>{
+      const L=elay.get(e),top=(Math.max(e.start,START)-START)/60*HH,h=(Math.min(e.start+e.dur,END)-Math.max(e.start,START))/60*HH-2;
+      const names=e.who.length===PEOPLE.length&&PEOPLE.length>1?"Everyone":e.who.map(w=>P(w).short).join(", ");
+      body+=`<div class="ev fixed ${e.tentative?"tent":""}" title="${esc(e.title)}, ${fmtT(e.start)} to ${fmtT(e.start+e.dur)}, ${esc(names)}" style="top:${top}px;height:${Math.max(14,h)}px;left:calc(2px + (100% - 4px) * ${L.lane} / ${L.n});width:calc((100% - 4px) / ${L.n} - 2px);right:auto"><div class="et">${esc(e.title)}</div>${h>=40?`<div class="em">${fmtT(e.start)} to ${fmtT(e.start+e.dur)}${S.who==="all"?" &middot; "+esc(names):""}</div>`:""}</div>`;
+    });
+    const timed=tasks.filter(t=>t.sched&&t.sched.day===k&&t.sched.start!=null&&vis(t)),lay=layout(timed,t=>t.sched.start,t=>t.dur);
+    timed.forEach(t=>{
+      const [c,cs]=colorOf(t.cust),h=t.dur/60*HH-2,L=lay.get(t);
+      body+=`<div class="ev task ${t.done?"done":""} ${missed(t)?"missed":""} ${h<40?"short":""} ${L.n>1?"narrow":""}" draggable="true" data-id="${esc(t.id)}" title="${esc(t.title)}, ${esc(t.cust)}, for ${esc(P(t.who).name)}, ${fmtD(t.dur)}"
+        style="--cc:var(${c});--cs:var(${cs});top:${(t.sched.start-START)/60*HH}px;height:${h}px;right:auto;left:calc(3px + (100% - 6px) * ${L.lane} / ${L.n});width:calc((100% - 6px) / ${L.n} - 2px)">
+        <button class="x" data-un="${esc(t.id)}" title="Move back to the list" aria-label="Unschedule">&times;</button>
+        <div class="et"><button class="ck" data-ck="${esc(t.id)}" aria-label="Mark done">${t.done?"&#10003;":""}</button><span>${esc(t.title)}</span>${av(t.who)}</div>
+        ${h>44&&L.n===1?`<div class="em">${esc(t.cust)} &middot; ${fmtT(t.sched.start)} to ${fmtT(t.sched.start+t.dur)}</div>`:""}
+        <div class="rs" data-rs="${esc(t.id)}"></div></div>`;
+    });
+    if(k===ymd(TODAY)){const nw=new Date(),nm=nw.getHours()*60+nw.getMinutes();if(nm>=START&&nm<=END)body+=`<div class="now" style="top:${(nm-START)/60*HH}px"></div>`}
+    body+=`</div>`;
+  });
+  const cb=$("#calbody");cb.style.setProperty("--cols",n);cb.innerHTML=body;
+}
+
+function renderBanner(){
+  const b=$("#banner");let msg="";
+  const noMail=PEOPLE.filter(p=>!p.email);
+  const perm=Object.values(calState.errors).includes("permission");
+  if(calState.configured===false)msg="Outlook is not connected yet, so meetings are not shown. Plans still work.";
+  else if(perm)msg="Outlook says the Hub does not have calendar permission yet. An admin needs to grant Calendars.Read, then reload.";
+  else if(noMail.length&&calState.configured)msg="No Outlook address yet for "+noMail.map(p=>esc(p.short)).join(", ")+", so their meetings are not shown. <button class=\"btn sm\" data-emails=\"1\">Add addresses</button>";
+  b.hidden=!msg;b.innerHTML=msg;
+}
+
+function renderSide(){
+  const k=S.sel,d=parse(k),used=usedMin(k),avail=availMin(k);
+  const mtg=meetMin(k);
+  const total=(WORK_E-WORK_S)*mult(),freeT=Math.max(0,avail-used);
+  const pc=v=>Math.min(100,v/total*100);
+  const items=[
+    ...dayEvents(k).map(e=>({s:e.start,t:e.title,kind:"fixed",done:false,who:e.who})),
+    ...tasks.filter(t=>t.sched&&t.sched.day===k&&vis(t)).map(t=>({s:t.sched.start,t:t.title,kind:"task",done:t.done,cust:t.cust,who:[t.who]}))
+  ].sort((a,b)=>(a.s==null?9999:a.s)-(b.s==null?9999:b.s));
+  const unsched=tasks.filter(t=>!t.sched&&!t.done&&vis(t)&&t.due&&t.due<=k);
+  const people=(S.who==="all"?PEOPLE:[P(S.who)]);
+  const dayAll=tasks.filter(t=>t.sched&&t.sched.day===k&&vis(t)),doneL=dayAll.filter(t=>t.done);
+  const missL=tasks.filter(t=>missed(t)&&vis(t));
+  const wkT=tasks.filter(t=>t.week===ymd(mondayOf(d))&&!t.sched&&!t.done&&vis(t));
+  $("#side").innerHTML=`
+   <div class="big"><div class="dt">${d.toLocaleDateString("en-US",{weekday:"long"})}, ${d.toLocaleDateString("en-US",{month:"short",day:"numeric"})}</div>
+     <div class="sub" style="margin-top:1px">${S.who==="all"?"Whole team":esc(P(S.who).name)}</div>
+     <div class="meter" title="Work day 8am to 5pm"><i style="width:${pc(mtg)}%;background:var(--muted2)"></i><i style="width:${pc(used)}%;background:var(--green)"></i></div>
+     <div class="legend"><span><span class="dot" style="background:var(--muted2)"></span>Meetings <b>${fmtD(mtg)}</b></span><span><span class="dot" style="background:var(--green)"></span>Tasks <b>${fmtD(used)}</b></span></div>
+     <div class="legend" style="margin-top:6px"><span>Open time left <b>${fmtD(freeT)}</b></span></div></div>
+   ${unsched.length?`<div class="sec"><div class="warnbox"><b>${unsched.length} due by this day, not scheduled</b>${unsched.slice(0,3).map(t=>esc(t.title)+" ("+esc(P(t.who).short)+")").join("<br>")}</div></div>`:""}
+   ${wkT.length?`<div class="sec"><div class="warnbox"><b>${wkT.length} for this week, no day yet</b>${wkT.slice(0,4).map(t=>esc(t.title)+" ("+esc(P(t.who).short)+")").join("<br>")}</div></div>`:""}
+   ${missL.length&&!isPast(k)?`<div class="sec"><div class="warnbox miss"><b>${missL.length} missed from earlier days</b>${missL.slice(0,6).map(t=>esc(t.title)+" ("+esc(P(t.who).short)+")").join("<br>")}<button class="btn sm" data-roll="1" style="margin-top:7px">Move to today</button></div></div>`:""}
+   ${dayAll.length?`<div class="sec"><h3>Completed <span class="n" style="margin-left:4px">${doneL.length} of ${dayAll.length}</span></h3>${doneL.length?doneL.map(t=>`<div class="row done2"><span class="ok">&#10003;</span><span class="tx">${esc(t.title)}<br><span style="color:var(--muted);font-size:11px">${esc(t.cust)} &middot; ${esc(P(t.who).short)}${t.sched.start!=null?" &middot; "+fmtT(t.sched.start):""}</span></span></div>`).join(""):`<div class="empty" style="padding:4px 0;text-align:left">Nothing completed yet.</div>`}</div>`:""}
+   <div class="sec"><h3>Who has what</h3>${people.map(p=>{const l=loadOf(k,p.id),b=baseAvail(k,p.id);return `<div class="who"><span class="av" style="--pc:${p.color}">${esc(p.ini)}</span><span class="wn">${esc(p.short)}</span><span class="bar"><i style="width:${Math.min(100,b?l/b*100:0)}%;background:${p.color}"></i></span><span class="wv">${l?fmtD(l):"free"}</span></div>`}).join("")||'<div class="empty">No team yet.</div>'}</div>
+   <div class="sec"><h3>In order</h3>${items.length?items.map(i=>`<div class="row ${i.done?"done":""}"><span class="tm">${i.s==null?"Any time":fmtT(i.s)}</span><span class="tx">${esc(i.t)}${i.cust?`<br><span style="color:var(--muted);font-size:11px">${esc(i.cust)} &middot; for ${esc(P(i.who[0]).short)}</span>`:i.kind==="fixed"&&S.who==="all"?`<br><span style="color:var(--muted);font-size:11px">${i.who.length===PEOPLE.length&&PEOPLE.length>1?"Everyone":i.who.map(w=>esc(P(w).short)).join(", ")}</span>`:""}</span></div>`).join(""):'<div class="empty">Nothing planned.</div>'}</div>`;
+}
+function render(){renderBanner();renderBacklog();renderCal();renderSide()}
+
+/* ---------- drag and drop ---------- */
+let drag=null;
+const byId=id=>tasks.find(x=>x.id===id);
+document.addEventListener("dragstart",e=>{
+  const el=e.target.closest&&e.target.closest("[data-id][draggable]");if(!el)return;
+  const r=el.getBoundingClientRect();
+  drag={id:el.dataset.id,off:el.classList.contains("task")?e.clientY-r.top:12};
+  e.dataTransfer.setData("text/plain",el.dataset.id);e.dataTransfer.effectAllowed="move";
+  setTimeout(()=>el.classList.add("ghost"),0);
+});
+document.addEventListener("dragend",()=>{drag=null;document.querySelectorAll(".drop").forEach(c=>c.classList.remove("drop"));render()});
+document.addEventListener("dragover",e=>{
+  if(!drag)return;
+  const c=e.target.closest&&e.target.closest(".col,.ln,.wl");
+  if(c){e.preventDefault();document.querySelectorAll(".drop").forEach(x=>x!==c&&x.classList.remove("drop"));c.classList.add("drop")}
+});
+document.addEventListener("drop",e=>{
+  if(!drag)return;
+  const c=e.target.closest&&e.target.closest(".col,.ln,.wl");if(!c)return;e.preventDefault();
+  const t=byId(drag.id);if(!t){drag=null;return}
+  if(c.classList.contains("wl")){if(c.dataset.wk<ymd(mondayOf(TODAY))&&!t.done){toast("That week has passed.");drag=null;render();return}t.sched=null;t.week=c.dataset.wk;drag=null;render();persist(t,["plan"]);return}
+  const dk=c.dataset.lane||c.dataset.day;
+  if(isPast(dk)&&!t.done){toast("That day has passed. Pick today or later.");drag=null;render();return}
+  if(c.classList.contains("ln")){
+    t.week=null;t.sched={day:c.dataset.lane,start:null};S.sel=c.dataset.lane;
+    if(t.due&&c.dataset.lane>t.due) toast("Scheduled after its due date");
+    drag=null;render();persist(t,["plan"]);return;
+  }
+  const r=c.getBoundingClientRect(),want=START+((e.clientY-r.top-drag.off)/HH)*60;
+  const s=fit(c.dataset.day,want,t.dur,t.id,t.who);
+  if(s==null){toast("No room that day for "+fmtD(t.dur)+". Try the Any time row.");return}
+  t.week=null;t.sched={day:c.dataset.day,start:s};S.sel=c.dataset.day;
+  if(t.due&&c.dataset.day>t.due) toast("Scheduled after its due date");
+  drag=null;render();persist(t,["plan"]);
+});
+document.addEventListener("click",e=>{
+  const g=a=>e.target.closest("["+a+"]");let el;
+  if((el=g("data-ck"))){const t=byId(el.dataset.ck);if(!t)return;t.done=!t.done;if(t.done&&!t.sched)t.sched={day:ymd(TODAY),start:null,derived:true};render();persist(t,["status","plan"]);return}
+  if((el=g("data-un"))){const t=byId(el.dataset.un);if(!t)return;t.sched=null;t.week=null;render();persist(t,["plan"]);return}
+  if((el=g("data-who"))){const t=byId(el.closest("[data-id]").dataset.id);if(!t)return;
+    const ids=[""].concat(PEOPLE.map(p=>p.id)),i=ids.indexOf(t.who);t.who=ids[(i+1)%ids.length];
+    if(t.sched&&t.sched.start!=null){const ns=fit(t.sched.day,t.sched.start,t.dur,t.id,t.who);
+      if(ns!==t.sched.start){t.sched.start=ns;if(ns==null)toast("No room at that time for "+P(t.who).short+", moved to Any time")}}
+    toast("Now for "+P(t.who).name);render();persist(t,["owner","plan"]);return}
+  if((el=g("data-roll"))){const mm=tasks.filter(t=>missed(t)&&vis(t));mm.forEach(t=>{t.week=null;t.sched={day:ymd(TODAY),start:null}});toast("Moved to today, any time");S.sel=ymd(TODAY);render();mm.forEach(t=>persist(t,["plan"]));return}
+  if((el=g("data-sel"))){S.sel=el.dataset.sel;if(S.view==="day"){S.week=mondayOf(parse(S.sel));loadCal()}render();return}
+  if((el=g("data-f"))){S.filter=el.dataset.f;renderBacklog();return}
+  if((el=g("data-v"))){S.view=el.dataset.v;document.querySelectorAll("#vseg button").forEach(b=>b.classList.toggle("on",b===el));render();loadCal();return}
+  if((el=g("data-nextwk"))){const t=byId(el.dataset.nextwk);if(!t)return;t.sched=null;t.week=nextWk();S.week=parse(nextWk());S.sel=nextWk();toast("Set for next week. Drag it to a day when you know which.");render();loadCal();persist(t,["plan"]);return}
+  if(g("data-emails")){openEmails();return}
+  if(e.target.id==="emsave"){saveEmails();return}
+  if(e.target.id==="emcancel"){$("#emdlg").hidden=true;return}
+});
+document.addEventListener("change",e=>{
+  const d=e.target.dataset||{};
+  if(d.dur){const t=byId(d.dur);if(t){t.dur=+e.target.value;persist(t,["planDur"])}}
+  if(d.whosel){const t=byId(d.whosel);if(t){t.who=e.target.value;render();persist(t,["owner"])}}
+  if(e.target.id==="who"){S.who=e.target.value;try{localStorage.setItem("plan.who",S.who)}catch(x){}render()}
+});
+$("#addf").addEventListener("submit",async e=>{e.preventDefault();const v=$("#addi").value.trim();if(!v)return;
+  const cid=$("#addc").value,who=$("#addw").value,c=customers.find(x=>x.id===cid);
+  const d={title:v,owner:who?P(who).name:"",party:"hci",visibility:"internal",status:"open",due:"",note:"",projectId:"",customerId:cid,hospital:c?c.name:"General",phase:0,plan:null,planDur:30,source:"Added in Plan",sourceDate:ymd(TODAY),createdAt:new Date().toISOString(),updatedAt:new Date().toISOString()};
+  $("#addi").value="";S.filter="all";
+  try{const r=await api("POST","/api/tasks",d);tasks.push({id:r.id,title:v,cust:c?c.name:"General",who,due:null,dur:30,done:false,sched:null});version=0;render()}catch(err){toast("Could not add it ("+err.message+")")}});
+function shift(n){if(S.view==="day"){const d=addDays(parse(S.sel),n);S.sel=ymd(d);S.week=mondayOf(d)}else{S.week=addDays(S.week,7*n);S.sel=ymd(S.week)}render();loadCal()}
+$("#prev").onclick=()=>shift(-1);$("#next").onclick=()=>shift(1);
+$("#today").onclick=()=>{S.week=mondayOf(TODAY);S.sel=ymd(TODAY);render();loadCal()};
+$("#auto").onclick=()=>{
+  let days=visibleDays().filter(d=>d.getDay()%6!==0&&ymd(d)>=ymd(TODAY)).map(ymd);
+  if(days.length<3){const nx=[0,1,2,3,4].map(i=>ymd(addDays(addDays(mondayOf(parse(days[0]||ymd(TODAY))),7),i)));days=days.concat(nx)}
+  const vw=ymd(mondayOf(visibleDays()[0]));
+  const todo=tasks.filter(t=>!t.sched&&!t.done&&vis(t)&&(!t.week||t.week===vw)).sort((a,b)=>(a.due||"9999").localeCompare(b.due||"9999"));
+  const placed=[];
+  todo.forEach(t=>{
+    const ok=days.filter(k=>!t.due||k<=t.due),order=ok.length?ok:days;
+    const pick=(t.due&&t.due<days[0])?days[0]:order.slice().sort((a,b)=>loadOf(a,t.who)-loadOf(b,t.who)||(a<b?-1:1))[0];
+    if(pick){t.week=null;t.sched={day:pick,start:null};placed.push(t)}
+  });
+  toast(placed.length?`Put ${placed.length} task${placed.length>1?"s":""} on days, balanced per person. No times set.`:"Nothing left to place");render();
+  placed.forEach(t=>persist(t,["plan"]));
+};
+/* resize */
+document.addEventListener("pointerdown",e=>{
+  const h=e.target.closest&&e.target.closest("[data-rs]");if(!h)return;
+  e.preventDefault();e.stopPropagation();
+  const t=byId(h.dataset.rs),y0=e.clientY,d0=t.dur,ev=h.closest(".ev");ev.draggable=false;
+  const mv=ev2=>{
+    let nd=Math.round((d0+((ev2.clientY-y0)/HH)*60)/15)*15;nd=Math.max(15,Math.min(240,nd));
+    const list=busyFor(t.sched.day,t.id,t.who);
+    while(nd>15&&!free(list,t.sched.start,t.sched.start+nd)) nd-=15;
+    if(t.sched.start+nd>END) nd=END-t.sched.start;
+    if(nd!==t.dur){t.dur=nd;ev.style.height=(nd/60*HH-2)+"px"}
+  };
+  const up=()=>{document.removeEventListener("pointermove",mv);document.removeEventListener("pointerup",up);render();if(t.dur!==d0)persist(t,["planDur"])};
+  document.addEventListener("pointermove",mv);document.addEventListener("pointerup",up);
+});
+
+/* Outlook addresses for people who have none yet */
+function openEmails(){
+  const dlg=$("#emdlg");
+  dlg.querySelector(".rows").innerHTML=PEOPLE.map(p=>`<label class="emrow"><span>${esc(p.name)}</span><input type="email" data-em="${esc(p.id)}" value="${esc(p.email)}" placeholder="name@hci-tv.com"></label>`).join("");
+  dlg.hidden=false;
+}
+async function saveEmails(){
+  const ins=[...document.querySelectorAll("[data-em]")];
+  for(const i of ins){const p=P(i.dataset.em),v=i.value.trim();if(v!==p.email){try{await api("PATCH","/api/team/"+encodeURIComponent(p.id),{email:v});p.email=v}catch(e){toast("Could not save "+p.short+" ("+e.message+")")}}}
+  $("#emdlg").hidden=true;Object.keys(calLoaded).forEach(k=>delete calLoaded[k]);version=0;await loadCal(true);toast("Saved");
+}
+
+function fillSelects(){
+  const w=$("#who"),cur=S.who;
+  w.innerHTML='<option value="all">Everyone</option>'+PEOPLE.map(p=>`<option value="${esc(p.id)}">${esc(p.name)}</option>`).join("");
+  if(cur!=="all"&&!PEOPLE.some(p=>p.id===cur))S.who="all";w.value=S.who;
+  $("#addw").innerHTML=[UNASSIGNED].concat(PEOPLE).map(p=>`<option value="${esc(p.id)}">${esc(p.id?p.short:"Nobody")}</option>`).join("");
+  const me=parent!==window&&0;
+  $("#addc").innerHTML='<option value="">No customer</option>'+customers.slice().sort((a,b)=>String(a.name).localeCompare(String(b.name))).map(c=>`<option value="${esc(c.id)}">${esc(c.name)}</option>`).join("");
+}
+async function boot(){
+  try{await load(true)}catch(e){$("#list").innerHTML='<div class="empty">Could not load the Hub ('+esc(e.message)+')</div>';return}
+  fillSelects();render();loadCal();
+  setInterval(async()=>{
+    if(drag||saving||document.hidden)return;
+    try{if(await load(false)){fillSelects();render()}}catch(e){}
+  },20000);
+}
+boot();
+})();
+</script>
+</body>
+</html>
