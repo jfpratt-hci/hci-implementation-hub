@@ -171,12 +171,20 @@ button.av{cursor:pointer}button.av:hover{outline:2px solid var(--focus)}
 .ev.fixed.tent{opacity:.7}
 .emdlg{position:fixed;inset:0;background:rgba(0,0,0,.4);display:grid;place-items:center;z-index:20}
 .emdlg[hidden]{display:none}
-.emdlg .box{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px;width:min(420px,92vw);display:grid;gap:12px;box-shadow:var(--shadow)}
+.emdlg .box{width:min(520px,94vw);background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px;width:min(420px,92vw);display:grid;gap:12px;box-shadow:var(--shadow)}
 .emdlg h2{font-size:15px;font-weight:800}
 .emrow{display:grid;grid-template-columns:110px 1fr;gap:8px;align-items:center;font-weight:700}
 .emrow input{border:1px solid var(--line);background:var(--soft);border-radius:999px;padding:7px 12px;min-width:0}
 .emdlg .rows{display:grid;gap:8px}
-.emdlg .acts{display:flex;justify-content:flex-end;gap:8px}
+.emdlg .box{max-height:94vh;overflow:auto}
+.fl{display:grid;gap:4px;font-size:11.5px;font-weight:800;color:var(--muted);letter-spacing:.03em}
+.fl input,.fl select,.fl textarea{border:1px solid var(--line);background:var(--soft);border-radius:12px;padding:7px 10px;font-weight:600;color:var(--ink);min-width:0;width:100%;font-size:13px}
+.fl textarea{resize:vertical;font-family:inherit}
+.fl.chk{display:flex;align-items:center;gap:8px;align-self:end;padding-bottom:8px;color:var(--ink);font-size:13px}.fl.chk input{width:auto}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}.g3{display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:10px}
+.btn.dng{color:var(--warn);border-color:var(--warn-soft)}.btn.dng.arm{background:var(--warn);color:#fff;border-color:var(--warn)}
+.ev.task,.chp,.tk{cursor:pointer}#tdlg .box{width:min(520px,94vw)}
+.emdlg .acts{align-items:center;flex-wrap:wrap;display:flex;justify-content:flex-end;gap:8px}
 @media (max-width:1100px){.main{grid-template-columns:260px minmax(0,1fr)}.side{display:none}}
 @media (max-width:760px){body{overflow:auto}.main{grid-template-columns:1fr}.app{height:auto}.calbody{min-width:700px}.cal{overflow:auto}}
 </style>
@@ -213,6 +221,7 @@ button.av{cursor:pointer}button.av:hover{outline:2px solid var(--focus)}
   </div>
 </div>
 <div class="toast" id="toast"></div>
+<div class="emdlg" id="tdlg" hidden><div class="box" role="dialog" aria-label="Task details"></div></div>
 <div class="emdlg" id="emdlg" hidden><div class="box" role="dialog" aria-label="Outlook addresses"><h2>Outlook addresses</h2><div class="sub">Used only to read busy time from each person's calendar.</div><div class="rows"></div><div class="acts"><button class="btn sm" id="emcancel">Cancel</button><button class="btn sm go" id="emsave">Save</button></div></div></div>
 <script>
 (function(){
@@ -264,7 +273,7 @@ function build(cols){
     let sched=d.plan&&d.plan.day?{day:d.plan.day,start:d.plan.start==null?null:d.plan.start}:null;
     if(done&&!sched){const day=localDay(d.updatedAt);if(day&&day>=cutoff)sched={day,start:null,derived:true}}
     if(done&&!sched)return;
-    tasks.push({id,title:d.title||"Untitled",cust:custName(d),who:own?own.id:"",due:d.due||null,dur:Number(d.planDur)||30,done,sched,week:(!sched&&d.plan&&d.plan.week)||null});
+    tasks.push({id,title:d.title||"Untitled",cust:custName(d),who:own?own.id:"",due:d.due||null,dur:Number(d.planDur)||30,done,sched,week:(!sched&&d.plan&&d.plan.week)||null,note:d.note||"",customerId:d.customerId||"",projectId:d.projectId||"",created:d.createdAt||"",source:d.source||""});
   });
 }
 async function load(first){
@@ -272,7 +281,7 @@ async function load(first){
   if(j.unchanged)return false;
   version=j.version;build(j.cols);loaded=true;return true;
 }
-const doc=(t)=>({owner:t.who?P(t.who).name:"",plan:t.sched?{day:t.sched.day,start:t.sched.start}:t.week?{week:t.week}:null,planDur:t.dur,status:t.done?"done":"open",updatedAt:new Date().toISOString()});
+const doc=(t)=>({title:t.title,note:t.note||"",due:t.due||"",customerId:t.customerId||"",projectId:t.projectId||"",hospital:t.cust&&t.cust!=="General"?t.cust:"General",owner:t.who?P(t.who).name:"",plan:t.sched?{day:t.sched.day,start:t.sched.start}:t.week?{week:t.week}:null,planDur:t.dur,status:t.done?"done":"open",updatedAt:new Date().toISOString()});
 let saving=0;
 async function persist(t,only){
   saving++;
@@ -542,6 +551,12 @@ document.addEventListener("click",e=>{
   if((el=g("data-nextwk"))){const t=byId(el.dataset.nextwk);if(!t)return;t.sched=null;t.week=nextWk();S.week=parse(nextWk());S.sel=nextWk();toast("Set for next week. Drag it to a day when you know which.");render();loadCal();persist(t,["plan"]);return}
   if(g("data-emails")){openEmails();return}
   if(e.target.id==="emsave"){saveEmails();return}
+  if(e.target.id==="tdcancel"||e.target.id==="tdlg"){closeTask();return}
+  if(e.target.id==="tdsave"){saveTask();return}
+  if(e.target.id==="tdoff"){offTask();return}
+  if(e.target.id==="tddel"){delTask();return}
+  if(e.target.closest("button,select,option,input,a,[data-rs]"))return;
+  if((el=e.target.closest(".ev.task,.chp,.tk"))&&el.dataset.id){openTask(el.dataset.id);return}
   if(e.target.id==="emcancel"){$("#emdlg").hidden=true;return}
 });
 document.addEventListener("change",e=>{
@@ -554,7 +569,7 @@ $("#addf").addEventListener("submit",async e=>{e.preventDefault();const v=$("#ad
   const cid=$("#addc").value,who=$("#addw").value,c=customers.find(x=>x.id===cid);
   const d={title:v,owner:who?P(who).name:"",party:"hci",visibility:"internal",status:"open",due:"",note:"",projectId:"",customerId:cid,hospital:c?c.name:"General",phase:0,plan:null,planDur:30,source:"Added in Plan",sourceDate:ymd(TODAY),createdAt:new Date().toISOString(),updatedAt:new Date().toISOString()};
   $("#addi").value="";S.filter="all";
-  try{const r=await api("POST","/api/tasks",d);tasks.push({id:r.id,title:v,cust:c?c.name:"General",who,due:null,dur:30,done:false,sched:null});version=0;render()}catch(err){toast("Could not add it ("+err.message+")")}});
+  try{const r=await api("POST","/api/tasks",d);tasks.push({id:r.id,title:v,cust:c?c.name:"General",who,due:null,dur:30,done:false,sched:null,week:null,note:"",customerId:cid,projectId:""});version=0;render()}catch(err){toast("Could not add it ("+err.message+")")}});
 function shift(n){if(S.view==="day"){const d=addDays(parse(S.sel),n);S.sel=ymd(d);S.week=mondayOf(d)}else{S.week=addDays(S.week,7*n);S.sel=ymd(S.week)}render();loadCal()}
 $("#prev").onclick=()=>shift(-1);$("#next").onclick=()=>shift(1);
 $("#today").onclick=()=>{S.week=mondayOf(TODAY);S.sel=ymd(TODAY);render();loadCal()};
@@ -587,6 +602,53 @@ document.addEventListener("pointerdown",e=>{
   const up=()=>{document.removeEventListener("pointermove",mv);document.removeEventListener("pointerup",up);render();if(t.dur!==d0)persist(t,["planDur"])};
   document.addEventListener("pointermove",mv);document.addEventListener("pointerup",up);
 });
+
+/* task detail */
+let openId=null,delArm=false;
+const timeOpts=(sel)=>'<option value="">Any time</option>'+Array.from({length:(END-START)/15},(_,i)=>START+i*15).map(m=>`<option value="${m}" ${m===sel?"selected":""}>${fmtT(m)}</option>`).join("");
+function openTask(id){
+  const t=byId(id);if(!t)return;openId=id;delArm=false;
+  const dlg=$("#tdlg"),sc=t.sched,p=projects.find(x=>x.id===t.projectId);
+  const people=[UNASSIGNED].concat(PEOPLE);
+  dlg.querySelector(".box").innerHTML=`<h2>Task details</h2>
+   <label class="fl">Task<input id="td_title" value="${esc(t.title)}"></label>
+   <div class="g2"><label class="fl">Customer<select id="td_cust"><option value="">No customer</option>${customers.slice().sort((a,b)=>String(a.name).localeCompare(String(b.name))).map(c=>`<option value="${esc(c.id)}" ${c.id===t.customerId||(!t.customerId&&c.name===t.cust)?"selected":""}>${esc(c.name)}</option>`).join("")}</select></label>
+   <label class="fl">For<select id="td_who">${people.map(x=>`<option value="${esc(x.id)}" ${x.id===t.who?"selected":""}>${esc(x.name)}</option>`).join("")}</select></label></div>
+   <div class="g3"><label class="fl">Day<input id="td_day" type="date" value="${sc?esc(sc.day):""}"></label>
+   <label class="fl">Start<select id="td_start">${timeOpts(sc&&sc.start!=null?sc.start:null)}</select></label>
+   <label class="fl">Time needed<select id="td_dur">${[15,30,45,60,90,120,180,240].map(m=>`<option value="${m}" ${m===t.dur?"selected":""}>${fmtD(m)}</option>`).join("")}</select></label></div>
+   <div class="g2"><label class="fl">Due<input id="td_due" type="date" value="${esc(t.due||"")}"></label>
+   <label class="fl chk"><input id="td_done" type="checkbox" ${t.done?"checked":""}> Done</label></div>
+   <label class="fl">Notes<textarea id="td_note" rows="3">${esc(t.note)}</textarea></label>
+   <div class="sub">${p?"Project: "+esc(p.name)+". ":""}${t.week&&!sc?"Planned for the week of "+esc(t.week)+". ":""}${t.source?esc(t.source)+". ":""}${t.created?"Created "+esc(new Date(t.created).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"}))+".":""}</div>
+   <div class="acts"><button class="btn sm dng" id="tddel">Delete task</button>${sc||t.week?'<button class="btn sm" id="tdoff">Take off calendar</button>':""}<span style="flex:1"></span><button class="btn sm" id="tdcancel">Cancel</button><button class="btn sm go" id="tdsave">Save</button></div>`;
+  dlg.hidden=false;setTimeout(()=>{const i=$("#td_title");i&&i.focus()},0);
+}
+function closeTask(){openId=null;delArm=false;$("#tdlg").hidden=true}
+async function saveTask(){
+  const t=byId(openId);if(!t)return closeTask();
+  const title=$("#td_title").value.trim();if(!title){toast("Give the task a name");return}
+  const cid=$("#td_cust").value,c=customers.find(x=>x.id===cid);
+  const day=$("#td_day").value,st=$("#td_start").value===""?null:+$("#td_start").value,dur=+$("#td_dur").value,who=$("#td_who").value;
+  t.title=title;t.note=$("#td_note").value;t.due=$("#td_due").value||null;t.dur=dur;t.who=who;t.done=$("#td_done").checked;
+  if(cid!==t.customerId){t.customerId=cid;t.projectId=""}
+  t.cust=c?c.name:"General";
+  if(day){
+    if(isPast(day)&&!t.done&&!(t.sched&&t.sched.day===day)){toast("That day has passed. Pick today or later.");return}
+    let start=st;
+    if(start!=null){const ok=fit(day,start,dur,t.id,who);if(ok!==start){toast(ok==null?"No room that day at that time. Choose Any time.":"Busy then. Next free start is "+fmtT(ok)+".");$("#td_start").value=ok==null?"":ok;return}}
+    t.sched={day,start};t.week=null;
+  }else if(t.sched){t.sched=null}
+  closeTask();render();await persist(t);
+}
+async function offTask(){const t=byId(openId);if(!t)return;t.sched=null;t.week=null;closeTask();render();await persist(t,["plan"]);toast("Taken off the calendar")}
+async function delTask(){
+  const t=byId(openId);if(!t)return;
+  const b=$("#tddel");if(!delArm){delArm=true;b.textContent="Click again to delete for good";b.classList.add("arm");return}
+  const id=t.id;closeTask();tasks=tasks.filter(x=>x.id!==id);render();
+  try{await api("DELETE","/api/tasks/"+encodeURIComponent(id));toast("Task deleted");version=0}catch(e){toast("Could not delete ("+e.message+")");load(true).then(render)}
+}
+document.addEventListener("keydown",e=>{if(e.key==="Escape"){if(!$("#tdlg").hidden)closeTask();else if(!$("#emdlg").hidden)$("#emdlg").hidden=true}});
 
 /* Outlook addresses for people who have none yet */
 function openEmails(){
